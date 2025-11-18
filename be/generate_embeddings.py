@@ -96,9 +96,9 @@ def run():
     # Load weights (Nếu có)
     try:
         text_encoder.load_state_dict(torch.load("weights/text_encoder.pth", map_location=device), strict=False)
-        # img_encoder.load_state_dict(torch.load("weights/img_encoder.pth", map_location=device))
-        # tab_encoder.load_state_dict(torch.load("weights/tab_encoder.pth", map_location=device))
-        # fusion_gate.load_state_dict(torch.load("weights/fusion_gate.pth", map_location=device))
+        img_encoder.load_state_dict(torch.load("weights/img_encoder.pth", map_location=device))
+        tab_encoder.load_state_dict(torch.load("weights/tab_encoder.pth", map_location=device))
+        fusion_gate.load_state_dict(torch.load("weights/fusion_gate.pth", map_location=device))
         print("✅ Đã load weights (các file tìm thấy).")
     except Exception as e:
         print(f"⚠️ Cảnh báo load weight: {e}")
