@@ -4,12 +4,18 @@ import pandas as pd
 import warnings
 import ast # Để parse (phân tích) các chuỗi list từ CSV
 import json
+from dotenv import load_dotenv
 
+# --- CẤU HÌNH LOAD .ENV  ---
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+be_dir = os.path.dirname(current_file_dir)
+env_path = os.path.join(be_dir, '.env')
+load_dotenv(dotenv_path=env_path)
 def configure_gemini():
     """
     Cấu hình API Gemini bằng cách đọc key từ biến môi trường.
     """
-    api_key = 'AIzaSyCobGbnxcc99w9kJuMuuN6LpF6BcDxq7oQ'
+    api_key = os.getenv("GEMINI_API_KEY")
     print(api_key)
     if not api_key:
         print("ERROR: Environment variable 'GEMINI_API_KEY' not found.")

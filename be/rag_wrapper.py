@@ -6,13 +6,13 @@ import os
 # Giúp Python tìm thấy folder 'llm' nằm ngang hàng với folder 'be'
 # Cấu trúc:
 # root/
-#   be/rag_wrapper.py
-#   llm/llm_utils.py
+#   be/
+#       rag_wrapper.py
+#       llm/llm_utils.py
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-llm_dir = os.path.join(parent_dir, 'llm')
+#parent_dir = os.path.dirname(current_dir)
+llm_dir = os.path.join(current_dir, 'llm')
 sys.path.append(llm_dir)
-
 # --- IMPORT TỪ LLM_UTILS ---
 try:
     from llm_utils import generate_rag_recommendation, configure_gemini
