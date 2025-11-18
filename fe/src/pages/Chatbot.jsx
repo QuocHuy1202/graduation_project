@@ -1,8 +1,9 @@
 // src/pages/Chatbot.jsx
 import { useState, useRef, useEffect } from 'react';
 import axios from "axios";
-
+import { useNavigate } from 'react-router-dom';
 function Chatbot() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([
     { id: 1, text: "👋 Xin chào! Tôi là trợ lý AI. Nhấn dấu (+) để gửi ảnh hoặc nhập tên sản phẩm bạn cần tìm nhé.", sender: "bot" }
   ]);
@@ -17,14 +18,17 @@ function Chatbot() {
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
-
+  
   // Lấy UserID
   let userId = localStorage.getItem("currentUserId");
   if (!userId) {
     userId = "USER_" + Date.now();
     localStorage.setItem("currentUserId", userId);
   }
-
+  useEffect(() => {
+    window.openProduct = (id) => navigate(`/product/${id}`);
+    return () => { delete window.openProduct; };
+  }, [navigate]);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -79,6 +83,7 @@ function Chatbot() {
       form.append("user_id", userId);
       form.append("k_retrieval", 100); // Tìm kiếm rộng
       form.append("k_rerank", 10);     // Lấy top 10 kết quả cuối cùng
+      form.append("use_rag", "true");
       if (currentImage) form.append("image", currentImage);
 
       const res = await axios.post("http://localhost:8000/search", form, {
@@ -87,30 +92,76 @@ function Chatbot() {
 
       setMessages(prev => prev.filter(m => m.id !== loadingId));
       const results = res.data.results;
-
+      const rag = res.data.rag_analysis;
       if (!results || results.length === 0) {
         setMessages(prev => [...prev, { id: Date.now() + 1, text: "😥 Không tìm thấy sản phẩm nào.", sender: "bot" }]);
         return;
       }
+    if (rag && rag.recommendations && rag.recommendations.length > 0) {
+        let ragHtml = `<div style="background: #e3f2fd; padding: 15px; border-radius: 10px; border-left: 4px solid #2196f3; margin-bottom: 15px;">`;
+        
+        // Lời khuyên chung
+        if (rag.general_advice) {
+            ragHtml += `<div style="font-style: italic; color: #555; margin-bottom: 10px;">💡 ${rag.general_advice}</div>`;
+        }
 
-      // HIỂN THỊ 10 SẢN PHẨM
+        // Chi tiết từng sản phẩm
+        rag.recommendations.forEach(rec => {
+                ragHtml += `
+                <div style="margin-top: 8px;">
+                    <strong>✅ ${rec.selected_item_title}</strong>
+                    <div style="font-size: 0.9rem; color: #444; margin-top: 2px;">👉 ${rec.recommendation_reason}</div>
+                </div>
+                `;
+        });
+        ragHtml += `</div>`;
+        
+        // Thêm tin nhắn Bot vào danh sách
+        setMessages(prev => [...prev, { 
+            id: Date.now() + 1, 
+            text: ragHtml, 
+            sender: "bot" 
+        }]);
+    }      
+      // Lấy danh sách ID được AI chọn (nếu có)
+      const recommendedIds = rag?.recommendations?.map(r => r.selected_item_index) || [];
+
       const replyHtml = results.map(item => {
         const scorePercent = (item.score * 100).toFixed(0);
+        
+        // Kiểm tra xem sản phẩm này có được AI chọn không
+        const isRecommended = recommendedIds.includes(item.id);
+
+        // Style động: Nếu được chọn thì nền xanh nhạt, viền xanh lá
+        const bgStyle = isRecommended 
+            ? 'background: #f6ffed; border: 2px solid #52c41a;' 
+            : 'background: #fff; border-bottom: 1px solid #f0f0f0;';
+        
+        // Thêm nhãn (AI Pick) nếu được chọn
+        const label = isRecommended 
+            ? '<span style="color: #27ae60; font-weight: bold; font-size: 0.8rem; margin-left: 5px;">(AI Pick)</span>' 
+            : '';
+
         return `
-          <div style="display: flex; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;">
-            <div style="flex-shrink: 0;">
+          <div onclick="window.openProduct(${item.id})" 
+               style="cursor: pointer; display: flex; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; padding: 10px; border-radius: 8px; ${bgStyle}">
+            
+            <div style="flex-shrink: 0; position: relative;">
                 <img src="${item.image}" 
                      alt="img" 
                      style="width: 70px; height: 70px; object-fit: contain; border-radius: 6px; border: 1px solid #eee; background: #fff;" 
                      onerror="this.src='https://placehold.co/70?text=N/A'" 
                 />
+                ${isRecommended ? '<div style="position: absolute; top: -5px; left: -5px; font-size: 18px;">⭐</div>' : ''}
             </div>
+
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
                 <div style="font-weight: 600; font-size: 0.95rem; color: #333; line-height: 1.3; margin-bottom: 4px;">
-                    ${item.title}
+                    ${item.title} ${label}
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div style="font-size: 0.8rem; color: #27ae60; font-weight: 500;">
+                
+                <div style="display: flex; gap: 8px; align-items: center;">
+                     <div style="font-size: 0.8rem; color: #27ae60; font-weight: 500;">
                         Độ phù hợp: ${scorePercent}%
                     </div>
                     <div style="font-size: 0.75rem; color: #888; background: #f1f1f1; padding: 2px 6px; borderRadius: 4px;">
@@ -124,7 +175,7 @@ function Chatbot() {
 
       setMessages(prev => [...prev, {
         id: Date.now() + 2,
-        text: `✨ Tìm thấy ${results.length} sản phẩm:<br/><div style="margin-top:10px">${replyHtml}</div>`,
+        text: `✨ Found ${results.length} products:<br/><div style="margin-top:10px">${replyHtml}</div>`,
         sender: "bot"
       }]);
 

@@ -9,7 +9,7 @@ def configure_gemini():
     """
     Cấu hình API Gemini bằng cách đọc key từ biến môi trường.
     """
-    api_key = 'AIzaSyDBOlUAYwwMtjPZKzRlTEteQF9qTl7nz6U'
+    api_key = 'AIzaSyCobGbnxcc99w9kJuMuuN6LpF6BcDxq7oQ'
     print(api_key)
     if not api_key:
         print("ERROR: Environment variable 'GEMINI_API_KEY' not found.")

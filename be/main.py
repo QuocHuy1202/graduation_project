@@ -7,10 +7,9 @@ from PIL import Image
 import io
 from torchvision import transforms
 from sklearn.preprocessing import minmax_scale
-
 # Import kiến trúc (đảm bảo file models.py đã có đủ class)
 from models import TextEncoder, ImageEncoder, FusionGate, D_LATENT, device
-
+from rag_wrapper import run_rag_pipeline
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -101,7 +100,8 @@ async def run_full_query_api(
     k_retrieval: int = Form(100),
     k_rerank: int = Form(20),
     alpha: float = Form(0.5), # ALPHA_INTENT
-    beta: float = Form(0.5)   # BETA_PERSONALIZATION
+    beta: float = Form(0.5),   # BETA_PERSONALIZATION
+    use_rag: bool = Form(False)
 ):
     print("\n" + "="*50)
     print(f"Bắt đầu query: '{query_text}' - User: {user_id}")
@@ -226,7 +226,7 @@ async def run_full_query_api(
         final_item_indices = top_k_indices[final_relative_indices]
         
         print("--- Hoàn tất Reranking ---")
-
+        
     # 4. FORMAT KẾT QUẢ TRẢ VỀ
     results = []
     final_indices_cpu = final_item_indices.cpu().numpy()
@@ -254,8 +254,23 @@ async def run_full_query_api(
             "average_rating": item.get("average_rating"),
             "type": "Popular" if is_new_user else "Personalized"
         })
+    rag_response = None
+    if use_rag:
+        # Chạy RAG trong background hoặc await trực tiếp
+        # Lưu ý: RAG khá chậm (2-5s), nên cân nhắc UX
+        rag_response = run_rag_pipeline(
+            query_text=query_text,
+            reranked_indices=final_indices_cpu, # Truyền list index đã rerank
+            item_meta=ITEM_META,
+            user_db=USER_DB,
+            user_id=user_id
+        )
 
-    return {"results": results}
+    return {
+        "results": results,     # Danh sách kết quả tìm kiếm
+        "rag_analysis": rag_response # Kết quả phân tích từ LLM
+    }
+    #return {"results": results}
 @app.get("/history/{user_id}")
 async def get_user_history(user_id: str):
     # Kiểm tra xem User có trong DB không
