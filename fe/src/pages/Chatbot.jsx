@@ -162,7 +162,7 @@ function Chatbot() {
                 
                 <div style="display: flex; gap: 8px; align-items: center;">
                      <div style="font-size: 0.8rem; color: #27ae60; font-weight: 500;">
-                        Độ phù hợp: ${scorePercent}%
+                         ${scorePercent}% Match
                     </div>
                     <div style="font-size: 0.75rem; color: #888; background: #f1f1f1; padding: 2px 6px; borderRadius: 4px;">
                         ID: ${item.id}
