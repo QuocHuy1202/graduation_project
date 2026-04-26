@@ -77,9 +77,44 @@ async def perform_search(
             else:
                 rerank_scores = torch.tensor([1.0] * len(pop_scores), device=device, dtype=torch.float)
         else:
-            candidate_item_embs = ml.ITEM_EMBS_GPU[top_k_indices]
-            rerank_scores = torch.matmul(user_rerank_emb, candidate_item_embs.T).squeeze(0)
-            rerank_scores = rerank_scores.squeeze(0) 
+            # --- CHUẨN BỊ VẾ 1: NGỮ CẢNH NGƯỜI DÙNG (QUERY + FULL HISTORY) ---
+            # Lấy TOÀN BỘ tên sản phẩm trong lịch sử mua hàng
+            all_history_titles = []
+            for h_idx in user_history:
+                all_history_titles.append(ml.ITEM_META[h_idx].get('title', ''))
+            
+            history_str = " | ".join(all_history_titles)
+            
+            # ⚠️ BẢO HIỂM TRÀN TOKEN: 
+            # Giới hạn độ dài chuỗi History để tránh bị lỗi vượt quá 512 tokens của BERT.
+            # Lấy khoảng 300 ký tự (tương đương ~70-100 tokens), chừa chỗ cho vế 2.
+            MAX_HISTORY_LENGTH = 300 
+            if len(history_str) > MAX_HISTORY_LENGTH:
+                # Nếu quá dài, ta ưu tiên lấy phần lịch sử MỚI NHẤT (nằm ở cuối chuỗi)
+                history_str = "..." + history_str[-MAX_HISTORY_LENGTH:]
+            
+            # Ghép Query và Full History (đã an toàn)
+            user_context = f"Query: {query_text}. User bought: {history_str}"
+
+            # --- CHUẨN BỊ CROSS-ENCODER INPUT ---
+            cross_inp = []
+            for idx in candidate_indices_cpu:
+                item_info = ml.ITEM_META[idx]
+                item_title = item_info.get('title', '')
+                item_features = " ".join(item_info.get('features', [])) if isinstance(item_info.get('features'), list) else ""
+                
+                # VẾ 2: Thông tin món hàng cần xét
+                item_text_context = f"{item_title}. {item_features}"
+                
+                # Đưa vào model: [Câu tìm kiếm + Lịch sử, Thông tin món hàng]
+                cross_inp.append([user_context, item_text_context])
+            
+            # --- CHẤM ĐIỂM BẰNG CROSS-ENCODER ---
+            cross_scores_np = ml.cross_encoder.predict(cross_inp)
+            rerank_logits = torch.tensor(cross_scores_np, device=device, dtype=torch.float)
+            
+            # Dùng Sigmoid ép về xác suất 0 -> 1
+            rerank_scores = torch.sigmoid(rerank_logits)
         
         # Final Combine
         final_combined_score = (alpha * top_k_retrieval_scores) + (beta * rerank_scores)

@@ -5,13 +5,15 @@ import giftCardsRaw from '../assets/meta_Gift_Cards.jsonl?raw';
 import '../css/ProductDetail.css'; 
 
 function ProductDetail() {
-  const { id } = useParams(); // Lấy ID từ URL (ví dụ: /product/0)
+  const { id } = useParams(); // Lấy ID từ URL (đóng vai trò là item_idx luôn)
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // State quản lý trạng thái nút mua hàng
+  const [isBuying, setIsBuying] = useState(false);
 
   useEffect(() => {
-    // Load dữ liệu lại để đảm bảo có thông tin ngay cả khi refresh trang
     try {
       const allProducts = giftCardsRaw
         .trim()
@@ -21,13 +23,11 @@ function ProductDetail() {
         })
         .filter(item => item !== null);
 
-      // Tìm sản phẩm theo index
       const foundProduct = allProducts[parseInt(id)];
       
       if (foundProduct) {
         setProduct(foundProduct);
       } else {
-        // Nếu không tìm thấy (ví dụ nhập ID bậy bạ), quay về trang chủ
         navigate('/');
       }
     } catch (error) {
@@ -37,10 +37,49 @@ function ProductDetail() {
     }
   }, [id, navigate]);
 
+  // Hàm xử lý khi người dùng bấm nút Mua Ngay
+// Hàm xử lý khi người dùng bấm nút Mua Ngay
+  const handleBuy = async () => {
+    // Lấy đúng key 'currentUserId' mà trang Login đã lưu
+    const currentUserId = localStorage.getItem('currentUserId');
+
+    // Kiểm tra xem khách đã đăng nhập chưa
+    if (!currentUserId) {
+      alert("Vui lòng đăng nhập để thực hiện chức năng này!");
+      navigate('/login'); // Đẩy người dùng về trang đăng nhập
+      return;
+    }
+
+    setIsBuying(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUserId, // Truyền ID thật của người dùng
+          item_idx: parseInt(id)  // Index sản phẩm
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`🎉 Mua hàng thành công!\nHệ thống AI: ${data.message}`);
+      } else {
+        alert(`❌ Lỗi từ Server: ${data.detail || data.message}`);
+      }
+    } catch (error) {
+      console.error("Lỗi khi kết nối API Mua hàng:", error);
+      alert("Không thể kết nối đến server AI. Vui lòng kiểm tra lại Backend!");
+    } finally {
+      setIsBuying(false);
+    }
+  };
   if (loading) return <div className="loading-text">Đang tải chi tiết...</div>;
   if (!product) return null;
 
-  // Lấy ảnh độ phân giải cao nhất
   const imageUrl = product.images?.[0]?.hi_res || product.images?.[0]?.large || 'https://placehold.co/600x800?text=No+Image';
 
   return (
@@ -48,12 +87,10 @@ function ProductDetail() {
       <button onClick={() => navigate(-1)} className="back-btn">← Quay lại</button>
       
       <div className="detail-wrapper">
-        {/* Cột trái: Ảnh */}
         <div className="detail-image-section">
           <img src={imageUrl} alt={product.title} />
         </div>
 
-        {/* Cột phải: Thông tin */}
         <div className="detail-info-section">
           <span className="detail-category">{product.main_category}</span>
           <h1 className="detail-title">{product.title}</h1>
@@ -81,8 +118,14 @@ function ProductDetail() {
             </ul>
           </div>
 
-          <button className="buy-btn" onClick={() => alert('Tính năng Mua hàng đang phát triển!')}>
-            Mua Ngay
+          {/* Nút bấm đã được tích hợp API gọi Backend */}
+          <button 
+            className="buy-btn" 
+            onClick={handleBuy}
+            disabled={isBuying} // Khóa nút khi đang gửi request
+            style={{ opacity: isBuying ? 0.7 : 1, cursor: isBuying ? 'wait' : 'pointer' }}
+          >
+            {isBuying ? 'Đang xử lý AI...' : 'Mua Ngay'}
           </button>
         </div>
       </div>

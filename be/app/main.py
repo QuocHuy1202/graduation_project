@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.ml_manager import ml
 from app.api.routers import search, user
-
+from app.api.routers import purchase
 # 1. Khởi tạo App
 app = FastAPI(title="Multimodal Recommendation System API")
 
@@ -19,5 +19,5 @@ async def startup_event():
 # 3. Gắn các API Routers vào App chính
 app.include_router(search.router, tags=["Search"])
 app.include_router(user.router, tags=["User"])
-
+app.include_router(purchase.router, tags=["Purchase"])
 # Chạy server bằng lệnh: uvicorn app.main:app --reload
