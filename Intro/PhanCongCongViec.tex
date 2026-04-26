@@ -1,0 +1,90 @@
+\begin{table}[h!]
+    \centering
+    \renewcommand{\arraystretch}{1.5} % Tăng khoảng cách dòng cho thoáng
+    \caption{Bảng phân công vai trò và nhiệm vụ chi tiết của nhóm}
+    \label{tab:team_assignment}
+    
+    % Cấu trúc cột: 
+    % p{2.5cm}: Cột Thành viên cố định rộng 2.5cm
+    % p{4cm}: Cột Vai trò cố định rộng 4cm
+    % X: Cột Nhiệm vụ tự động giãn hết phần còn lại của trang
+    \begin{tabularx}{\textwidth}{@{} p{2.5cm} p{4cm} X @{}}
+    \toprule
+    \textbf{Thành viên} & \textbf{Vai trò chuyên môn} & \textbf{Nhiệm vụ chi tiết \& Kết quả thực hiện} \\ 
+    \midrule
+    
+    \textbf{Huỳnh Quốc Huy} 
+    & Xử lý dữ liệu \& Tích hợp AI Tạo sinh 
+    & 
+    \textbf{1. Tiền xử lý dữ liệu (Data Preprocessing):}
+    \begin{itemize}[leftmargin=*, nosep, after=\vspace{0.3em}]
+        \item Thu thập, làm sạch và chuẩn hóa các nguồn dữ liệu đa phương thức (hình ảnh, văn bản, thông số kỹ thuật).
+        \item Xây dựng pipeline xử lý dữ liệu tự động để phục vụ quá trình huấn luyện.
+    \end{itemize}
+    \textbf{2. Xây dựng Hệ thống Demo (Web Application):}
+    \begin{itemize}[leftmargin=*, nosep]
+        \item Thiết kế và phát triển giao diện người dùng (Frontend) cho Web Demo.
+        \item Xây dựng Backend API để kết nối giữa giao diện và các mô hình gợi ý, hiển thị kết quả trực quan cho người dùng.
+    \end{itemize}
+    \textbf{3. Tích hợp LLM (Explainability):}
+    \begin{itemize}[leftmargin=*, nosep]
+        \item Nghiên cứu và tích hợp mô hình ngôn ngữ lớn (LLM) để sinh văn bản giải thích lý do gợi ý.
+        \item Thiết kế kỹ thuật \textit{Prompt Engineering} để tạo ra các giải thích tự nhiên và phù hợp ngữ cảnh.
+    \end{itemize}
+    \\ \midrule
+    
+    \textbf{Nguyễn Gia Huy} 
+    & Mô hình hóa Sản phẩm \& Nghiên cứu Nâng cao 
+    & 
+    \textbf{1. Xây dựng Tháp Sản phẩm (Item Tower):}
+    \begin{itemize}[leftmargin=*, nosep, after=\vspace{0.3em}]
+        \item Thiết kế và cài đặt các bộ mã hóa đặc trưng (\texttt{ImageEncoder}, \texttt{TextEncoder}, \texttt{TabularEncoder}).
+        \item Hiện thực hóa cơ chế \textit{Item Fusion} để tạo vector đại diện sản phẩm thống nhất.
+    \end{itemize}
+    \textbf{2. Nghiên cứu Cross-Encoder:}
+    \begin{itemize}[leftmargin=*, nosep]
+        \item Tìm hiểu cơ sở lý thuyết và kiến trúc của mô hình Cross-Encoder cho bài toán Re-ranking.
+        \item Đề xuất giải pháp và kiến trúc tích hợp Cross-Encoder để cải thiện độ chính xác (định hướng phát triển tương lai).
+    \end{itemize}
+    \\ \midrule
+    
+    \textbf{Đàm Đức Huy} 
+    & Mô hình hóa Người dùng
+    & 
+    \textbf{Xây dựng Tháp Người dùng (User Tower):}
+    \begin{itemize}[leftmargin=*, nosep, after=\vspace{0.3em}]
+        \item Cài đặt kiến trúc \textit{Transformer/SASRec} để mô hình hóa chuỗi hành vi tuần tự của người dùng.
+        \item Hiện thực hóa các kỹ thuật \textit{Masked Mean Pooling} và \textit{Positional Encoding}.
+    \end{itemize}
+    \\ \bottomrule
+    \end{tabularx}
+\end{table}
+
+\newpage
+
+\begin{table}[H]
+    \centering
+    \caption{Kế hoạch thực hiện đề tài}
+    \label{tab:project-timeline}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{1.0\linewidth}{lX}
+    \toprule
+    \textbf{Tuần (Thời gian)} & \textbf{Nội dung thực hiện} \\
+    \midrule
+    w37 (08/09 -- 14/09) & Tìm hiểu tổng quan, xác định phạm vi đề tài và dataset. \\
+    w38 (15/09 -- 21/09) & Thu thập, phân tích và làm sạch bộ dữ liệu \textit{Amazon Reviews}. \\
+    w39 (22/09 -- 28/09) & Thực hiện embedding dữ liệu sản phẩm và người dùng. \\
+    w40 (29/09 -- 05/10) & Xây dựng và cài đặt Item Tower (Tích hợp Fusion Gate). \\
+    w41 (06/10 -- 12/10) & Xây dựng User Tower với kiến trúc SASRec để mô hình hóa chuỗi hành vi. \\
+    w42 (13/10 -- 19/10) & Huấn luyện mô hình Two-Tower (Loss function: \textit{InfoNCE} + In-batch Negatives). \\
+    w43 (20/10 -- 26/10) & Triển khai cơ chế Retrieval và chiến lược Hybrid Reranking. \\
+    w44 (27/10 -- 02/11) & Tối ưu hóa mô hình: Tinh chỉnh Hyperparameters ($\alpha, \beta$, Learning rate) để cải thiện chỉ số NDCG/Recall. \\
+    w45 (03/11 -- 09/11) & Xây dựng Demo (FastAPI/ReactJS) và tích hợp nhanh API LLM để giải thích kết quả. \\
+    w46 (10/11 -- 16/11) & Đánh giá toàn diện hệ thống: So sánh với các baseline và phân tích trường hợp lỗi (Error Analysis). \\
+    w47 (17/11 -- 23/11) & Tổng hợp kết quả thực nghiệm, vẽ biểu đồ so sánh hiệu năng. \\
+    w48 (24/11 -- 30/11) & Viết báo cáo chương 1--3 (Lý thuyết, Thiết kế hệ thống). \\
+    w49 (01/12 -- 07/12) & Viết báo cáo chương 4--5 (Thực nghiệm, Kết luận, Hướng phát triển tương lai). \\
+    w50 (08/12 -- 14/12) & Rà soát lần cuối và hoàn thiện slide thuyết trình. \\
+    \bottomrule
+    \end{tabularx}
+\end{table}
