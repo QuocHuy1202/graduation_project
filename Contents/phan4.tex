@@ -1,0 +1,311 @@
+
+\chapter{Thực nghiệm và Đánh giá}
+\label{chap:experiment}
+
+Chương này trình bày chi tiết về quá trình thực nghiệm nhằm kiểm chứng hiệu quả của mô hình đề xuất (Two-Tower Multi-modal Recommendation System). Mục tiêu của các thực nghiệm là trả lời các câu hỏi nghiên cứu sau:
+
+\begin{enumerate}
+    \item Việc kết hợp đa phương thức (Văn bản, Hình ảnh, Dữ liệu bảng) có cải thiện hiệu năng gợi ý so với đơn phương thức hay không?
+    \item Mô hình giải quyết bài toán dự đoán hành vi tiếp theo (Next-Item Prediction) và vấn đề khởi lạnh (Cold-start) hiệu quả như thế nào?
+    \item Cơ chế Hybrid Retrieval (kết hợp Query ngữ nghĩa và Personalization) đóng góp ra sao vào trải nghiệm người dùng cuối?
+    \item Mô hình đề xuất có khả năng triển khai trong môi trường thực tế (Real-world Deployment) đảm bảo yêu cầu về độ trễ thấp (Low Latency) và tính tương tác thời gian thực hay không?
+\end{enumerate}
+
+Nội dung chương bao gồm mô tả tập dữ liệu, thiết lập môi trường thực nghiệm, định nghĩa các độ đo đánh giá, phân tích sâu các kết quả thu được và minh họa hệ thống triển khai thực tế (System Demo).
+
+\section{Mô tả tập dữ liệu}
+\label{sec:data_desc}
+
+\subsection{Tổng quan về nguồn dữ liệu}
+Nghiên cứu sử dụng tập dữ liệu quy chuẩn \textbf{Amazon Reviews 2023}. Để đánh giá tính tổng quát, đồ án thực nghiệm trên hai phân loại hàng hóa có đặc thù khác biệt:
+\begin{enumerate}
+    \item \textbf{Gift Cards:} Sản phẩm ít biến động ngoại hình, phụ thuộc nhiều vào ngữ cảnh tặng quà.
+    \item \textbf{Beauty:} Sản phẩm đa dạng, phụ thuộc mạnh vào đặc trưng thị giác và tính năng chi tiết.
+\end{enumerate}
+
+Dữ liệu được tổ chức thành hai tập tin JSON Lines riêng biệt nhưng liên kết chặt chẽ: \textbf{User Reviews} (lưu trữ lịch sử tương tác) và \textbf{Item Metadata} (lưu trữ thông tin sản phẩm đa phương thức).
+
+\subsubsection*{A. Chi tiết dữ liệu User Reviews}
+Tập dữ liệu này cung cấp chuỗi hành vi lịch sử để huấn luyện mô hình.
+
+\begin{table}[H]
+    \centering
+    \caption{Mô tả các trường thông tin trong tập dữ liệu User Reviews}
+    \label{tab:user_reviews_desc}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|p{0.25\linewidth}|p{0.7\linewidth}|}
+        \hline
+        \textbf{Trường dữ liệu} & \textbf{Mô tả và Phương pháp xử lý} \\
+        \hline
+        \texttt{user\_id} \newline \textit{(String)} & 
+        Định danh người dùng. Khóa chính để gom nhóm và sắp xếp chuỗi tương tác theo thời gian làm đầu vào cho Tháp Người dùng. \\
+        \hline
+        \texttt{parent\_asin} \newline \textit{(String)} & 
+        Mã sản phẩm cha. Dùng làm khóa ngoại liên kết với tập Item Metadata. \\
+        \hline
+        \texttt{rating} \newline \textit{(Float)} & 
+        Điểm đánh giá. Mức từ 4.0 trở lên được xem là tích cực. Dùng làm đặc trưng số học cho mô hình. \\
+        \hline
+        \texttt{title} \& \texttt{text} \newline \textit{(String)} & 
+        Tiêu đề và nội dung đánh giá. Nối lại thành chuỗi văn bản đầu vào cho mô hình mã hóa, phản ánh lý do và cảm xúc. \\
+        \hline
+        \texttt{timestamp} \newline \textit{(Integer)} & 
+        Thời gian đánh giá. Dùng để sắp xếp chuỗi tương tác theo trình tự chuẩn, ngăn chặn hiện tượng rò rỉ dữ liệu tương lai. \\
+        \hline
+        \texttt{verified\_purchase} \newline \textit{(Boolean)} & 
+        Nhãn xác thực mua hàng. Được nhúng thành vector đặc trưng giúp mô hình phân biệt độ tin cậy của tương tác. \\
+        \hline
+        \texttt{helpful\_vote} \newline \textit{(Integer)} & 
+        Lượt hữu ích. Được chuẩn hóa logarit và sử dụng như một chỉ số đo lường chất lượng đánh giá. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection*{B. Chi tiết dữ liệu Item Metadata}
+Tập dữ liệu cung cấp thông tin đa phương thức để xây dựng Tháp Sản phẩm.
+
+\begin{table}[H]
+    \centering
+    \caption{Mô tả các trường thông tin trong tập dữ liệu Item Metadata}
+    \label{tab:item_metadata_desc}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|p{0.3\linewidth}|p{0.65\linewidth}|}
+        \hline
+        \textbf{Trường dữ liệu} & \textbf{Mô tả và Phương pháp xử lý} \\
+        \hline
+        \texttt{parent\_asin} \newline \textit{(String)} & 
+        Khóa chính của sản phẩm, ánh xạ với dữ liệu User Reviews. \\
+        \hline
+        \texttt{title} \newline \textit{(String)} & 
+        Tên sản phẩm. Đặc trưng văn bản quan trọng nhất, được mã hóa bằng mô hình ngôn ngữ để tạo vector ngữ nghĩa. \\
+        \hline
+        \texttt{images} \newline \textit{(List)} & 
+        Danh sách ảnh. Các ảnh độ phân giải cao được đưa qua Vision Transformer để trích xuất đặc trưng thị giác. \\
+        \hline
+        \texttt{main\_category} \newline \textit{(String)} & 
+        Danh mục chính. Giúp định danh miền dữ liệu, được xử lý nhúng hoặc mã hóa One-hot. \\
+        \hline
+        \texttt{categories} \newline \textit{(List)} & 
+        Phân cấp danh mục. Tạo vector đại diện giúp mô hình gom cụm các sản phẩm tương đồng. \\
+        \hline
+        \texttt{store} \newline \textit{(String)} & 
+        Thương hiệu phát hành. Chuyển đổi thành chỉ số và đưa qua mạng nhúng. \\
+        \hline
+        \texttt{avg\_rating} \textit{(Float)} \& \newline \texttt{rating\_number} \textit{(Int)} & 
+        Điểm trung bình và tổng lượt đánh giá. Được chuẩn hóa số học trước khi đưa vào mạng nơ-ron để tránh chênh lệch thang đo. \\
+        \hline
+        \texttt{price} \newline \textit{(Float)} & 
+        Giá bán quy đổi. Các giá trị khuyết thiếu được xử lý bằng phương pháp gán giá trị trung vị. \\
+        \hline
+        \texttt{features}, \texttt{description} \newline \& \texttt{details} & 
+        Mô tả và thông số kỹ thuật. Bổ sung ngữ nghĩa cho tiêu đề, được gộp thành chuỗi văn bản cho mô hình mã hóa. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection*{C. Mối quan hệ và Thách thức dữ liệu}
+\textbf{Mối quan hệ liên kết:} Dữ liệu được liên kết qua trường \texttt{parent\_asin} bằng phép nối trong. Hệ thống chỉ giữ lại các cặp tương tác mà sản phẩm sở hữu đầy đủ thông tin cốt lõi (hình ảnh và tiêu đề) để đưa vào huấn luyện.
+
+\textbf{Thách thức:} 
+\begin{itemize}
+    \item \textbf{Đa dạng định dạng:} Đòi hỏi kiến trúc mạng nơ-ron phải đủ phức tạp để dung hòa hiệu quả các miền thông tin phi cấu trúc (hình ảnh, văn bản) và có cấu trúc.
+    \item \textbf{Nhiễu dữ liệu:} Tồn tại nhiều ảnh chất lượng thấp hoặc đánh giá quá ngắn thiếu ngữ nghĩa, đòi hỏi quy trình tiền xử lý và làm sạch nghiêm ngặt.
+\end{itemize}
+
+
+\subsection{Quy trình Tiền xử lý dữ liệu}
+\label{sec:preprocessing}
+
+Quy trình tiền xử lý được chia thành 4 giai đoạn chính nhằm giảm nhiễu và tối ưu hóa dữ liệu đầu vào cho kiến trúc đa phương thức:
+
+\subsubsection{Giai đoạn 1: Làm sạch và Lọc dữ liệu}
+\begin{itemize}
+    \item \textbf{Xử lý giá trị khuyết:} Loại bỏ các mẫu thiếu tiêu đề sản phẩm; sử dụng trung vị để điền khuyết cho trường giá cả; và thay thế các trường mô tả rỗng bằng chuỗi ký tự trống.
+    \item \textbf{Lọc tương tác:} Áp dụng kỹ thuật k-core ($k=3$) để loại bỏ người dùng có ít hơn 3 tương tác (nhóm cold-start) và sản phẩm xuất hiện ít hơn 2 lần, đảm bảo mô hình có đủ thông tin để học được sự phụ thuộc chuỗi.
+\end{itemize}
+
+\subsubsection{Giai đoạn 2: Xử lý đặc trưng phi cấu trúc}
+\begin{itemize}
+    \item \textbf{Văn bản:} Nối các trường thông tin ngữ nghĩa theo công thức:
+    \begin{equation}
+        \text{Text}_{input} = [\text{Title}] \oplus [\text{Description}] \oplus [\text{Features}] \oplus [\text{Details}]
+    \end{equation}
+    Chuỗi tổng hợp được đưa qua Tokenizer (cắt tỉa hoặc đệm) để đồng bộ về một kích thước chuẩn giới hạn.
+    \item \textbf{Hình ảnh:} Thay đổi kích thước về $224 \times 224$ pixels và chuẩn hóa theo phân bố ImageNet:
+    \begin{equation}
+        x_{norm} = \frac{x - \mu_{ImageNet}}{\sigma_{ImageNet}}
+    \end{equation}
+    Bước này giúp tối ưu hóa đầu vào cho mạng Vision Transformer.
+\end{itemize}
+
+\subsubsection{Giai đoạn 3: Xử lý dữ liệu bảng}
+\begin{itemize}
+    \item \textbf{Biến phân loại:} Chuyển đổi sang số nguyên thông qua Label Encoding. Đối với biến đa trị (danh mục sản phẩm), hệ thống dùng Multi-hot Encoding kết hợp Average Pooling để tạo vector đại diện.
+    \item \textbf{Biến số:} Chuẩn hóa bằng Standard Scaler:
+    \begin{equation}
+        z = \frac{x - \mu}{\sigma}
+    \end{equation}
+    Riêng các biến có phân bố lệch trái mạnh (như lượt hữu ích) sẽ được biến đổi logarit $x' = \log(1 + x)$ trước khi chuẩn hóa để mô hình hội tụ tốt hơn.
+\end{itemize}
+
+\subsubsection{Giai đoạn 4: Xây dựng chuỗi tương tác}
+Dữ liệu được gom nhóm theo định danh người dùng và sắp xếp tăng dần theo thời gian. Mẫu huấn luyện được tạo bằng cơ chế Cửa sổ trượt: sử dụng chuỗi lịch sử $H_t = \{i_1, ..., i_{t-1}\}$ để dự đoán sản phẩm mục tiêu $i_t$. Các chuỗi ngắn được đệm phần tử rỗng bên trái kết hợp cùng Attention Mask để triệt tiêu nhiễu trong quá trình tính toán của mạng Transformer.
+
+Kết quả của quá trình tiền xử lý là các Tensor định dạng PyTorch sẵn sàng được đưa
+vào GPU để huấn luyện.
+
+
+\section{Thiết lập thực nghiệm}
+
+\subsection{Môi trường và Phạm vi huấn luyện}
+Các thực nghiệm được triển khai trên nền tảng đám mây \textbf{Kaggle Kernels} nhằm tận dụng hiệu năng cao và đảm bảo tính nhất quán cho mô hình.
+
+\textbf{1. Cấu hình phần cứng và phần mềm:}
+\begin{itemize}
+    \item \textbf{Phần cứng:} Sử dụng GPU NVIDIA Tesla P100-PCIE (16GB HBM2) với băng thông bộ nhớ vượt trội, đặc biệt tối ưu cho tác vụ tra cứu bảng nhúng của kiến trúc mạng nơ-ron sâu. Hệ thống kết hợp CPU 4 nhân và 32GB RAM để xử lý dữ liệu đa luồng, ngăn chặn hiện tượng nghẽn cổ chai cục bộ.
+    \item \textbf{Phần mềm:} Hệ thống được phát triển bằng Python 3.10. Các thư viện cốt lõi bao gồm PyTorch (xây dựng đồ thị tính toán), Hugging Face Transformers (xử lý ngôn ngữ) và TIMM (trích xuất đặc trưng hình ảnh).
+\end{itemize}
+
+\textbf{2. Phạm vi thực nghiệm:}
+Để chứng minh tính tổng quát và khả năng thích ứng của kiến trúc đề xuất, mô hình \textbf{Bi-Encoder} (bao gồm Tháp Sản phẩm và Tháp Người dùng) được huấn luyện và kiểm thử toàn diện trên cả hai miền dữ liệu là GiftCards và Beauty. Ngược lại, do mô hình \textbf{Cross-Encoder} có độ phức tạp tính toán theo hàm mũ và tiêu tốn lượng lớn tài nguyên bộ nhớ, việc huấn luyện và tinh chỉnh module này được giới hạn duy nhất trên tập GiftCards. Chiến lược này nhằm mục đích tối ưu hóa thời gian và tài nguyên phần cứng, trong khi vẫn đảm bảo cung cấp đủ minh chứng thực nghiệm về tính hiệu quả của toàn bộ đường ống kiến trúc đề xuất.
+
+\subsection{Cấu hình Siêu tham số}
+Quá trình huấn luyện áp dụng chiến lược phân tầng: hoàn thiện Tháp Sản phẩm trước, sau đó sử dụng các vector đầu ra để tiếp tục huấn luyện Tháp Người dùng. Cuối cùng, mô hình Cross-Encoder được tinh chỉnh độc lập phục vụ cho giai đoạn xếp hạng lại.
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu hình siêu tham số cho Tháp Sản phẩm}
+    \label{tab:item_params}
+    \vspace{0.2cm}
+    \begin{tabular}{l l p{6.5cm}}
+        \toprule
+        \textbf{Tham số} & \textbf{Giá trị} & \textbf{Giải thích} \\
+        \midrule
+        Mã hóa văn bản & \texttt{all-mpnet-base-v2} & Mô hình tối ưu cho tìm kiếm ngữ nghĩa \\
+        Mã hóa hình ảnh & \texttt{vit\_base\_patch16\_224} & Mạng thị giác tiền huấn luyện \\
+        Kích thước lô & 128 & Số lượng mẫu trong một bước cập nhật \\
+        Tốc độ học & $2 \times 10^{-5}$ & Mức thấp để tinh chỉnh tránh phá vỡ trọng số \\
+        Số chu kỳ & 70 & Số vòng lặp qua toàn bộ dữ liệu \\
+        Nhiệt độ ($\tau$) & 0.07 & Điều chỉnh độ nhạy của hàm mất mát tương phản \\
+        Chiều vector ẩn & 256 & Kích thước vector nhúng đầu ra \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu hình siêu tham số cho Tháp Người dùng}
+    \label{tab:user_params}
+    \vspace{0.2cm}
+    \begin{tabular}{l l p{6.5cm}}
+        \toprule
+        \textbf{Tham số} & \textbf{Giá trị} & \textbf{Giải thích} \\
+        \midrule
+        Kiến trúc & Transformer Encoder & Xử lý sự phụ thuộc tuần tự \\
+        Số lớp mạng & 2 & Độ sâu của khối mạng \\
+        Số đầu chú ý & 4 & Phân chia cơ chế tự chú ý \\
+        Độ dài chuỗi tối đa & 40 & Giới hạn số lượng tương tác quá khứ \\
+        Tốc độ học cơ sở & $1 \times 10^{-4}$ & Dành cho các lớp mạng khởi tạo mới \\
+        Tốc độ học tinh chỉnh & $1 \times 10^{-6}$ & Dành cho các lớp dùng lại trọng số \\
+        Kích thước lô & 64 & Giảm kích thước do kiến trúc phức tạp \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu hình siêu tham số của mô hình Cross-Encoder}
+    \label{tab:cross_params}
+    \vspace{0.2cm}
+    \begin{tabular}{l l p{7cm}}
+        \toprule
+        \textbf{Tham số} & \textbf{Giá trị} & \textbf{Giải thích} \\
+        \midrule
+        Mô hình nền tảng & \texttt{all-mpnet-base-v2} & Mô hình Transformer được huấn luyện trước cho bài toán biểu diễn ngữ nghĩa và đối sánh văn bản \\
+        
+        Độ dài tối đa & 80 & Giới hạn số token cho cặp truy vấn--sản phẩm nhằm cân bằng giữa hiệu năng và chi phí tính toán \\
+        
+        Kích thước lô & 8 & Giá trị nhỏ do chi phí tính toán cao của Cross-Encoder khi xử lý từng cặp đầu vào \\
+        
+        Tốc độ học & $2 \times 10^{-5}$ & Mức học thấp phù hợp cho quá trình fine-tuning mô hình Transformer \\
+        
+        Số epoch & 3--5 & Số vòng lặp huấn luyện vừa đủ để hội tụ, tránh hiện tượng quá khớp \\
+        
+        Bộ tối ưu & AdamW & Bộ tối ưu phổ biến cho Transformer, kết hợp weight decay để tránh overfitting \\
+        
+        Hàm mất mát & Binary Cross-Entropy with logits & Tối ưu hóa bài toán phân loại nhị phân giữa cặp phù hợp và không phù hợp \\
+        
+        Mixed precision & FP16 (AMP) & Tăng tốc huấn luyện và giảm sử dụng bộ nhớ GPU \\
+        
+        \bottomrule
+    \end{tabular}
+\end{table}
+\section{Các độ đo đánh giá}
+\label{sec:metrics}
+
+Để đánh giá định lượng hiệu năng hệ thống cho bài toán dự đoán sản phẩm tiếp theo, đồ án sử dụng bộ ba chỉ số tiêu chuẩn. Tại mỗi bước thời gian $t$, người dùng $u$ tương tác với duy nhất một sản phẩm thực tế $i_{true}$. Nhiệm vụ của mô hình là xếp hạng sản phẩm này cao nhất có thể trong danh sách $K$ gợi ý $R_u$.
+
+\subsection{Recall@K \cite{43}}
+Đo lường khả năng bao phủ của mô hình, trả lời câu hỏi: Sản phẩm mục tiêu có xuất hiện trong Top-K gợi ý hay không? Độ đo này không quan tâm đến thứ tự xếp hạng bên trong danh sách.
+
+\begin{equation}
+    \text{Recall@K} = \frac{1}{|U|} \sum_{u \in U} \mathbb{I}(i_{true}^{(u)} \in R_u[:K])
+\end{equation}
+
+Trong đó, $|U|$ là tổng số người dùng, $\mathbb{I}(\cdot)$ là hàm chỉ thị nhận giá trị $1$ nếu đúng và $0$ nếu sai.
+
+\subsection{MRR@K\cite{44}}
+Thứ hạng nghịch đảo trung bình đánh giá độ chính xác xếp hạng một cách khắt khe. Điểm số tỷ lệ nghịch với vị trí của sản phẩm đúng: sản phẩm xếp càng thấp, điểm bị phạt càng mạnh (ví dụ: top 1 đạt $1.0$, top 2 chỉ còn $0.5$).
+
+\begin{equation}
+    \text{MRR@K} = \frac{1}{|U|} \sum_{u \in U} \left( \frac{1}{\text{rank}(i_{true}^{(u)})} \cdot \mathbb{I}(\text{rank}(i_{true}^{(u)}) \le K) \right)
+\end{equation}
+
+\subsection{NDCG@K\cite{43}}
+Lợi nhuận tích lũy chiết khấu chuẩn hóa là độ đo tối ưu nhất để đánh giá chất lượng xếp hạng tổng thể. Khác với MRR phạt tuyến tính, NDCG sử dụng hàm logarit để giảm trừ điểm số mượt mà hơn, phản ánh chính xác sự suy giảm chú ý của người dùng khi lướt xem danh sách.
+
+\begin{equation}
+    \text{NDCG@K} = \frac{1}{|U|} \sum_{u \in U} \frac{1}{\log_2(\text{rank}(i_{true}^{(u)}) + 1)} \cdot \mathbb{I}(\text{rank}(i_{true}^{(u)}) \le K)
+\end{equation}
+
+Sự kết hợp của ba chỉ số này mang lại góc nhìn toàn diện: Recall đo độ phủ, MRR đo độ chính xác tuyệt đối ở vị trí đầu, và NDCG đo chất lượng trải nghiệm xếp hạng tổng thể.
+\section{Đánh giá Toàn trình và Chất lượng Lời giải thích LLM}
+
+\subsection{Phân tích độ trễ toàn hệ thống}
+Để đánh giá tính khả thi khi triển khai hệ thống gợi ý trong môi trường thực tế, độ trễ (Latency) là một chỉ số mang tính quyết định. Quá trình xử lý từ lúc nhận truy vấn của người dùng đến khi trả về kết quả cuối cùng kèm lời giải thích được đo lường cẩn thận trên 7354 mẫu thử nghiệm ngẫu nhiên.
+
+Kết quả thực nghiệm cho thấy hệ thống đạt được hiệu năng rất khả quan, cụ thể như sau:
+\begin{itemize}
+    \item \textbf{Cụm Tìm kiếm:} Tổng thời gian để trích xuất đặc trưng truy vấn, quét tìm lân cận gần nhất bằng cách thực hiện phép nhân ma trận giữa embedding của truy vấn và ma trận embedding của toàn bộ item trên GPU, và xếp hạng lại Top các ứng viên bằng Cross-Encoder chỉ tiêu tốn trung bình \textbf{86.65 ms}. Con số này chứng minh hiệu quả của việc thiết kế kiến trúc lai, giúp cân bằng hoàn hảo giữa độ phức tạp tính toán và tốc độ xử lý.
+    \item \textbf{Giai đoạn Sinh giải thích:} Việc đưa các sản phẩm đã được xếp hạng vào khung Prompt cùng ngữ cảnh người dùng và gọi API LLM tốn khoảng \textbf{906.76 ms}. Đây là nút thắt cổ chai lớn nhất của hệ thống, điều hoàn toàn dễ hiểu đối với các mô hình ngôn ngữ lớn hoạt động theo cơ chế sinh tự hồi quy.
+\end{itemize}
+
+\textbf{Tổng độ trễ toàn trình} của hệ thống đạt mức \textbf{993.41 ms} ($\approx 1$ giây). Đối với một hệ thống gợi ý thế hệ mới tích hợp khả năng sinh ngôn ngữ tự nhiên và phân tích ngữ cảnh sâu, mức phản hồi dưới 1.5 giây là hoàn toàn đáp ứng được tiêu chuẩn trải nghiệm người dùng trong thương mại điện tử thực tế.
+
+\subsection{Đánh giá chất lượng xếp hạng}
+Để đo lường độ chính xác của thuật toán gợi ý và thu hẹp không gian tìm kiếm, hệ thống tiến hành đánh giá trên toàn bộ tập kiểm thử tại ngưỡng cắt khắt khe $K=10$ (chỉ xét 10 sản phẩm có điểm số cao nhất sau khi đi qua Cross-Encoder). Các độ đo được sử dụng bao gồm Tỷ lệ trúng đích, Điểm xếp hạng trung bình nghịch đảo và Điểm tăng ích chiết khấu chuẩn hóa.
+
+Bảng kết quả đánh giá chất lượng xếp hạng được thể hiện dưới đây:
+
+\begin{table}[H]
+    \centering
+    \caption{Kết quả đánh giá hiệu năng Cụm Tìm kiếm tại ngưỡng Top 10}
+    \label{tab:ranking_metrics}
+    \vspace{0.2cm}
+    \begin{tabular}{l c}
+        \toprule
+        \textbf{Độ đo đánh giá} & \textbf{Kết quả thực nghiệm} \\
+        \midrule
+        Tỷ lệ trúng đích (Hit Rate@10) & \textbf{81.10\%} \\
+        Điểm xếp hạng trung bình nghịch đảo (MRR@10) & \textbf{0.3998} \\
+        Điểm tăng ích chiết khấu chuẩn hóa (NDCG@10) & \textbf{0.4964} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Phân tích kết quả thực nghiệm:}
+\begin{itemize}
+    \item \textbf{Độ phủ xuất sắc (Hit Rate@10 đạt 81.10\%):} Trong hơn 80\% các trường hợp truy vấn, sản phẩm đích mà người dùng thực sự muốn mua đã xuất hiện gọn gàng trong danh sách 10 sản phẩm đầu tiên. Việc giới hạn ở $K=10$ giúp giảm thiểu tối đa "nhiễu" (noise) trước khi đưa dữ liệu vào các bước xử lý tiếp theo, qua đó tiết kiệm tài nguyên tính toán đáng kể.
+    \item \textbf{Chất lượng xếp hạng (MRR@10 và NDCG@10):} Chỉ số \textit{MRR@10} đạt $0.3998$ đồng nghĩa với việc sản phẩm đích thường xuyên lọt vào vị trí thứ 2 hoặc thứ 3 trong danh sách gợi ý. Kết hợp cùng chỉ số \textit{NDCG@10} đạt $0.4964$, có thể khẳng định mô hình Cross-Encoder đã học được cực kỳ tốt các đặc trưng tương quan chéo giữa truy vấn và thông tin sản phẩm, giúp đẩy các ứng viên tiềm năng nhất lên vị trí ưu tiên cao nhất một cách chính xác.
+\end{itemize}
+
