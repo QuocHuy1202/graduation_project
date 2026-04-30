@@ -7,22 +7,23 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {3.1}{\ignorespaces Minh họa cơ chế lấy mẫu kết hợp với kích thước lô $N=3$}}{44}{table.caption.25}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu User Reviews}}{49}{table.caption.27}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu Item Metadata}}{50}{table.caption.29}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Thống kê tỷ lệ dữ liệu khuyết trên Item Metadata}}{51}{table.caption.32}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Thống kê tập dữ liệu Amazon Gift Cards sau khi tiền xử lý}}{54}{table.caption.38}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Cấu hình siêu tham số cho Item Tower}}{58}{table.caption.46}%
-\contentsline {table}{\numberline {4.6}{\ignorespaces Cấu hình siêu tham số cho User Tower}}{58}{table.caption.48}%
-\contentsline {table}{\numberline {4.7}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Text Encoder}}{59}{table.caption.50}%
-\contentsline {table}{\numberline {4.8}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Image Encoder}}{60}{table.caption.52}%
-\contentsline {table}{\numberline {4.9}{\ignorespaces Đặc tả luồng dữ liệu trong Tabular Encoder}}{60}{table.caption.54}%
-\contentsline {table}{\numberline {4.10}{\ignorespaces Đặc tả các luồng dữ liệu đầu vào cho User Tower}}{62}{table.caption.57}%
-\contentsline {table}{\numberline {4.11}{\ignorespaces Kết quả đánh giá hiệu năng mô hình Hybrid trên tập Test}}{67}{table.caption.74}%
-\contentsline {table}{\numberline {4.12}{\ignorespaces Hiệu năng mô hình theo từng phương thức đầu vào}}{69}{table.caption.80}%
-\contentsline {table}{\numberline {4.13}{\ignorespaces Tác động của trọng số $\alpha $ và $\beta $ lên độ chính xác}}{72}{table.caption.88}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu User Reviews}}{56}{table.caption.33}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu Item Metadata}}{56}{table.caption.35}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Thống kê tỷ lệ dữ liệu khuyết trên Item Metadata}}{57}{table.caption.38}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Thống kê tập dữ liệu Amazon Gift Cards sau khi tiền xử lý}}{60}{table.caption.44}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Cấu hình siêu tham số cho Item Tower}}{64}{table.caption.52}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Cấu hình siêu tham số cho User Tower}}{64}{table.caption.54}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Text Encoder}}{65}{table.caption.56}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Image Encoder}}{65}{table.caption.58}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces Đặc tả luồng dữ liệu trong Tabular Encoder}}{65}{table.caption.60}%
+\contentsline {table}{\numberline {4.10}{\ignorespaces Đặc tả các luồng dữ liệu đầu vào cho User Tower}}{67}{table.caption.63}%
+\contentsline {table}{\numberline {4.11}{\ignorespaces Kết quả đánh giá hiệu năng mô hình Hybrid trên tập Test}}{72}{table.caption.80}%
+\contentsline {table}{\numberline {4.12}{\ignorespaces Hiệu năng mô hình theo từng phương thức đầu vào}}{74}{table.caption.86}%
+\contentsline {table}{\numberline {4.13}{\ignorespaces So sánh hiệu suất giữa các mô hình trên tập Cell Phones \& Accessories}}{77}{table.caption.94}%
+\contentsline {table}{\numberline {4.14}{\ignorespaces Tác động của trọng số $\alpha $ và $\beta $ lên độ chính xác}}{79}{table.caption.99}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {5.1}{\ignorespaces Ví dụ mẫu dữ liệu Triplet trong MS MARCO với Hard Negative}}{87}{table.caption.98}%
-\contentsline {table}{\numberline {5.2}{\ignorespaces Ví dụ minh họa và chiến lược gán nhãn nhị phân cho ESCI}}{89}{table.caption.100}%
-\contentsline {table}{\numberline {5.3}{\ignorespaces Ví dụ minh họa và chiến lược gán nhãn nhị phân cho ESCI}}{89}{table.caption.100}%
-\contentsline {table}{\numberline {5.4}{\ignorespaces Ví dụ minh họa quy trình sinh dữ liệu tổng hợp từ Review}}{91}{table.caption.101}%
-\contentsline {table}{\numberline {5.5}{\ignorespaces Kế hoạch thực hiện đề tài (15 Tuần)}}{94}{table.caption.102}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Ví dụ mẫu dữ liệu Triplet trong MS MARCO với Hard Negative}}{93}{table.caption.109}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Ví dụ minh họa và chiến lược gán nhãn nhị phân cho ESCI}}{96}{table.caption.111}%
+\contentsline {table}{\numberline {5.3}{\ignorespaces Ví dụ minh họa và chiến lược gán nhãn nhị phân cho ESCI}}{96}{table.caption.111}%
+\contentsline {table}{\numberline {5.4}{\ignorespaces Ví dụ minh họa quy trình sinh dữ liệu tổng hợp từ Review}}{97}{table.caption.112}%
+\contentsline {table}{\numberline {5.5}{\ignorespaces Kế hoạch thực hiện đề tài (15 Tuần)}}{100}{table.caption.113}%

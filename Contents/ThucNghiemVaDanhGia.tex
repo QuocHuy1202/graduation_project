@@ -745,6 +745,79 @@ Thứ hai, và quan trọng hơn, là yếu tố \textbf{Tính chịu lỗi} tro
 
 \textbf{Kết luận:} Mặc dù Image là đặc trưng mạnh nhất, kiến trúc Fusion là giải pháp tối ưu về mặt kỹ thuật hệ thống, đảm bảo độ chính xác tiệm cận mức tuyệt đối đồng thời duy trì tính bền vững trước các nhiễu động dữ liệu thực tế.
 
+
+\section{Đánh giá Cross-Encoder}
+
+\subsection{Thiết lập Thực nghiệm (Experimental setup)}
+
+\subsubsection*{Tập dữ liệu (Datasets)}
+Nghiên cứu sử dụng tập dữ liệu công khai Amazon Product Dataset (phiên bản 5-core), tập trung kiểm thử trên phân khúc Cell Phones \& Accessories \cite{23}. Để xây dựng câu truy vấn mô phỏng hành vi tìm kiếm thực tế, hệ thống trích xuất tên các danh mục (categories) của sản phẩm, sau đó tiến hành loại bỏ các từ dừng (stop words), từ trùng lặp và dấu câu để tạo thành câu truy vấn cốt lõi \cite{23}. Nếu một sản phẩm thuộc nhiều danh mục khác nhau, một câu truy vấn sẽ được chọn ngẫu nhiên để đại diện. 
+
+Để kiến tạo môi trường huấn luyện và kiểm thử đảm bảo tính logic về mặt thời gian của dữ liệu chuỗi hành vi, hệ thống áp dụng chiến lược phân chia dữ liệu tương tự các mô hình cơ sở. Cụ thể, đối với một chuỗi hành vi mua sắm gồm tổng cộng $n$ tương tác của một người dùng, các tương tác từ vị trí 1 đến $n-2$ được sử dụng để xây dựng tập huấn luyện (Train), tương tác ở vị trí thứ $n-1$ được dành riêng cho tập xác thực (Validation) nhằm tinh chỉnh siêu tham số, và tương tác cuối cùng ở vị trí thứ $n$ được sử dụng làm tập kiểm thử cuối cùng để đánh giá hiệu suất.
+
+\subsubsection*{Các mô hình cơ sở (Baselines)}
+Hiệu suất của kiến trúc đề xuất được đối chiếu với các phương pháp tìm kiếm sản phẩm cá nhân hóa và phi cá nhân hóa tiên tiến sau
+% (các mô hình này được triển khai theo thiết lập của bài báo CoPPS \cite{23})
+:
+\begin{itemize}
+    \item \textbf{LSE} \cite{24}: Mô hình tìm kiếm cơ sở thiết lập không gian biểu diễn vector tiềm ẩn cho sản phẩm.
+    \item \textbf{HEM} \cite{25}: Mô hình nhúng phân cấp kế thừa từ LSE, tích hợp khả năng học biểu diễn người dùng để phục vụ cá nhân hóa.
+    \item \textbf{ZAM} \cite{26}: Áp dụng cơ chế chú ý rỗng (zero attention) để trích xuất sở thích người dùng từ các chuỗi lịch sử.
+    \item \textbf{TEM} \cite{27}: Khai thác sức mạnh của kiến trúc Transformer để học các mức độ quan trọng khác nhau từ các hành vi trong lịch sử.
+    \item \textbf{DREM} \cite{28} và \textbf{DREM-HGN} \cite{29}: Các mô hình định hướng đồ thị khai thác cấu trúc đồ thị tri thức (KG) để lập bản đồ mối quan hệ giữa người dùng, truy vấn và sản phẩm.
+    \item \textbf{CoPPS} \cite{23}: Khung học tương phản (contrastive learning) giúp tinh chỉnh và gia tăng độ mạnh mẽ cho bộ mã hóa chuỗi hành vi người dùng.
+\end{itemize}
+
+\subsubsection*{Phương pháp Đánh giá}
+Chất lượng xếp hạng được đo lường thông qua ba độ đo truy xuất tiêu chuẩn: Mean Reciprocal Rank (MRR), Normalized Discounted Cumulative Gain tại top 10 (NDCG@10) \cite{23} và Hit Rate tại top 10 (HR@10). Quá trình kiểm thử được thiết lập theo giao thức giới hạn 100 ứng viên: đối với mỗi phiên tìm kiếm trong tập kiểm thử (1000 người dùng), hệ thống phải tính toán điểm số và xếp hạng một danh sách gồm 100 sản phẩm, trong đó có duy nhất 1 sản phẩm tích cực đích thực (ground truth) và 99 sản phẩm tiêu cực (mồi nhử).
+
+\subsubsection*{Chi tiết Cài đặt}
+Mô hình được phát triển và tối ưu hóa dựa trên framework PyTorch và bộ thư viện Transformers của Huggingface \cite{17}. Trong quá trình xử lý chuỗi, nhánh Cross-Encoder được thiết lập độ dài đầu vào ở mức 128 token nhằm đảm bảo không gian ngữ nghĩa bao quát được cả câu truy vấn lẫn thông tin mô tả chi tiết của sản phẩm. Trong khi đó, nhánh Memory Encoder duy trì tối đa 5 ký ức sản phẩm gần nhất, mỗi sản phẩm được giới hạn ở 64 token. Quá trình huấn luyện sử dụng bộ tối ưu hóa AdamW và được thiết kế chia làm hai giai đoạn với các cấu hình siêu tham số chuyên biệt:
+\begin{itemize}
+    \item \textbf{Giai đoạn 1 (Phase 1):} Nhánh đối sánh ngữ nghĩa được huấn luyện trong 1 epoch với kích thước lô (batch size) là 8. Tỷ lệ học (learning rate) được thiết lập ở mức rất nhỏ là $5 \times 10^{-6}$ nhằm tinh chỉnh nhẹ nhàng (fine-tune) mà không phá vỡ khả năng biểu diễn cốt lõi của mô hình tiền huấn luyện.
+    \item \textbf{Giai đoạn 2 (Phase 2):} Quá trình huấn luyện mạng trộn Mixing MLP cũng diễn ra trong 1 epoch với batch size duy trì ở mức 8. Tuy nhiên, tỷ lệ học được cấu hình cao hơn, đạt mức $1 \times 10^{-3}$, nhằm giúp mạng nơ-ron nhanh chóng học được và hội tụ trọng số phân bổ tối ưu.
+    % \item Trong giai đoạn suy luận và kiểm thử (Inference \& Testing), batch size được chủ động nâng lên mức 32 nhằm tận dụng tối đa dung lượng VRAM của phần cứng, đẩy nhanh tốc độ đối chiếu khi mô hình phải quét qua danh sách 100 ứng viên.
+\end{itemize}
+
+\subsection{Kết quả Thực nghiệm}
+
+Kết quả đánh giá định lượng trên tập kiểm thử phân khúc Cell Phones \& Accessories cho thấy sự vượt trội toàn diện của kiến trúc đề xuất so với các phương pháp cơ sở. Bảng \ref{tab:performance_comparison} trình bày chi tiết sự chênh lệch hiệu năng thông qua các độ đo MRR và NDCG@10.
+
+\begin{table}[htbp]
+\centering
+\caption{So sánh hiệu suất giữa các mô hình trên tập Cell Phones \& Accessories}
+\label{tab:performance_comparison}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Mô hình} & \textbf{MRR} & \textbf{NDCG@10} \\ \hline
+HEM & 0.078 & 0.093 \\ \hline
+ZAM & 0.083 & 0.095 \\ \hline
+TEM & 0.085 & 0.098 \\ \hline
+DREM & 0.094 & 0.110 \\ \hline
+DREM-HGN & 0.185 & 0.208 \\ \hline
+CoPPS & 0.291 & 0.249 \\ \hline
+\textbf{Mô hình đề xuất (Phase 1)} & \textbf{0.4802} & \textbf{0.5461} \\ \hline
+\textbf{Mô hình đề xuất (Phase 2)} & \textbf{0.4961} & \textbf{0.5551} \\ \hline
+\end{tabular}
+\end{table}
+
+Dựa trên số liệu tổng hợp, có thể rút ra những phân tích cốt lõi sau:
+
+Thứ nhất, đối với nhóm các mô hình cơ sở, các phương pháp tuần tự (ZAM, TEM) và đồ thị cơ bản (DREM) ghi nhận chỉ số khá thấp, với MRR dao động dưới mốc 0.1. Ngay cả khung học tương phản CoPPS – mô hình tiên tiến nhất trong nhóm baseline – cũng chạm trần ở mức MRR là 0.291 và NDCG là 0.249 \cite{23}. 
+
+Thứ hai, mô hình đề xuất đã tạo ra một sự bứt phá về ngưỡng hiệu suất. Ngay từ \textbf{Giai đoạn 1 (Phase 1)}, khi hệ thống chỉ sử dụng phép cộng vô hướng đơn giản để kết hợp điểm số, sức mạnh của lõi Cross-Encoder 128 token đã giúp chỉ số MRR nhảy vọt lên \textbf{0.4802} và NDCG@10 đạt \textbf{0.5461}, đồng thời kéo 75.7\% sản phẩm mục tiêu (HitRate@10 = 0.7570) lọt vào top 10 kết quả đầu tiên. Sự chênh lệch này khẳng định sức mạnh tuyệt đối của cơ chế đối sánh biểu diễn chéo (Cross-Attention) so với các kiến trúc mã hóa độc lập (Bi-Encoder) truyền thống.
+
+Cuối cùng, sự hiện diện của bộ trộn Mixing MLP ở \textbf{Giai đoạn 2 (Phase 2)} tiếp tục thiết lập một đỉnh cao mới. Bằng cách dự đoán trọng số nội suy động dựa trên ngữ cảnh truy vấn và mật độ hồ sơ, hệ thống đẩy mức MRR lên \textbf{0.4961}, NDCG@10 lên \textbf{0.5551} và HitRate@10 vươn tới mốc \textbf{0.7740} (tăng tương đối 1.7\% cho HitRate so với Phase 1). Sự gia tăng đồng bộ này xác nhận rằng việc điều tiết tín hiệu linh hoạt mang lại khả năng xếp hạng chính xác và tự nhiên hơn đáng kể so với việc cố định tỷ lệ cá nhân hóa.
+
+
+
+
+
+
+
+
+
 \subsection{Hiệu quả của chiến lược Reranking}
 \label{sec:reranking_analysis}
 

@@ -383,6 +383,125 @@ Thứ hai, phương pháp này tối ưu hóa trực tiếp cho bài toán truy 
 
 Thứ ba, môi trường tương phản tạo ra sức mạnh phân biệt tương đối cực kỳ sắc bén. Việc đặt một sản phẩm mục tiêu vào giữa hàng loạt mẫu âm tính trong cùng một lô huấn luyện tạo ra một áp lực cạnh tranh khốc liệt. Mô hình không chỉ học cách nhận diện sản phẩm phù hợp một cách độc lập, mà còn buộc phải tinh chỉnh trọng số sao cho khoảng cách từ người dùng đến sản phẩm đích luôn ngắn hơn khoảng cách đến toàn bộ các mặt hàng nhiễu khác. Sức ép tối ưu hóa này buộc mạng lưới nơ-ron của cả hai tháp phải chắt lọc ra những đặc trưng mang tính định danh cao nhất, qua đó nâng cao độ chính xác tuyệt đối cho toàn bộ luồng gợi ý đa phương thức.
 
+
+\section{Giai đoạn 2: Re-ranker}
+\subsection{Kiến trúc tổng quan Reranker}
+
+Trong lĩnh vực tìm kiếm thông tin, việc chỉ dựa vào độ phù hợp ngữ nghĩa giữa truy vấn và tài liệu thường không đáp ứng đủ nhu cầu đa dạng của người dùng. Ngược lại, việc áp dụng cá nhân hóa một cách cứng nhắc lại có nguy cơ làm giảm tính đa dạng của kết quả và khiến hệ thống trở nên thiếu minh bạch, khó kiểm soát. Từ đó, một bài toán cốt lõi được đặt ra là làm thế nào để kết hợp hài hòa giữa tín hiệu đối sánh ngữ nghĩa truyền thống và tín hiệu sở thích cá nhân, đồng thời cấp cho hệ thống khả năng tự động đánh giá và điều chỉnh mức độ cá nhân hóa tùy thuộc vào từng ngữ cảnh truy vấn cụ thể.
+
+Để giải quyết triệt để vấn đề này, một kiến trúc xếp hạng lại (reranker) tổng hợp được đề xuất, hoạt động dựa trên cơ chế kết hợp giữa mô hình mã hóa chéo (Embedding Cross-Encoder) và bộ nhớ người dùng (User Memory). Cụ thể, điểm số đánh giá mức độ phù hợp của một tài liệu, ký hiệu là $s_d$, được xác định thông qua hàm $f_{Ret}(\mathcal{P}_u, q, d)$, trong đó q là câu truy vấn, d là tài liệu ứng viên được trích xuất từ danh sách của mô hình xếp hạng bước một, và $\mathcal{P}_u$ là hồ sơ lịch sử của người dùng. Kiến trúc này vận hành bằng cách tính toán hai nguồn điểm số độc lập nhưng bổ trợ cho nhau: điểm phù hợp ngữ nghĩa giữa truy vấn và tài liệu ($s_d^q$) được xuất ra từ mô hình Cross-Encoder ($f_{CE}$), và điểm phù hợp cá nhân hóa ($s_d^u$) được tính toán thông qua mô hình Memory Encoder ($f_{Mem}$). Thay vì cộng gộp một cách tuyến tính và cố định, hai giá trị này được dung hợp thông qua một mô hình trộn (Mixing Model), ký hiệu là $g_{Mix}$. Mô hình kết hợp này sinh ra một trọng số động w, cho phép tính toán điểm số xếp hạng cuối cùng theo phương trình:
+
+$$s_d = w \cdot s_d^q + (1-w) \cdot s_d^u = w \cdot f_{CE}(q, d) + (1-w) \cdot f_{Mem}(\mathcal{P}_u, q, d)$$
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/overview_cross_encoder.png} % Thay reranker_arch.png bằng tên file của bạn
+    \vspace{0.5cm}
+    \caption{Kiến trúc tổng quan của mô hình xếp hạng lại (Reranker) kết hợp đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.}
+    \label{fig:reranker_arch}
+\end{figure}
+
+Sự khác biệt của kiến trúc này so với các mạng Cross-Encoder tiêu chuẩn nằm ở phương pháp biểu diễn đặc trưng. Các mô hình Cross-Encoder truyền thống thường gộp chung truy vấn và tài liệu thành một chuỗi thống nhất, làm hạn chế khả năng tách biệt và tái sử dụng đặc trưng của tài liệu cho các tác vụ khác. Ngược lại, mô hình đề xuất sử dụng kiến trúc Embedding Cross-Encoder, cho phép học các biểu diễn vector tách biệt nhưng vẫn chứa đựng thông tin ngữ cảnh chéo (cross-encoded) cho cả truy vấn ($\mathbf{q}$) và tài liệu ($\mathbf{d}$). Nhờ cấu trúc phân mảnh này, vector biểu diễn của tài liệu có thể trực tiếp tương tác với các vector đa chiều $V_i$ trong hồ sơ người dùng $\mathcal{P}_u$ thông qua thành phần $f_{Mem}$. Đồng thời, trọng số w được sinh ra đóng vai trò như một bộ dự báo hiệu suất, giúp hệ thống đánh giá mức độ tin cậy của tín hiệu từ Cross-Encoder, qua đó quyết định xem có cần sự can thiệp từ bộ nhớ cá nhân hay không. Cấu trúc phân tách điểm số này cũng cung cấp một cơ chế điều khiển thiết yếu, cho phép hệ thống dễ dàng quay về trạng thái không cá nhân hóa thông qua thao tác loại bỏ thành phần $s_d^u$ khỏi phương trình tính toán khi không cần thiết.
+
+Tổng thể kiến trúc của giai đoạn xếp hạng lại được xây dựng theo dạng mô-đun nhằm cân bằng giữa việc phân tích ngữ nghĩa và khai thác thông tin cá nhân hóa. Cách tiếp cận này giúp hệ thống khắc phục được tính cứng nhắc của các phương pháp truyền thống, đồng thời cho phép kiểm soát linh hoạt mức độ can thiệp của dữ liệu lịch sử đối với từng truy vấn cụ thể. Thiết kế phân tách rõ ràng giữa các thành phần học ngữ nghĩa và thành phần trộn điểm cũng tạo nền tảng thuận lợi cho việc tối ưu hóa độc lập trong các quá trình huấn luyện tiếp theo.
+
+\subsection{Embedding Cross Encoder}
+
+Các kiến trúc Cross-Encoder tiêu chuẩn hiện đóng vai trò nền tảng trong nhiều hệ thống xếp hạng văn bản tiên tiến nhờ khả năng phân tích ngữ nghĩa sâu sắc và đánh giá mức độ liên quan với độ chính xác cao. Theo cách tiếp cận truyền thống, các mô hình này tiến hành ghép nối trực tiếp câu truy vấn và tài liệu ứng viên thành một chuỗi duy nhất thông qua các token phân cách, sau đó nạp toàn bộ chuỗi này qua các tầng tự chú ý (self-attention) của mô hình ngôn ngữ. Mặc dù phương pháp này tối ưu hóa được việc học các tương tác từ vựng chéo ở mức độ token (token-level cross-attention), nó lại bộc lộ một rào cản kiến trúc nghiêm trọng khi được tích hợp vào các hệ thống đòi hỏi tính cá nhân hóa. Nguyên nhân cốt lõi nằm ở việc các mô hình này thường nén toàn bộ thông tin của cặp truy vấn - tài liệu vào một token đại diện duy nhất (thường là token [CLS]) để tính toán ra một điểm số vô hướng cuối cùng. Sự hợp nhất này làm xóa nhòa ranh giới đặc trưng không gian của tài liệu. Khi không thể trích xuất được một biểu diễn vector độc lập đại diện cho tài liệu, hệ thống hoàn toàn thiếu đi cơ sở dữ liệu véc-tơ để tiếp tục đối chiếu với các nguồn thông tin khác, đặc biệt là không gian vector đa chiều chứa bộ nhớ về lịch sử tương tác của người dùng.
+
+\begin{figure}[htbp]
+    \centering
+    % Dùng width=1\textwidth để ép hình ngang tràn viền lề, hiển thị to và rõ nhất
+    \includegraphics[width=1\textwidth]{Images/embedding_cross_encoder.png} % Thay embedding_ce.png bằng tên file của bạn
+    \vspace{0.5cm}
+    \caption{Sơ đồ luồng xử lý và trích xuất đặc trưng độc lập của kiến trúc Embedding Cross-Encoder.}
+    \label{fig:embedding_ce}
+\end{figure}
+
+Để vượt qua giới hạn kiến trúc này, một cơ chế mang tên Embedding Cross-Encoder được triển khai, sử dụng mô hình ngôn ngữ MPNet làm lõi xử lý trung tâm. Lõi MPNet được ưu tiên lựa chọn nhờ khả năng nắm bắt ngữ nghĩa toàn cục vượt trội, bắt nguồn từ phương pháp huấn luyện kết hợp giữa cơ chế che giấu từ (masked language modeling) và hoán vị từ (permuted language modeling), giúp mô hình hiểu được cấu trúc ngữ cảnh phức tạp của các chuỗi văn bản dài. Quá trình xử lý của Embedding Cross-Encoder vẫn duy trì bước khởi đầu quen thuộc: nạp chuỗi ghép nối giữa truy vấn và tài liệu vào mô hình để trích xuất các biểu diễn token mang tính ngữ cảnh (contextualized token embeddings) từ tầng ẩn cuối cùng. Tuy nhiên, sự khác biệt mang tính đột phá nhằm giải quyết bài toán biểu diễn nằm ở bước phân tách đặc trưng. Thay vì sử dụng đầu ra từ token [CLS], hệ thống tận dụng các chuỗi định danh (sequence IDs) do bộ phân tách từ ngữ (tokenizer) cung cấp để xác định rõ ranh giới ngữ nghĩa. Dựa trên các định danh này, các ma trận mặt nạ (attention mask) chuyên biệt được tạo ra để định vị và cô lập chính xác tập hợp các token thuộc về câu truy vấn và tập hợp các token thuộc về tài liệu ứng viên. 
+
+Ngay sau khi quá trình cô lập nhóm token hoàn tất, kỹ thuật gộp trung bình (mean pooling) được áp dụng một cách độc lập lên từng nhóm token tương ứng với mặt nạ phân bổ của chúng. Kết quả của phép toán này là sự hình thành của hai biểu diễn vector hoàn toàn tách biệt có cùng không gian số chiều: một vector đại diện cho truy vấn (q) và một vector đại diện cho tài liệu (d). Nhằm đảm bảo tính ổn định và đồng nhất trong hình học không gian vector, cả hai biểu diễn này đều tiếp tục trải qua quá trình chuẩn hóa L2 (L2 Normalization), đưa toàn bộ các giá trị về cùng một không gian độ đo chuẩn mực. Sau khi được chuẩn hóa, điểm số đánh giá mức độ phù hợp ngữ nghĩa cốt lõi giữa truy vấn và tài liệu được tính toán trực tiếp thông qua phép toán tích vô hướng của hai vector này. Nhờ sự hiện diện của bước chuẩn hóa trước đó, tích vô hướng ở công đoạn này mang ý nghĩa toán học tương đương với việc đo lường độ cosine similarity, phản ánh một cách trực quan và chính xác sự hội tụ về mặt ý nghĩa giữa ý định tìm kiếm của người dùng và nội dung cốt lõi của văn bản.
+
+Nhìn chung, việc thiết kế và ứng dụng cơ chế Embedding Cross-Encoder mang lại những lợi ích mang tính bản lề cho toàn bộ kiến trúc của giai đoạn xếp hạng lại. Một mặt, kiến trúc này vẫn kế thừa trọn vẹn khả năng phân tích sự phụ thuộc từ vựng phức tạp nhờ cơ chế tự chú ý chéo diễn ra liên tục trong các tầng sâu của mô hình MPNet, qua đó bảo chứng cho độ chính xác cao của tín hiệu tìm kiếm ngữ nghĩa độc lập. Mặt khác, sự can thiệp mang tính cấu trúc ở lớp đầu ra đã giải phóng đặc trưng của tài liệu khỏi trạng thái nén cứng nhắc truyền thống. Vector tài liệu (d) được trích xuất ra mang một đặc tính lai độc đáo: nó vừa tồn tại như một thực thể toán học độc lập trong không gian vector, vừa chứa đựng dấu ấn ngữ cảnh sâu sắc từ sự tương tác trực tiếp với câu truy vấn. Chính biểu diễn tài liệu đã được ngữ cảnh hóa này sẽ đóng vai trò là đầu vào tiên quyết để thực hiện các phép toán đối chiếu chéo với bộ nhớ người dùng, kiến tạo nên tiền đề kỹ thuật vững chắc để hệ thống triển khai các thuật toán cá nhân hóa ở những giai đoạn tiếp theo một cách minh bạch và hiệu quả.
+
+
+\subsection{Memory Encoder}
+
+Sau khi trích xuất thành công vector biểu diễn tài liệu độc lập từ mô-đun Embedding Cross-Encoder, hệ thống tiến tới giai đoạn định lượng mức độ phù hợp của tài liệu ứng viên đối với từng người dùng cụ thể. Việc chỉ phụ thuộc vào câu truy vấn hiện tại sẽ bỏ qua nguồn thông tin ngữ cảnh có giá trị lớn ẩn chứa trong lịch sử tương tác. Tuy nhiên, lịch sử của một người dùng thường bao gồm một tập hợp nhiều sản phẩm hoặc tài liệu mang các chủ đề rất đa dạng. Do đó, việc đối chiếu trực tiếp một tài liệu mới với toàn bộ chuỗi sự kiện trong quá khứ đặt ra một thách thức lớn về mặt biểu diễn không gian. Hệ thống đòi hỏi một cơ chế tính toán chuyên biệt nhằm chuyển đổi dữ liệu lịch sử thô thành các tín hiệu cá nhân hóa có khả năng đo lường chính xác, mà không làm mất đi các sắc thái sở thích riêng biệt.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{Images/Embedding Cross-encoder-2026-04-30-153925.png} 
+    \vspace{0.5cm}
+    \caption{Cơ chế hoạt động của Memory Encoder phân tách thành hai luồng: Xử lý ngoại tuyến (chắt lọc hồ sơ đa vector) và Xử lý trực tuyến (đối chiếu và tính điểm cá nhân hóa).}
+    \label{fig:memory_encoder}
+\end{figure}
+
+Để giải quyết bài toán này, mô-đun Memory Encoder (Bộ mã hóa ký ức) được thiết kế nhằm số hóa và quản lý hồ sơ người dùng dưới dạng một cấu trúc bộ nhớ đa vector (Multi-vector User Representation). Trong cơ chế này, lịch sử tương tác được xem như một tập hợp các tài liệu độc lập, và mỗi tài liệu cấu thành nên lịch sử đó sẽ được nạp qua một mô hình ngôn ngữ chuyên biệt nhằm tạo ra một tập hợp các vector biểu diễn ký ức ($V_i$) riêng biệt. Nhằm tối ưu hóa tài nguyên tính toán và giảm thiểu độ trễ, toàn bộ quá trình mã hóa bộ nhớ này được thực hiện ngoại tuyến (offline) với các trọng số của mô hình mã hóa được đóng băng hoàn toàn. Điểm số đánh giá mức độ cá nhân hóa ($s_d^u$) của tài liệu ứng viên được xác định dựa trên độ tương đồng vô hướng (dot product) giữa vector tài liệu mục tiêu (d) — được truyền sang từ nhánh Cross-Encoder — và từng vector ký ức trong hồ sơ người dùng. Cụ thể, hệ thống áp dụng toán tử tìm giá trị lớn nhất (max pooling) trên toàn bộ tập hợp các điểm số tương đồng vừa tính toán. Thao tác toán học này đảm bảo rằng tài liệu ứng viên chỉ cần có độ cộng hưởng mạnh mẽ với một phần sở thích cốt lõi trong quá khứ là đủ để ghi nhận điểm cá nhân hóa cao, ngăn chặn hiện tượng các tín hiệu nổi bật bị làm loãng nếu áp dụng các phép tính trung bình hóa thông thường.
+
+Nhìn chung, Memory Encoder đóng vai trò như một bộ lọc cá nhân hóa có độ phân giải cao trong tổng thể kiến trúc xếp hạng lại. Bằng cách duy trì trực tiếp các biểu diễn vector độc lập của từng sản phẩm thay vì nén toàn bộ lịch sử thành một khối dữ liệu duy nhất, kiến trúc này bảo toàn trọn vẹn các đặc trưng chi tiết trong sở thích của người dùng. Tín hiệu cá nhân hóa độc lập và sắc bén được sinh ra từ mô-đun này không chỉ phản ánh mức độ thân thuộc của tài liệu ứng viên, mà còn cung cấp một tham chiếu định lượng thiết yếu. Đây chính là mảnh ghép dữ liệu hoàn chỉnh giúp bộ trộn ở công đoạn tiếp theo có khả năng cân đối một cách linh hoạt giữa kết quả đối sánh ngữ nghĩa và thói quen tương tác dài hạn của người dùng.
+
+
+\subsection{Mixing Model}
+
+Trong các hệ thống tìm kiếm kết hợp (hybrid search), việc trích xuất thành công hai nguồn điểm số độc lập đại diện cho độ phù hợp ngữ nghĩa và độ phù hợp cá nhân hóa mới chỉ là bước khởi đầu. Thách thức kiến trúc lớn nhất ở giai đoạn dung hợp đặc trưng nằm ở hiện tượng mất cân bằng tín hiệu, thường được nhắc đến trong lý thuyết học máy là sự sụp đổ phương thức (modality collapse) hoặc vấn đề áp đảo (dominance problem). Trên thực tế, mức độ cần thiết của thông tin cá nhân hóa biến thiên rất lớn tùy thuộc vào bản chất của từng phiên tìm kiếm: các truy vấn mang tính khám phá hoặc đa nghĩa đòi hỏi sự định hướng mạnh mẽ từ hồ sơ người dùng, trong khi các truy vấn tra cứu định danh cụ thể lại chỉ cần đối sánh từ vựng chính xác. Nếu hệ thống áp dụng một phương pháp kết hợp tuyến tính với trọng số cố định hoặc nội suy đơn giản, mô hình thường có xu hướng hội tụ về trạng thái mất cân đối, nơi nó chỉ phụ thuộc vào tín hiệu dễ học và triệt tiêu hoàn toàn vai trò của bộ nhớ lịch sử.
+
+Nhằm khắc phục triệt để điểm yếu kiến trúc này, một mô hình trộn động (Mixing Model, ký hiệu là $g_{Mix}$) được thiết kế để điều phối toàn bộ quá trình tính toán kết quả từ các đầu vào cơ sở: câu truy vấn (q), tài liệu ứng viên (d) và hồ sơ lịch sử người dùng ($\mathcal{P}_u$). Về mặt toán học, điểm số xếp hạng cuối cùng ($s_d$) của một tài liệu được xác định thông qua phương trình nội suy kết hợp giữa tích vô hướng của các vector ngữ nghĩa và phép toán tìm cực đại trên không gian bộ nhớ:
+
+$$s_d = w \cdot \mathbf{q}^T \mathbf{d} + (1-w) \cdot \max_{i \in \{1...P\}} \mathbf{d}^T \mathbf{V}_i$$
+
+Trong đó, $\mathbf{q}^T \mathbf{d}$ chính là điểm phù hợp ngữ nghĩa ($s_d^q$) do Embedding Cross-Encoder trích xuất, và $\max \mathbf{d}^T \mathbf{V}_i$ là điểm cá nhân hóa ($s_d^u$) được đối chiếu từ P vector ký ức trong Memory Encoder. Trọng tâm của sự linh hoạt nằm ở việc xác định trọng số điều phối w. Thay vì gán một giá trị tĩnh, trọng số này được dự đoán liên tục thông qua một mạng nơ-ron đa tầng (MLP) kết hợp với hàm kích hoạt sigmoid nhằm giới hạn biên độ đầu ra trong khoảng [0, 1]:
+
+$$w = \text{sigmoid}(\text{MLP}([\mathbf{q}, len(q), P, s_d^q, s_d^u]))$$
+
+Đầu vào của mạng MLP này không chỉ dừng lại ở hai điểm số thành phần ($s_d^q$ và $s_d^u$), mà còn bao gồm một tập hợp các đặc trưng ngữ cảnh (metadata) mang tính quyết định: vector biểu diễn gốc của truy vấn ($\mathbf{q}$), độ dài của chuỗi truy vấn (len(q)), và quy mô cấu trúc của bộ nhớ người dùng (P).
+
+Sự tích hợp của mô hình trộn động đã biến kiến trúc xếp hạng từ một cỗ máy tính toán tĩnh thành một hệ thống thích ứng ngữ cảnh mang tính dự báo. Về bản chất, thành phần này vận hành như một bộ dự báo hiệu suất (performance predictor): bằng cách phân tích hình thái của câu truy vấn và độ phong phú của dữ liệu lịch sử, nó tự động đánh giá mức độ tin cậy của nhánh đối sánh ngữ nghĩa để từ đó đưa ra quyết định cấp phát trọng số tương ứng cho nhánh cá nhân hóa. Cơ chế điều tiết tinh vi này không những giải quyết thành công bài toán áp đảo phương thức mà còn đảm bảo sự dung hòa tuyệt đối giữa ý định tìm kiếm tức thời và thói quen tiêu dùng dài hạn, cho phép hệ thống cung cấp các kết quả tìm kiếm được cá nhân hóa một cách chừng mực và tự nhiên nhất.
+
+\subsection{Chiến thuật Huấn luyện}
+
+\subsubsection*{Khởi tạo và thiết lập mô hình}
+
+Quá trình huấn luyện đồng thời (end-to-end) toàn bộ kiến trúc kết hợp giữa đối sánh ngữ nghĩa và cá nhân hóa thường dẫn đến hiện tượng nhiễu loạn gradient. Sự giao thoa của các luồng tín hiệu cập nhật trọng số khác biệt có thể làm suy giảm nghiêm trọng khả năng biểu diễn ngôn ngữ cốt lõi của hệ thống. Để giải quyết rào cản này, một chiến lược huấn luyện phân tách (decoupled training) được triển khai, chia quá trình tối ưu hóa thành hai giai đoạn độc lập. Đi kèm với đó là các thiết lập khởi tạo chuyên biệt cho từng bộ mã hóa trên tập dữ liệu thương mại điện tử Amazon Review nhằm tận dụng tối đa tri thức ngôn ngữ từ các mô hình học sâu tiên tiến.
+
+Đối với nhánh mã hóa chéo ($Enc_{CE}$), hệ thống không khởi tạo trọng số ngẫu nhiên mà kế thừa trực tiếp từ kiến trúc tiền huấn luyện \texttt{sentence-transformers/all-mpnet-base-v2}. Việc lựa chọn phiên bản này xuất phát từ hai lý do cốt lõi. Thứ nhất, về mặt nền tảng, nó vẫn kế thừa trọn vẹn kiến trúc MPNet cơ sở với khả năng tổng hợp ưu điểm của hai phương pháp học ngôn ngữ hàng đầu: cơ chế che giấu từ (Masked Language Modeling - MLM) giúp nắm bắt cấu trúc từ vựng cục bộ, và cơ chế hoán vị từ (Permuted Language Modeling - PLM) giúp hiểu được sự phụ thuộc ngữ cảnh toàn cục. Thứ hai, phiên bản \texttt{all-mpnet-base-v2} đã trải qua quá trình tối ưu hóa đặc biệt trên một bộ dữ liệu quy mô lớn gồm hơn 1 tỷ cặp câu, cung cấp một không gian vector biểu diễn tổng quát (sentence embeddings) có độ chính xác rất cao. Sau khi được khởi tạo với nền tảng trọng số mạnh mẽ này, lõi mô hình tiếp tục được tinh chỉnh (fine-tune) trực tiếp trên kho ngữ liệu của tập dữ liệu Amazon Review. Thao tác này mang ý nghĩa tiên quyết giúp mô hình làm quen với các thuật ngữ chuyên ngành, sự phân bố từ vựng đặc thù và các dạng tương tác từ vựng chéo phổ biến trong miền thương mại điện tử.
+
+Ngược lại, đối với nhánh mã hóa ký ức ($Enc_{Mem}$), hệ thống tái sử dụng trọng số từ mô hình tiền huấn luyện \texttt{sentence-transformers/multi-qa-mpnet-base-cos-v1}. Đây là một biến thể của kiến trúc MPNet đã được tinh chỉnh chuyên sâu để tối ưu hóa cho các tác vụ hỏi đáp và truy xuất thông tin dày đặc (dense retrieval) dựa trên độ đo tương đồng cosine. Nhằm đảm bảo hệ thống có thể hoạt động trơn tru và mở rộng quy mô trên các phần cứng GPU tiêu chuẩn mà không gặp hiện tượng tràn bộ nhớ, toàn bộ hệ số trọng lượng của nhánh $Enc_{Mem}$ được đóng băng (frozen) ngay từ đầu. Chiến lược đóng băng này cho phép hệ thống thực hiện trích xuất và tính toán trước toàn bộ không gian bộ nhớ của người dùng ($\mathcal{P}_u$) một cách ngoại tuyến (offline), giúp tiết kiệm đáng kể dung lượng bộ nhớ và tài nguyên tính toán cho các công đoạn tối ưu hóa phía sau.
+
+\subsubsection*{Giai đoạn 2 (Phase 2): Huấn luyện điều chuẩn $g_{Mix}$}
+
+Giai đoạn huấn luyện đầu tiên được thiết kế với mục tiêu duy nhất là tối ưu hóa khả năng phân tích và trích xuất điểm số phù hợp ngữ nghĩa ($s_d^q$) của mô-đun $Enc_{CE}$ từ các cặp truy vấn và tài liệu ứng viên. Trong toàn bộ pha này, mô hình trộn cùng với điểm số cá nhân hóa hoàn toàn bị loại bỏ khỏi luồng tính toán. Sự cô lập này ép buộc nhánh mã hóa chéo phải tự mình học cách phân biệt sự liên quan ngữ nghĩa một cách khách quan nhất mà không có bất kỳ sự định hướng nào từ thông tin hồ sơ lịch sử.
+
+Để đạt được mục tiêu tối ưu hóa, hệ thống áp dụng khung học tương phản (contrastive learning) làm nguyên lý cấu trúc dữ liệu cốt lõi. Cụ thể, đối với mỗi truy vấn q được trích xuất từ tập huấn luyện, dữ liệu đầu vào sẽ bao gồm một tài liệu tích cực đích thực (đại diện cho kết quả khớp chuẩn) đi kèm với một tập hợp gồm M tài liệu tiêu cực đóng vai trò là mồi nhử (negative samples). Tập dữ liệu ghép nối này sau khi đi qua quá trình mã hóa sẽ sinh ra một vector điểm số dự đoán liên tục, ký hiệu là $s_q$, tương ứng với một vector nhãn gốc $y_q$ mang giá trị phân phối nhị phân (trong đó duy nhất vị trí của tài liệu tích cực nhận giá trị 1, các mồi nhử còn lại nhận giá trị 0).
+
+Quá trình cập nhật trọng số của mạng nơ-ron được dẫn dắt trực tiếp bởi hàm mất mát Softmax Cross-Entropy tiêu chuẩn. Việc áp dụng hàm loss này trên một tập hợp bao gồm cả mẫu tích cực và các mẫu tiêu cực nội lô (in-batch negatives) đã được chứng minh là phương pháp cốt lõi mang lại hiệu suất vượt trội cho các hệ thống truy xuất văn bản hiện đại \cite{22}. Về mặt toán học, hàm mất mát Softmax Cross-Entropy tiêu chuẩn \cite{22} được biểu diễn thông qua phương trình:
+$$\mathcal{L}(y_q, s_q) = - \sum_{i=1}^M y_q[i] \log \text{sm}(s_q[i])$$
+
+Trong phương trình trên, toán tử sm đại diện cho hàm phân phối xác suất softmax. Việc tối thiểu hóa hàm $\mathcal{L}$ mang một ý nghĩa hình học rõ ràng: nó tạo ra một lực đẩy ép mô hình $Enc_{CE}$ phải điều chỉnh không gian vector biểu diễn sao cho điểm số $s_d^q$ của tài liệu tích cực luôn được khuếch đại, từ đó áp đảo hoàn toàn xác suất của hàng loạt tài liệu nhiễu trong cùng một không gian đối chiếu. Kết thúc giai đoạn này, nhánh ngữ nghĩa đã đạt trạng thái sẵn sàng cao nhất để làm nền tảng cho việc dung hợp thông tin cá nhân hóa ở pha tiếp theo.
+
+\subsubsection*{Giai đoạn 2 (Phase 2): Huấn luyện điều chuẩn $g_{Mix}$}
+
+\textbf{Mục tiêu và Tích hợp tham số tỷ lệ:}
+Bước sang giai đoạn thứ hai, trọng số của cả hai nhánh mã hóa $Enc_{CE}$ và $Enc_{Mem}$ đều được đóng băng cố định nhằm bảo toàn trọn vẹn không gian biểu diễn đã được thiết lập ở pha trước. Mục tiêu cốt lõi lúc này là tập trung huấn luyện mạng nơ-ron đa tầng của mô hình trộn $g_{Mix}$ học cách dự đoán chính xác trọng số điều phối w. Trọng số này đóng vai trò quyết định trong việc thiết lập tỷ lệ nội suy giữa điểm phù hợp ngữ nghĩa ($s_d^q$) và điểm cá nhân hóa ($s_d^u$). Điểm đáng chú ý mang tính đột phá trong kiến trúc tối ưu hóa của pha này là sự tích hợp của một tham số tỷ lệ có khả năng học (learnable scale parameter), được thiết kế lấy cảm hứng từ các mô hình mạng nơ-ron đối chiếu tiên tiến (như kiến trúc CLIP). Tham số này được khởi tạo với giá trị logarit tương đương tỷ lệ 1/0.07 (xấp xỉ 14.3) và không bị khóa cứng; ngược lại, nó được mô hình tự động tinh chỉnh linh hoạt trong suốt quá trình huấn luyện nhằm kiểm soát độ nhạy (temperature) của dải điểm số đầu ra trước khi đưa vào hàm tính toán xác suất.
+
+\textbf{Cấu trúc dữ liệu và Mỏ neo:}
+Về mặt cấu trúc dữ liệu, Giai đoạn 2 tiếp tục kế thừa nguyên vẹn tập hợp dữ liệu gồm một mẫu tích cực và M mẫu tiêu cực. Tuy nhiên, hệ thống chèn thêm một điểm mỏ neo (anchor) nhân tạo vào tập điểm số với logit mục tiêu cố định $s_0 = 0$, đi kèm với nhãn mục tiêu điều chỉnh là $y_0$ (đóng vai trò là một siêu tham số). Sự can thiệp có chủ đích này, khi được kết hợp với phép nhân vô hướng từ tham số tỷ lệ (logit scale) liên tục cập nhật, sẽ tự động khuếch đại hoặc thu hẹp khoảng cách tương đối giữa các giá trị dự đoán, từ đó biến đổi vector điểm số thô ban đầu thành $s'_q$ và vector nhãn tương ứng thành $y'_q$.
+
+\textbf{Hàm mất mát và Ý nghĩa hiệu chuẩn:}
+Để ngăn chặn tình trạng mạng MLP sinh ra các dự đoán quá tự tin (overconfident predictions) dẫn đến hiện tượng sụp đổ phương thức (modality collapse), hệ thống từ bỏ hàm Softmax tiêu chuẩn và thay thế bằng hàm Scale Calibrating Softmax Objective \cite{30}:
+
+$$ \mathcal{L}(y'_q, s'_q) = - \sum_{i=1}^M y'_q[i] \log \frac{e^{s'_q[i]}}{\sum_j e^{s'_q[j]} + 1} + y_0 \log \left( \sum_j e^{s'_q[j]} + 1 \right) $$
+
+Việc chèn biến neo $y_0$ vào hàm loss đóng vai trò như một cơ chế chính quy hóa (regularization) mang tính cấu trúc. Cụ thể, thành phần thứ hai của phương trình tạo ra một lực phạt nghiêm ngặt đối với các điểm số dự đoán quá lớn, trong khi thành phần thứ nhất đảm bảo các điểm số nhỏ không bị tiêu biến hoàn toàn. Dưới sự điều tiết kép của hàm loss hiệu chuẩn và tham số tỷ lệ (logit scale), trọng số w do $g_{Mix}$ sinh ra sẽ không bị cực đoan hóa về các thái cực tuyệt đối 0 hoặc 1. Thay vào đó, nó biến thiên một cách mượt mà, bám sát và phản chiếu đúng mức độ tin cậy thực tế của nhánh ngữ nghĩa, cho phép hệ thống tìm kiếm hòa trộn các tín hiệu cá nhân hóa một cách tự nhiên, chừng mực và đạt độ ổn định cao nhất.
+
+
+
+
+
+
+
+
+
 \section{Tích hợp LLM trong Giai đoạn Hậu Truy xuất}
 
 Trong kiến trúc tổng thể của hệ thống, Mô hình Ngôn ngữ Lớn Google Gemini được tích hợp vào giai đoạn hậu truy xuất (\textit{Post-Retrieval Stage}). Trong khi mô hình Two-Tower đóng vai trò bộ lọc thô (\textit{Coarse Filter}) giúp truy xuất nhanh các ứng viên tiềm năng dựa trên độ tương đồng vector, thì mô-đun LLM đảm nhận chức năng bộ lọc tinh và tác nhân giải thích (\textit{Explainable Agent}). Thành phần này tận dụng khả năng suy luận ngôn ngữ tự nhiên để cá nhân hóa trải nghiệm người dùng một cách sâu sắc hơn.
