@@ -11,25 +11,16 @@
 \contentsline {figure}{\numberline {2.7}{\ignorespaces Kiến trúc tổng quan của mô hình Cross-Encoder}}{24}{figure.caption.18}%
 \contentsline {figure}{\numberline {2.8}{\ignorespaces So sánh sự khác biệt giữa kiến trúc Bi-Encoder và Cross-Encoder}}{25}{figure.caption.19}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Mô hình two-tower}}{30}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Quá trình Truy xuất sản phẩm}}{30}{figure.caption.20}%
 \contentsline {figure}{\numberline {3.2}{\ignorespaces Quá trình Truy xuất sản phẩm}}{31}{figure.caption.21}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Kiến trúc Item Tower: Quy trình mã hóa và hợp nhất dữ liệu Đa phương thức}}{32}{figure.caption.22}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Quy trình Tính toán và Tổng hợp Đặc trưng Hình ảnh}}{34}{figure.caption.23}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Kiến trúc chi tiết Tháp Người dùng với cơ chế mô hình hóa chuỗi đa phương thức.}}{41}{figure.caption.24}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Kiến trúc tổng quan của mô hình xếp hạng lại (Reranker) kết hợp đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.}}{47}{figure.caption.26}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng xử lý và trích xuất đặc trưng độc lập của kiến trúc Embedding Cross-Encoder.}}{48}{figure.caption.27}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Cơ chế hoạt động của Memory Encoder phân tách thành hai luồng: Xử lý ngoại tuyến (chắt lọc hồ sơ đa vector) và Xử lý trực tuyến (đối chiếu và tính điểm cá nhân hóa).}}{49}{figure.caption.28}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Kiến trúc Item Tower: Quy trình mã hóa và hợp nhất dữ liệu Đa phương thức}}{33}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Quy trình Tính toán và Tổng hợp Đặc trưng Hình ảnh}}{35}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Kiến trúc chi tiết Tháp Người dùng với cơ chế mô hình hóa chuỗi đa phương thức.}}{38}{figure.caption.24}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Kiến trúc tổng quan của mô hình xếp hạng lại (Reranker) kết hợp đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.}}{44}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng xử lý và trích xuất đặc trưng độc lập của kiến trúc Embedding Cross-Encoder.}}{45}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Cơ chế hoạt động của Memory Encoder phân tách thành hai luồng: Xử lý ngoại tuyến (chắt lọc hồ sơ đa vector) và Xử lý trực tuyến (đối chiếu và tính điểm cá nhân hóa).}}{47}{figure.caption.28}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Diễn biến hàm mất mát trong quá trình huấn luyện Item Tower}}{70}{figure.caption.76}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Diễn biến hàm mất mát trong quá trình huấn luyện User Tower}}{71}{figure.caption.78}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Biểu đồ trực quan hóa hiệu năng các độ đo tại Top-10 và Top-20}}{73}{figure.caption.81}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Kiến trúc hệ thống gợi ý Two-Tower triển khai thực tế}}{81}{figure.caption.101}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Giao diện hiển thị kết quả tìm kiếm}}{83}{figure.caption.102}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces Log xử lý thời gian thực tại Backend}}{83}{figure.caption.103}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Kiến trúc hệ thống gợi ý Two-Tower triển khai thực tế}}{74}{figure.caption.78}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Giao diện hiển thị kết quả tìm kiếm}}{76}{figure.caption.79}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Log xử lý thời gian thực tại Backend}}{76}{figure.caption.80}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Sơ đồ kiến trúc Cross-Encoder với đầu vào ghép đôi và đầu ra phân loại}}{87}{figure.caption.104}%
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Sơ đồ so sánh kiến trúc giữa Bi-Encoder (trái) và Cross-Encoder (phải)}}{88}{figure.caption.105}%
-\contentsline {figure}{\numberline {5.3}{\ignorespaces Sơ đồ quy trình phễu lọc hai giai đoạn: Từ hàng triệu sản phẩm xuống Top 10}}{89}{figure.caption.106}%
-\contentsline {figure}{\numberline {5.4}{\ignorespaces Sơ đồ quy trình Knowledge Distillation: Mô hình Student học cách mô phỏng phân phối xác suất (Logits) của Teacher.}}{90}{figure.caption.107}%
-\contentsline {figure}{\numberline {5.5}{\ignorespaces Tổng quan kiến trúc Deep Self-Attention Distillation của MiniLM.}}{92}{figure.caption.108}%
-\contentsline {figure}{\numberline {5.6}{\ignorespaces Quy trình phát triển mô hình: Từ kiến trúc MiniLM gốc, qua bước tinh chỉnh (Fine-tuning) trên dữ liệu MS MARCO để tạo thành Cross-Encoder hoàn chỉnh.}}{95}{figure.caption.110}%

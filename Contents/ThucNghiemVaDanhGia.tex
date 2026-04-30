@@ -620,290 +620,384 @@ Với bài toán Next-Item Prediction chỉ có 1 nhãn đúng, công thức NDC
 \subsubsection*{Tại sao NDCG ưu việt hơn MRR?}
 Mặc dù cả MRR và NDCG đều chú trọng các kết quả đứng đầu, NDCG sở hữu cơ chế giảm trọng số nhẹ nhàng hơn ở các thứ hạng thấp nhờ đặc tính của hàm logarit. Sự khác biệt này thể hiện rõ nét khi so sánh mức giảm điểm số giữa vị trí thứ nhất và thứ hai; trong khi MRR tạo ra khoảng cách lớn từ $1.0$ xuống $0.5$, NDCG lại duy trì mức giảm vừa phải hơn từ $1.0$ xuống $0.63$. Xét trong ngữ cảnh gợi ý thẻ quà tặng, người dùng thường có xu hướng xem xét nhiều lựa chọn khác nhau, do đó việc sản phẩm mục tiêu xuất hiện ở vị trí thứ 3 hay thứ 4 vẫn mang lại giá trị thực tiễn. Vì vậy, NDCG được xem là thước đo phản ánh mức độ hài lòng chính xác hơn. Nhìn chung, việc kết hợp bộ ba chỉ số mang lại góc nhìn toàn diện cho hệ thống: Recall đo lường độ phủ, MRR đánh giá khả năng dự đoán chính xác tuyệt đối và NDCG phản ánh chất lượng trải nghiệm xếp hạng tổng thể.
 
-\section{Kết quả thực nghiệm}
+\section{Đánh giá Hiệu suất Truy xuất sơ cấp Bi-Encoder}
 
-\subsection{Quá trình huấn luyện}
-Do kiến trúc Two-Tower được huấn luyện theo quy trình hai giai đoạn, chúng tôi theo dõi và phân tích sự biến thiên của hàm mất mát riêng biệt cho từng mạng. Việc giám sát này không chỉ giúp phát hiện các hiện tượng bất thường như Overfitting hay Underfitting mà còn cung cấp cái nhìn sâu sắc về khả năng học đặc trưng của mô hình.
+Trong kiến trúc của các hệ thống gợi ý quy mô lớn hiện đại, giai đoạn truy xuất sơ cấp đóng vai trò như một bộ lọc tuyến đầu. Nhiệm vụ của nó là thu hẹp nhanh chóng không gian tìm kiếm khổng lồ từ hàng vạn, thậm chí hàng triệu sản phẩm xuống còn một tập hợp nhỏ Top-K các ứng viên tiềm năng nhất. Yêu cầu tối thượng của giai đoạn này không phải là độ chính xác xếp hạng tuyệt đối, mà là tốc độ xử lý tức thời và khả năng không bỏ sót các sản phẩm phù hợp (High Recall).
 
-\subsubsection*{Giai đoạn 1: Huấn luyện Item Tower}
-Trong giai đoạn này, mục tiêu là tối ưu hóa không gian biểu diễn chung giữa Văn bản và Hình ảnh. Mô hình được huấn luyện trong 70 Epochs với hàm mất mát Contrastive Loss.
+Kiến trúc Bi-Encoder được ứng dụng trong đồ án hoàn toàn đáp ứng được các tiêu chí khắt khe này. Bằng cách tách biệt hoàn toàn quá trình mã hóa của Tháp Người dùng và Tháp Sản phẩm, hệ thống cho phép tính toán trước và lưu trữ ngoại tuyến toàn bộ vector đặc trưng của mặt hàng. Khi có yêu cầu gợi ý, hệ thống chỉ cần tính toán duy nhất vector của người dùng tại thời điểm đó và thực hiện truy xuất thông qua phép đối sánh không gian vector.
 
-% [PLACEHOLDER CHO ẢNH ITEM TOWER LOSS]
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{Images/item_tower_loss.png} 
-    %\framebox[0.9\textwidth]{\rule{0pt}{7cm} [Hình ảnh: Biểu đồ Loss của Item Tower (70 Epochs)]}
-    \caption{Diễn biến hàm mất mát trong quá trình huấn luyện Item Tower}
-    \label{fig:item_loss}
-\end{figure}
+Để chứng minh tính hiệu quả và sự ưu việt của kiến trúc đề xuất, phần đánh giá này được thiết kế theo hướng bóc tách, chia thành hai khía cạnh phân tích cốt lõi:
 
-\textbf{Phân tích Hình \ref{fig:item_loss}:}
-Quá trình huấn luyện mô hình ghi nhận sự hội tụ ổn định và tích cực thông qua biểu đồ biến thiên của hàm mất mát. Cụ thể, giá trị Loss giảm mượt mà từ mốc khởi điểm $\sim 21.4$ xuống còn $\sim 12.6$ sau 70 epochs mà không xuất hiện các dấu hiệu bất thường như dao động mạnh hay phân kỳ. Sự ổn định số học này minh chứng cho tính hợp lý của tốc độ học (Learning Rate = $2e^{-5}$) đã được thiết lập. Đáng chú ý, đường cong Loss của tập Validation luôn duy trì khoảng cách rất nhỏ và biến thiên đồng dạng với tập Train, khẳng định mô hình đã tránh được hiện tượng quá khớp. Thay vì ghi nhớ máy móc các mẫu dữ liệu, mạng nơ-ron đã thực sự nắm bắt được mối tương quan ngữ nghĩa trừu tượng giữa tiêu đề văn bản và hình ảnh minh họa. Kết quả này đóng vai trò then chốt, đảm bảo các vector đặc trưng sản phẩm Item Embeddings đầu ra sở hữu tính phân biệt cao, tạo tiền đề vững chắc cho độ chính xác của các thuật toán gợi ý ở giai đoạn tiếp theo.
+\begin{itemize}
+    \item \textbf{Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức:} Tập trung phân tích năng lực thu nhận và hợp nhất thông tin từ nhiều nguồn dữ liệu (Văn bản, Hình ảnh, Dữ liệu bảng) thông qua tác vụ truy xuất chéo nội bộ và các nghiên cứu cắt bỏ (Ablation Study).
+    
+    \item \textbf{Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống:} Kiểm chứng khả năng nắm bắt ý định mua sắm tuần tự của người dùng, thông qua việc đối chiếu hiệu năng truy xuất toàn cục của mô hình đề xuất so với các mô hình cơ sở (Baselines) tiên tiến.
+\end{itemize}
 
-\subsubsection*{Giai đoạn 2: Huấn luyện User Tower}
-Sau khi cố định trọng số của Item Tower, chúng tôi tiến hành huấn luyện User Tower để mô hình hóa chuỗi hành vi người dùng. Quá trình này diễn ra trong 26 Epochs với cơ chế dừng sớm.
+\subsection{Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức}
 
-% [PLACEHOLDER CHO ẢNH USER TOWER LOSS]
-\begin{figure}[H]
-    \centering
-     \includegraphics[width=0.9\textwidth]{Images/loss_chart.png}
-    %\framebox[0.9\textwidth]{\rule{0pt}{7cm} [Hình ảnh: Biểu đồ Loss của User Tower (26 Epochs)]}
-    \caption{Diễn biến hàm mất mát trong quá trình huấn luyện User Tower}
-    \label{fig:user_loss}
-\end{figure}
+Mục tiêu của phép thử này là kiểm chứng xem Tháp Sản phẩm có thực sự ánh xạ được các đặc trưng khác biệt (Văn bản và Hình ảnh) của cùng một mặt hàng vào chung một vùng không gian vector hay không. Quá trình đánh giá được thực hiện thông qua tác vụ Truy xuất chéo phương thức (Cross-modal Retrieval): sử dụng vector Văn bản để truy vấn vector Hình ảnh của chính sản phẩm đó ($Text \rightarrow Image$) trong tập kiểm thử. 
 
-\textbf{Phân tích Hình \ref{fig:user_loss}:}
-Khác biệt với diễn biến của Item Tower, quá trình huấn luyện User Tower ghi nhận tốc độ hội tụ nhanh chóng, đạt trạng thái ổn định chỉ sau khoảng 3 đến 5 Epochs đầu tiên với hàm Loss giảm từ mức khởi điểm $\sim 2.94$ xuống vùng $\sim 2.35$. Ngay sau giai đoạn này, mô hình bước vào vùng bão hòa kéo dài từ Epoch 10 đến Epoch 26, nơi mức cải thiện của Validation Loss trở nên không đáng kể (dao động $0.001 - 0.002$). Đây là đặc trưng điển hình của các bài toán dự đoán chuỗi trên tập dữ liệu thưa, phản ánh việc mô hình đã khai thác tối đa các mẫu hành vi tuần tự hiện hữu trong lịch sử tương tác giới hạn của người dùng. Để tối ưu hóa hiệu suất trong bối cảnh này, chiến lược \textit{Model Checkpointing} đã được áp dụng nhằm lưu lại phiên bản mô hình tốt nhất tại Epoch 26 với giá trị Loss đạt $2.3488$, phục vụ cho quá trình kiểm thử cuối cùng.
-
-\subsubsection*{Tổng hợp đánh giá quá trình huấn luyện}
-Sự chênh lệch rõ rệt trong động học huấn luyện giữa hai nhánh mạng không phải là yếu tố ngẫu nhiên, mà phản ánh chính xác độ phức tạp nội tại của từng loại dữ liệu đầu vào. Cụ thể, \textbf{Item Tower} đòi hỏi một chu trình huấn luyện kéo dài tới 70 Epochs do phải giải quyết bài toán khó khăn nhất: lấp đầy khoảng cách ngữ nghĩa từ dữ liệu thô. Mạng nơ-ron phải học cách trích xuất và tổng hợp các đặc trưng mức thấp từ điểm ảnh và câu chữ để tạo ra các biểu diễn trừu tượng, một quá trình tối ưu hóa trên không gian chiều cực lớn và đầy nhiễu.\\
-
-Ở chiều ngược lại, sự hội tụ nhanh chóng của \textbf{User Tower} là kết quả trực tiếp của chiến lược huấn luyện phân tầng. Do đầu vào của tháp này là các vector đặc trưng đã được tinh chế từ giai đoạn trước, mô hình được giải phóng khỏi gánh nặng xử lý tín hiệu sơ cấp. Thay vào đó, nhiệm vụ của nó được khu trú vào việc nhận diện các quy luật sắp xếp và nắm bắt sự phụ thuộc chuỗi trong hành vi người dùng. Vì hoạt động trên không gian vector mật độ cao và ít chiều hơn, bề mặt tối ưu hóa của User Tower trở nên trơn tru hơn, dẫn đến tốc độ hội tụ vượt trội.
-Việc tách rời hai giai đoạn này giúp chúng tôi kiểm soát tốt hơn quá trình tối ưu hóa và tiết kiệm tài nguyên tính toán đáng kể so với việc huấn luyện End-to-End toàn bộ hệ thống cùng lúc.
-
-\subsection{Kết quả đánh giá chính}
-Bảng \ref{tab:main_results} tóm tắt hiệu năng định lượng của mô hình Hybrid Pipeline trên tập kiểm thử tại hai ngưỡng cắt quan trọng là $K=10$ và $K=20$. Các chỉ số này phản ánh khả năng dự đoán chính xác hành vi tiêu dùng tiếp theo của hệ thống.
+Độ đo được sử dụng là tỷ lệ trúng đích $Hit@K$ (tương đương với $Recall@K$ trong bài toán đối sánh 1-1). Kết quả thực nghiệm trên cả hai tập dữ liệu Gift Card và All Beauty được trình bày chi tiết tại Bảng \ref{tab:cross_modal}.
 
 \begin{table}[H]
     \centering
-    \caption{Kết quả đánh giá hiệu năng mô hình Hybrid trên tập Test}
-    \label{tab:main_results}
-    \vspace{0.2cm}
-    \begin{tabular}{l c c}
-        \toprule
-        \textbf{Độ đo (Metric)} & \textbf{@Top-10} & \textbf{@Top-20} \\
-        \midrule
-        Recall (Hit Rate) & 0.9923 & 0.9943 \\
-        MRR (Mean Reciprocal Rank) & 0.8616 & 0.8618 \\
-        NDCG & 0.8941 & 0.8946 \\
-        \bottomrule
+    \caption{Kết quả đánh giá độ tương quan chéo (Text $\rightarrow$ Image) trên hai tập dữ liệu}
+    \label{tab:cross_modal}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Metric} & \textbf{Gift Card} & \textbf{All Beauty} \\
+        \hline
+        Hit@1 & $35.96\%$ & $12.33\%$ \\
+        \hline
+        Hit@5 & $57.89\%$ & $36.01\%$ \\
+        \hline
+        Hit@10 & $66.67\%$ & $48.83\%$ \\
+        \hline
+        Hit@50 & $92.93\%$ & $76.03\%$ \\
+        \hline
     \end{tabular}
 \end{table}
 
-% [PLACEHOLDER CHO BIỂU ĐỒ]
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1.0\textwidth]{Images/metrics_bar_chart.png}
-    %\framebox[1.0\textwidth]{\rule{0pt}{6cm} [Hình ảnh: Biểu đồ cột so sánh Recall, NDCG, MRR]}
-    \caption{Biểu đồ trực quan hóa hiệu năng các độ đo tại Top-10 và Top-20}
-    \label{fig:metrics_bar}
-\end{figure}
+\vspace{0.3cm}
+Dựa vào các số liệu thống kê tại Bảng \ref{tab:cross_modal}, ta có thể rút ra hai minh chứng quan trọng về năng lực của kiến trúc Tháp Sản phẩm:
 
-\subsubsection*{Phân tích và Bình luận chi tiết}
-Dựa trên số liệu từ Bảng \ref{tab:main_results} và Hình \ref{fig:metrics_bar}, chúng ta có thể rút ra những nhận xét quan trọng sau về hiệu quả của mô hình:
-
-\paragraph*{1. Khả năng bao phủ tuyệt đối (Recall tiệm cận 1.0):}
-Kết quả thực nghiệm ghi nhận chỉ số Recall@10 đạt mức ấn tượng \textbf{0.9923}, tương đương với việc hệ thống nắm bắt chính xác nhu cầu mua sắm của người dùng trong hơn 99\% các phiên kiểm thử. Điều này có nghĩa là sản phẩm đích thực hầu như luôn hiện diện trong danh sách 10 gợi ý đầu tiên, một hiệu suất hiếm thấy đối với các bài toán gợi ý trên tập dữ liệu thưa. Đáng chú ý, khi mở rộng phạm vi tìm kiếm lên 20 sản phẩm, mức tăng trưởng hiệu suất là không đáng kể, chênh lệch dưới $0.002$. Sự bão hòa sớm này cho thấy mô hình hoạt động cực kỳ dứt khoát: nó xác định đúng đối tượng ngay từ những bước đầu tiên mà không cần dựa vào danh sách gợi ý dài dòng. Từ góc độ ứng dụng, đặc điểm này có ý nghĩa to lớn trong việc tối ưu hóa giao diện người dùng trên thiết bị di động, nơi không gian hiển thị bị giới hạn và người dùng thường có xu hướng ít kiên nhẫn khi phải cuộn trang quá nhiều.
-
-\paragraph*{2. Chất lượng xếp hạng vượt trội:}
-Bên cạnh khả năng tìm kiếm chính xác, User Tower còn thể hiện năng lực sắp xếp thứ tự ưu tiên vượt trội, được phản ánh rõ nét qua chỉ số MRR@10 đạt \textbf{0.8616}. Trong ngữ cảnh của bài toán xếp hạng, nếu coi $MRR=1.0$ là trạng thái lý tưởng và $MRR=0.5$ tương ứng với vị trí thứ hai, thì con số $0.86$ cho phép suy luận rằng trong đại đa số các trường hợp, sản phẩm mục tiêu đang nằm cố định ở vị trí \textbf{Top-1 hoặc Top-2}. Nhận định này càng được củng cố bởi chỉ số NDCG@10 đạt \textbf{0.8941}, khẳng định hệ thống không chỉ đưa sản phẩm đúng vào danh sách mà còn đẩy nó lên những vị trí dễ nhìn thấy nhất. Việc tối đa hóa thứ hạng này giúp giảm thiểu ma sát trong trải nghiệm tìm kiếm, giúp người dùng ra quyết định nhanh chóng mà không tốn nhiều nỗ lực sàng lọc.
-
-\paragraph*{3. Hiệu quả của kiến trúc Đa phương thức:}
-Thành tựu đạt được các chỉ số cao kỷ lục này trên tập dữ liệu Amazon Gift Cards—vốn có độ thưa dữ liệu lên tới 99.8\%—là minh chứng thực nghiệm vững chắc cho giả thuyết nghiên cứu ban đầu. Cụ thể, khi dữ liệu tương tác hành vi trở nên quá khan hiếm để các thuật toán Lọc cộng tác truyền thống hoạt động hiệu quả, sự bổ sung thông tin từ các nhánh ngữ nghĩa BERT và thị giác ViT đã đóng vai trò cứu cánh quyết định. Mô hình Two-Tower đã thành công trong việc thiết lập mối liên kết ngầm ẩn giữa sở thích trừu tượng của người dùng và các đặc tính nội dung đa phương thức của sản phẩm. Thay vì chỉ đơn thuần đếm tần suất tương tác, hệ thống đã thực sự hiểu được nội dung sản phẩm để đưa ra gợi ý, chứng minh sức mạnh của hướng tiếp cận Content-based hiện đại trong việc giải quyết bài toán Cold-start và dữ liệu thưa.\\
-
-Mô hình Two-Tower đã thành công trong việc học được mối liên kết ngầm ẩn giữa sở thích người dùng và đặc tính nội dung của sản phẩm, thay vì chỉ dựa vào việc đếm số lần tương tác như các phương pháp truyền thống.
-
-\section{Phân tích vai trò từng thành phần}
-
-\subsection{Ảnh hưởng của Đa phương thức}
-Để định lượng chính xác đóng góp của từng nguồn dữ liệu, chúng tôi thực hiện thí nghiệm cô lập. Trong đó, các nhánh đầu vào của mạng Fusion Gate lần lượt bị vô hiệu hóa, buộc mô hình chỉ được sử dụng một nguồn thông tin duy nhất để truy vấn.
-
-Kết quả thực nghiệm trên tập kiểm thử được trình bày trong Bảng \ref{tab:ablation_results}.
-
-\begin{table}[H]
-    \centering
-    \caption{Hiệu năng mô hình theo từng phương thức đầu vào}
-    \label{tab:ablation_results}
-    \vspace{0.2cm}
-    \begin{tabular}{l c c p{5cm}}
-        \toprule
-        \textbf{Phương thức} & \textbf{Recall@10} & \textbf{MRR@10} & \textbf{Đánh giá} \\
-        \midrule
-        Chỉ Text & 0.9937 & 0.8611 & Hiệu năng tốt, đóng vai trò nền tảng. \\
-        \textbf{Chỉ Image} & \textbf{0.9998} & \textbf{0.9153} & \textbf{Xuất sắc nhất.} Định danh chính xác tuyệt đối. \\
-        Fusion & 0.9995 & 0.9009 & Đạt sự cân bằng tối ưu giữa độ chính xác và độ tin cậy. \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\subsection{Phân tích đặc thù miền dữ liệu và Hiệu quả Fusion}
-
-Các kết quả từ Bảng \ref{tab:ablation_results} cho thấy những đặc điểm thú vị của tập dữ liệu Gift Cards, đồng thời làm sáng tỏ sự đánh đổi trade-off trong cơ chế kết hợp đa phương thức.
-
-\subsubsection*{1. Sự thống trị của kênh Thị giác}
-Kết quả thực nghiệm đối với chế độ \textbf{Image-Only} ghi nhận những chỉ số hiệu suất gần như tuyệt đối, với Recall tiệm cận $100\%$ và MRR vượt ngưỡng $0.91$. Thành tựu này phản ánh sâu sắc đặc thù của miền dữ liệu Thẻ quà tặng \textit{Gift Cards}, nơi hình ảnh đóng vai trò định danh cực kỳ mạnh mẽ. Khác với các sản phẩm điện tử tiêu dùng - vốn thường chia sẻ ngôn ngữ thiết kế công nghiệp tương đồng và khó phân biệt - mỗi tấm thẻ quà tặng đều sở hữu thiết kế đồ họa mang tính biểu tượng cao gắn liền với các dịp lễ cụ thể như hình ảnh Bánh sinh nhật, Cây thông Noel hay Nôi em bé. Chính nhờ sự khác biệt rõ rệt này, mô hình Vision Transformer đã phát huy tối đa năng lực trích xuất đặc trưng thị giác, cho phép hệ thống định danh chính xác mục đích và ngữ cảnh sử dụng của thẻ ngay cả khi thiếu vắng hoàn toàn thông tin văn bản.
-
-\subsubsection*{2. Hạn chế về ngữ nghĩa của dữ liệu Văn bản}
-Mặc dù chế độ Text-Only duy trì được mức Recall ấn tượng $\approx 99.37\%$, khả năng xếp hạng chi tiết, phản ánh qua chỉ số MRR, lại thua kém đáng kể so với phương thức xử lý hình ảnh. Nguyên nhân cốt lõi nằm ở hiện tượng \textit{trùng lặp ngữ nghĩa} trong dữ liệu văn bản. Cụ thể, tiêu đề sản phẩm thường chứa các cụm từ định danh chung chung lặp lại với tần suất cao như ``Amazon.com Gift Card'' hay ``Gift Card in a Box''. Sự thiếu hụt các từ khóa mang tính phân biệt khiến Text Encoder gặp trở ngại lớn trong việc phân định thứ tự ưu tiên giữa các sản phẩm cùng phân loại nhưng khác biến thể mẫu mã, dẫn đến sự sụt giảm tất yếu trong chất lượng xếp hạng.
-
-\subsubsection*{3. Luận giải sự cần thiết của kiến trúc Fusion}
-Một quan sát thực nghiệm đáng chú ý là hiệu năng của mô hình Fusion $0.9995$ thấp hơn một lượng rất nhỏ so với chế độ Image-Only $0.9998$. Tuy nhiên, độ lệch $0.0003$ này là \textbf{không đáng kể về mặt thống kê}, và việc duy trì kiến trúc Fusion vẫn được xác định là yêu cầu bắt buộc dựa trên hai luận điểm kỹ thuật then chốt:\\
-
-Thứ nhất là bài toán \textbf{giải quyết xung đột tín hiệu}. Trong một số trường hợp biên, tín hiệu từ văn bản vốn có độ phân biệt thấp có thể gây nhiễu hoặc mâu thuẫn nhẹ với tín hiệu hình ảnh, làm giảm độ tự tin của mô hình khi ra quyết định xếp hạng, kéo MRR giảm nhẹ từ $0.91$ xuống $0.90$. Đây được xem là sự đánh đổi chấp nhận được để đổi lấy tính tổng quát hóa của mô hình.\\
-
-Thứ hai, và quan trọng hơn, là yếu tố \textbf{Tính chịu lỗi} trong môi trường vận hành thực tế. Dữ liệu hình ảnh thường đối mặt với các rủi ro kỹ thuật cao như lỗi đường truyền, ảnh không tải được hoặc chất lượng suy giảm. Trong kịch bản đó, một hệ thống phụ thuộc đơn lẻ vào Image-Only sẽ đối mặt với nguy cơ ngưng trệ hoàn toàn. Ngược lại, kiến trúc Fusion với cơ chế cổng kiểm soát sẽ tự động điều hướng trọng số sang nhánh văn bản, vốn vẫn đảm bảo Recall $>99\%$. Nhờ đó, nhánh văn bản đóng vai trò như một \textbf{``Lưới an toàn''}, đảm bảo hệ thống luôn duy trì hoạt động ổn định và bền vững bất chấp các sự cố dữ liệu đầu vào.\\
-
-\textbf{Kết luận:} Mặc dù Image là đặc trưng mạnh nhất, kiến trúc Fusion là giải pháp tối ưu về mặt kỹ thuật hệ thống, đảm bảo độ chính xác tiệm cận mức tuyệt đối đồng thời duy trì tính bền vững trước các nhiễu động dữ liệu thực tế.
-
-
-\section{Đánh giá Cross-Encoder}
-
-\subsection{Thiết lập Thực nghiệm (Experimental setup)}
-
-\subsubsection*{Tập dữ liệu (Datasets)}
-Nghiên cứu sử dụng tập dữ liệu công khai Amazon Product Dataset (phiên bản 5-core), tập trung kiểm thử trên phân khúc Cell Phones \& Accessories \cite{23}. Để xây dựng câu truy vấn mô phỏng hành vi tìm kiếm thực tế, hệ thống trích xuất tên các danh mục (categories) của sản phẩm, sau đó tiến hành loại bỏ các từ dừng (stop words), từ trùng lặp và dấu câu để tạo thành câu truy vấn cốt lõi \cite{23}. Nếu một sản phẩm thuộc nhiều danh mục khác nhau, một câu truy vấn sẽ được chọn ngẫu nhiên để đại diện. 
-
-Để kiến tạo môi trường huấn luyện và kiểm thử đảm bảo tính logic về mặt thời gian của dữ liệu chuỗi hành vi, hệ thống áp dụng chiến lược phân chia dữ liệu tương tự các mô hình cơ sở. Cụ thể, đối với một chuỗi hành vi mua sắm gồm tổng cộng $n$ tương tác của một người dùng, các tương tác từ vị trí 1 đến $n-2$ được sử dụng để xây dựng tập huấn luyện (Train), tương tác ở vị trí thứ $n-1$ được dành riêng cho tập xác thực (Validation) nhằm tinh chỉnh siêu tham số, và tương tác cuối cùng ở vị trí thứ $n$ được sử dụng làm tập kiểm thử cuối cùng để đánh giá hiệu suất.
-
-\subsubsection*{Các mô hình cơ sở (Baselines)}
-Hiệu suất của kiến trúc đề xuất được đối chiếu với các phương pháp tìm kiếm sản phẩm cá nhân hóa và phi cá nhân hóa tiên tiến sau
-% (các mô hình này được triển khai theo thiết lập của bài báo CoPPS \cite{23})
-:
 \begin{itemize}
-    \item \textbf{LSE} \cite{24}: Mô hình tìm kiếm cơ sở thiết lập không gian biểu diễn vector tiềm ẩn cho sản phẩm.
-    \item \textbf{HEM} \cite{25}: Mô hình nhúng phân cấp kế thừa từ LSE, tích hợp khả năng học biểu diễn người dùng để phục vụ cá nhân hóa.
-    \item \textbf{ZAM} \cite{26}: Áp dụng cơ chế chú ý rỗng (zero attention) để trích xuất sở thích người dùng từ các chuỗi lịch sử.
-    \item \textbf{TEM} \cite{27}: Khai thác sức mạnh của kiến trúc Transformer để học các mức độ quan trọng khác nhau từ các hành vi trong lịch sử.
-    \item \textbf{DREM} \cite{28} và \textbf{DREM-HGN} \cite{29}: Các mô hình định hướng đồ thị khai thác cấu trúc đồ thị tri thức (KG) để lập bản đồ mối quan hệ giữa người dùng, truy vấn và sản phẩm.
-    \item \textbf{CoPPS} \cite{23}: Khung học tương phản (contrastive learning) giúp tinh chỉnh và gia tăng độ mạnh mẽ cho bộ mã hóa chuỗi hành vi người dùng.
+    \item \textbf{Sự hội tụ thành công của không gian nhúng:} Khi mở rộng phạm vi tìm kiếm lên mốc $K=50$, cả hai tập dữ liệu đều đạt tỷ lệ truy xuất rất cao (lần lượt là $92.93\%$ và $76.03\%$). Điều này chứng tỏ cơ chế \textit{Gating Fusion} và hàm mất mát đối chiếu (InfoNCE) đã làm rất tốt nhiệm vụ thu hẹp khoảng cách ngữ nghĩa. Mạng nơ-ron đã thực sự "hiểu" cách liên kết mô tả văn bản phức tạp với đặc trưng thị giác của cùng một thực thể.
+    
+    \item \textbf{Độ khó và Quy mô của không gian ứng viên (Search Space \& Domain Specificity):} Số liệu cho thấy hiệu suất trên tập \textbf{Gift Card} vượt trội hoàn toàn so với \textbf{All Beauty} ở mọi mốc $K$. Hiện tượng này phản ánh chính xác quy mô và bản chất vật lý của hai ngành hàng:
+    \begin{itemize}
+        \item Ngành hàng thẻ quà tặng (\textit{Gift Card}) có không gian tìm kiếm tương đối nhỏ (chỉ $1.307$ sản phẩm). Hơn nữa, hình ảnh chủ yếu là các logo thương hiệu đặc trưng và rất khớp với từ khóa văn bản. Không gian mẫu nhỏ cộng với đặc trưng phân tách rõ ràng giúp việc dùng chữ tìm ảnh diễn ra tương đối dễ dàng.
+        \item Ngược lại, ngành hàng mỹ phẩm (\textit{All Beauty}) lại là một thách thức cực đại (\textit{Extreme Fine-grained}) với quy mô lên tới $10.216$ sản phẩm (lớn gấp gần $8$ lần so với Gift Card). Tập dữ liệu này chứa hàng vạn mặt hàng có ngoại quan thị giác gần như giống hệt nhau (ví dụ: các thỏi son cùng một dòng chỉ khác biệt rất nhỏ về sắc độ, hoặc các chai serum dùng chung thiết kế lọ đục). Do tính đa dạng, nhiễu hình ảnh cao và không gian ứng viên khổng lồ, việc chỉ dùng một đoạn văn bản ngắn để trích xuất ra đúng 100\% bức ảnh của sản phẩm đó khó khăn hơn rất nhiều, dẫn đến chỉ số Hit@1 chỉ đạt $12.33\%$.
+    \end{itemize}
 \end{itemize}
 
-\subsubsection*{Phương pháp Đánh giá}
-Chất lượng xếp hạng được đo lường thông qua ba độ đo truy xuất tiêu chuẩn: Mean Reciprocal Rank (MRR), Normalized Discounted Cumulative Gain tại top 10 (NDCG@10) \cite{23} và Hit Rate tại top 10 (HR@10). Quá trình kiểm thử được thiết lập theo giao thức giới hạn 100 ứng viên: đối với mỗi phiên tìm kiếm trong tập kiểm thử (1000 người dùng), hệ thống phải tính toán điểm số và xếp hạng một danh sách gồm 100 sản phẩm, trong đó có duy nhất 1 sản phẩm tích cực đích thực (ground truth) và 99 sản phẩm tiêu cực (mồi nhử).
+Kết quả thực nghiệm này là tiền đề hoàn hảo để lý giải cho các đánh giá truy xuất người dùng tiếp theo: Chính vì hình ảnh của tập All Beauty chứa đựng quá nhiều thông tin phân loại hạt mịn tinh vi, nên việc hệ thống học được và tích hợp thành công đặc trưng này sẽ mang lại sức mạnh đột phá trong gợi ý cá nhân hóa, vượt trội hơn hẳn so với những ngành hàng ít biến động hình ảnh như Gift Card.
 
-\subsubsection*{Chi tiết Cài đặt}
-Mô hình được phát triển và tối ưu hóa dựa trên framework PyTorch và bộ thư viện Transformers của Huggingface \cite{17}. Trong quá trình xử lý chuỗi, nhánh Cross-Encoder được thiết lập độ dài đầu vào ở mức 128 token nhằm đảm bảo không gian ngữ nghĩa bao quát được cả câu truy vấn lẫn thông tin mô tả chi tiết của sản phẩm. Trong khi đó, nhánh Memory Encoder duy trì tối đa 5 ký ức sản phẩm gần nhất, mỗi sản phẩm được giới hạn ở 64 token. Quá trình huấn luyện sử dụng bộ tối ưu hóa AdamW và được thiết kế chia làm hai giai đoạn với các cấu hình siêu tham số chuyên biệt:
-\begin{itemize}
-    \item \textbf{Giai đoạn 1 (Phase 1):} Nhánh đối sánh ngữ nghĩa được huấn luyện trong 1 epoch với kích thước lô (batch size) là 8. Tỷ lệ học (learning rate) được thiết lập ở mức rất nhỏ là $5 \times 10^{-6}$ nhằm tinh chỉnh nhẹ nhàng (fine-tune) mà không phá vỡ khả năng biểu diễn cốt lõi của mô hình tiền huấn luyện.
-    \item \textbf{Giai đoạn 2 (Phase 2):} Quá trình huấn luyện mạng trộn Mixing MLP cũng diễn ra trong 1 epoch với batch size duy trì ở mức 8. Tuy nhiên, tỷ lệ học được cấu hình cao hơn, đạt mức $1 \times 10^{-3}$, nhằm giúp mạng nơ-ron nhanh chóng học được và hội tụ trọng số phân bổ tối ưu.
-    % \item Trong giai đoạn suy luận và kiểm thử (Inference \& Testing), batch size được chủ động nâng lên mức 32 nhằm tận dụng tối đa dung lượng VRAM của phần cứng, đẩy nhanh tốc độ đối chiếu khi mô hình phải quét qua danh sách 100 ứng viên.
-\end{itemize}
+\subsection{Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}
 
-\subsection{Kết quả Thực nghiệm}
+Để đánh giá chính xác năng lực thực tế của kiến trúc Tháp Người dùng (User Tower) khi triển khai, đồ án áp dụng giao thức truy xuất toàn cục (Full-corpus Retrieval). Thay vì sử dụng phương pháp đánh giá lấy mẫu (Sampled Evaluation) vốn dễ gây ra hiện tượng thổi phồng hiệu suất, mô hình bắt buộc phải tính toán và xếp hạng toàn bộ sản phẩm trong cơ sở dữ liệu để tìm ra mặt hàng mục tiêu.
 
-Kết quả đánh giá định lượng trên tập kiểm thử phân khúc Cell Phones \& Accessories cho thấy sự vượt trội toàn diện của kiến trúc đề xuất so với các phương pháp cơ sở. Bảng \ref{tab:performance_comparison} trình bày chi tiết sự chênh lệch hiệu năng thông qua các độ đo MRR và NDCG@10.
+Mô hình đề xuất (Bi-Encoder Đa phương thức) được kiểm chứng trên hai tập dữ liệu: Gift Card và All Beauty. Riêng đối với tập All Beauty, đồ án thực hiện đối sánh trực tiếp với mô hình cơ sở SASRec (mô hình học nhúng ID truyền thống) để làm rõ ưu thế của phương pháp tiếp cận mới.
 
 \begin{table}[htbp]
-\centering
-\caption{So sánh hiệu suất giữa các mô hình trên tập Cell Phones \& Accessories}
-\label{tab:performance_comparison}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Mô hình} & \textbf{MRR} & \textbf{NDCG@10} \\ \hline
-HEM & 0.078 & 0.093 \\ \hline
-ZAM & 0.083 & 0.095 \\ \hline
-TEM & 0.085 & 0.098 \\ \hline
-DREM & 0.094 & 0.110 \\ \hline
-DREM-HGN & 0.185 & 0.208 \\ \hline
-CoPPS & 0.291 & 0.249 \\ \hline
-\textbf{Mô hình đề xuất (Phase 1)} & \textbf{0.4802} & \textbf{0.5461} \\ \hline
-\textbf{Mô hình đề xuất (Phase 2)} & \textbf{0.4961} & \textbf{0.5551} \\ \hline
-\end{tabular}
-\end{table}
-
-Dựa trên số liệu tổng hợp, có thể rút ra những phân tích cốt lõi sau:
-
-Thứ nhất, đối với nhóm các mô hình cơ sở, các phương pháp tuần tự (ZAM, TEM) và đồ thị cơ bản (DREM) ghi nhận chỉ số khá thấp, với MRR dao động dưới mốc 0.1. Ngay cả khung học tương phản CoPPS – mô hình tiên tiến nhất trong nhóm baseline – cũng chạm trần ở mức MRR là 0.291 và NDCG là 0.249 \cite{23}. 
-
-Thứ hai, mô hình đề xuất đã tạo ra một sự bứt phá về ngưỡng hiệu suất. Ngay từ \textbf{Giai đoạn 1 (Phase 1)}, khi hệ thống chỉ sử dụng phép cộng vô hướng đơn giản để kết hợp điểm số, sức mạnh của lõi Cross-Encoder 128 token đã giúp chỉ số MRR nhảy vọt lên \textbf{0.4802} và NDCG@10 đạt \textbf{0.5461}, đồng thời kéo 75.7\% sản phẩm mục tiêu (HitRate@10 = 0.7570) lọt vào top 10 kết quả đầu tiên. Sự chênh lệch này khẳng định sức mạnh tuyệt đối của cơ chế đối sánh biểu diễn chéo (Cross-Attention) so với các kiến trúc mã hóa độc lập (Bi-Encoder) truyền thống.
-
-Cuối cùng, sự hiện diện của bộ trộn Mixing MLP ở \textbf{Giai đoạn 2 (Phase 2)} tiếp tục thiết lập một đỉnh cao mới. Bằng cách dự đoán trọng số nội suy động dựa trên ngữ cảnh truy vấn và mật độ hồ sơ, hệ thống đẩy mức MRR lên \textbf{0.4961}, NDCG@10 lên \textbf{0.5551} và HitRate@10 vươn tới mốc \textbf{0.7740} (tăng tương đối 1.7\% cho HitRate so với Phase 1). Sự gia tăng đồng bộ này xác nhận rằng việc điều tiết tín hiệu linh hoạt mang lại khả năng xếp hạng chính xác và tự nhiên hơn đáng kể so với việc cố định tỷ lệ cá nhân hóa.
-
-
-
-
-
-
-
-
-
-\subsection{Hiệu quả của chiến lược Reranking}
-\label{sec:reranking_analysis}
-
-Trong kiến trúc đề xuất, chúng tôi áp dụng cơ chế truy xuất hai giai đoạn, một tiêu chuẩn vàng trong thiết kế các hệ thống gợi ý quy mô lớn. Giai đoạn này giải quyết bài toán cân bằng Trade-off giữa:
-\begin{itemize}
-    \item \textbf{Ý định nhất thời:} Người dùng đang tìm kiếm từ khóa gì? (Đại diện bởi \textit{Query Embedding}).
-    \item \textbf{Sở thích dài hạn:} Người dùng thường thích thương hiệu nào, mệnh giá bao nhiêu? (Đại diện bởi \textit{User Embedding}).
-\end{itemize}
-
-Để tổng hợp hai nguồn thông tin này, hệ thống sử dụng hàm tổng hợp tuyến tính có trọng số:
-
-\begin{equation}
-    \text{Score}_{final}(u, i, q) = \alpha \cdot \text{Sim}(q, i) + \beta \cdot \text{Sim}(u, i)
-\end{equation}
-
-Trong đó:
-\begin{itemize}
-    \item $\text{Sim}(q, i)$: Điểm tương đồng giữa truy vấn (Text/Image) và sản phẩm (Retrieval Score).
-    \item $\text{Sim}(u, i)$: Điểm tương đồng giữa vector người dùng và sản phẩm (Personalization Score).
-    \item $\alpha, \beta$: Các siêu tham số kiểm soát mức độ ảnh hưởng, được thiết lập thực nghiệm là $\alpha=0.7, \beta=0.3$.
-\end{itemize}
-
-\subsubsection*{Vai trò then chốt của kích thước tập ứng viên ($k_{retrieval}$)}
-Một trong những phát hiện quan trọng nhất trong quá trình thực nghiệm là sự tác động của siêu tham số $k_{retrieval}$ (số lượng ứng viên được chọn ở giai đoạn 1 để đưa vào giai đoạn 2). Chúng tôi so sánh hai kịch bản: $k_{retrieval}=10$ và $k_{retrieval}=100$.
-
-Kết quả cho thấy việc thiết lập $k_{retrieval}=100$ mang lại hiệu năng vượt trội. Nguyên nhân nằm ở cơ chế \textbf{Hiệu ứng Phễu ngược} được phân tích dưới đây.
-
-\paragraph*{1. Vấn đề Tunnel Vision khi $k$ nhỏ:}
-Nếu ta chỉ lấy Top-10 sản phẩm có độ khớp văn bản cao nhất ($k_{retrieval}=10$):
-\begin{itemize}
-    \item Danh sách ứng viên lúc này bị chi phối hoàn toàn bởi sự trùng khớp từ khóa.
-    \item \textbf{Hệ quả:} Không gian hoạt động của User Embedding bị giới hạn cực hẹp. Dù người dùng có sở thích đặc biệt, ví dụ: thích thẻ màu đỏ, thích hãng Starbucks, nhưng nếu các sản phẩm này nằm ở vị trí thứ 11, 12 trong danh sách Retrieval, chúng sẽ bị loại bỏ ngay lập tức.
-    \item Lúc này, tham số $\beta$ trở nên vô nghĩa vì nó chỉ có thể đảo vị trí của 10 item đã được chọn sẵn, không thể đưa thêm các item phù hợp sở thích vào danh sách.
-\end{itemize}
-
-\paragraph*{2. Cơ chế Resurrection khi $k$ lớn:}
-Khi mở rộng không gian tìm kiếm lên Top-100 ($k_{retrieval}=100$):
-\begin{itemize}
-    \item Hệ thống chấp nhận đưa vào những sản phẩm có độ khớp từ khóa thấp hơn, nằm ở vị trí 50-100. Đây thường là những sản phẩm có mô tả văn bản không hoàn toàn trùng khớp với query nhưng lại có đặc tính ẩn phù hợp với người dùng.
-    \item \textbf{Ví dụ thực tế:}
-    \begin{itemize}
-        \item \textit{Query:} ``Happy Birthday Card''.
-        \item \textit{User Profile:} Thường xuyên mua thẻ game PlayStation, Xbox.
-        \item \textit{Giai đoạn 1 (Retrieval):} Các thẻ ``PlayStation'' có thể chỉ đứng hạng 80 vì tiêu đề của nó ít chứa chữ ``Happy Birthday'' so với các thẻ thiệp chúc mừng truyền thống.
-        \item \textit{Giai đoạn 2 (Reranking):} Nhờ trọng số cá nhân hóa $\beta$, điểm số của thẻ ``PlayStation'' đang ở hạng 80 được cộng thêm một lượng lớn điểm tương đồng User-Item. Kết quả là nó ``lội ngược dòng'' vươn lên Top-5 trong danh sách cuối cùng.
-    \end{itemize}
-\end{itemize}
-
-\subsubsection*{Phân tích độ nhạy của tham số trộn ($\alpha, \beta$)}
-Để tối ưu hóa hàm mục tiêu Hybrid, chúng tôi khảo sát sự biến thiên hiệu năng của hệ thống khi thay đổi trọng số giữa tính năng Tìm kiếm ($\alpha$) và Cá nhân hóa ($\beta$) trên tập ứng viên đã lọc.
-
-\begin{table}[H]
     \centering
-    \caption{Tác động của trọng số $\alpha$ và $\beta$ lên độ chính xác}
-    \label{tab:alpha_beta}
-    \vspace{0.2cm}
-    \begin{tabular}{c c c p{6.5cm}}
+    \caption{Hiệu suất Gợi ý Toàn cục của mô hình Đề xuất trên tập Gift Card (1.307 sản phẩm)}
+    \label{tab:gift_card}
+    \begin{tabular}{lccc}
         \toprule
-        $\alpha$ & $\beta$ & \textbf{Recall@10} & \textbf{Cơ chế xếp hạng} \\
+        \textbf{Metric} & \textbf{Top @10} & \textbf{Top @20}  \\
         \midrule
-        1.0 & 0.0 & 0.9715 & \textbf{Pure Search:} Xếp hạng hoàn toàn dựa trên độ khớp từ khóa/hình ảnh với truy vấn. \\
-        0.0 & 1.0 & 0.8950 & \textbf{Pure Personalization:} Xếp hạng chỉ dựa trên lịch sử mua sắm, bỏ qua mức độ liên quan của từ khóa. \\
-        \textbf{0.7} & \textbf{0.3} & \textbf{0.9923} & \textbf{Hybrid Optimal:} Kết hợp tối ưu điểm mạnh của cả hai. \\
+        Hit Rate & 49.74\% & 56.08\% \\
+        NDCG     & 30.77\% & 32.38\%  \\
+        MRR      & 24.81\% & 25.26\%  \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\textbf{Phân tích kết quả thực nghiệm:}
+\begin{table}[htbp]
+    \centering
+    \caption{So sánh hiệu suất Gợi ý Toàn cục trên tập dữ liệu All Beauty (10.216 sản phẩm)}
+    \label{tab:all_beauty}
+    \begin{tabular}{lcccccc}
+        \toprule
+        \multirow{2}{*}{\textbf{Metric}} & \multicolumn{2}{c}{\textbf{Top @10}} & \multicolumn{2}{c}{\textbf{Top @20}} & \multicolumn{2}{c}{\textbf{Top @50}} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+        & \textbf{SASRec} & \textbf{Đề xuất} & \textbf{SASRec} & \textbf{Đề xuất} & \textbf{SASRec} & \textbf{Đề xuất} \\
+        \midrule
+        Hit Rate & 10.26\% & 10.53\% & 13.85\% & 14.04\% & 17.95\% & 19.30\% \\
+        NDCG     & 5.84\%  & 5.72\%  & 6.73\%  & 6.63\%  & 7.59\%  & 7.71\% \\
+        MRR      & 4.51\%  & 4.27\%  & 4.75\%  & 4.53\%  & 4.91\%  & 4.72\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
-Từ Bảng \ref{tab:alpha_beta}, chúng ta rút ra các nhận định phù hợp với giả thuyết ban đầu:
+\vspace{0.3cm}
+\noindent \textbf{Phân tích và Biện luận Kết quả:}
 
-\begin{enumerate}
-    \item \textbf{Vai trò chủ đạo của Tìm kiếm:}
-    Kịch bản \textit{Pure Search} đạt Recall rất cao ($0.9715$) so với \textit{Pure Personalization} ($0.8950$). Điều này khẳng định rằng trong bài toán Gift Cards, ý định tìm kiếm hiện tại thể hiện qua Query là yếu tố quan trọng nhất. Nếu hệ thống lờ đi độ khớp từ khóa (cho $\alpha=0$), nó sẽ dễ dàng gợi ý sai các sản phẩm mà người dùng thích nhưng không đúng chủ đề cần mua, ví dụ: thích thẻ Game nhưng đang tìm thẻ Spa.
+Sự tương quan giữa mô hình đề xuất và baseline SASRec phản ánh rõ rệt đặc trưng và sự đánh đổi của các hệ thống gợi ý đa phương thức:
 
-    \item \textbf{Giá trị gia tăng của Cá nhân hóa:}
-    Tuy nhiên, Search đơn thuần chưa phải là tốt nhất. Khi kết hợp thêm 30\% yếu tố cá nhân hóa ($\beta=0.3$), Recall tăng vọt từ $0.9715$ lên mức kỷ lục $0.9923$.
-    \begin{itemize}
-        \item Khoảng tăng trưởng $\sim 2.1\%$ này giải quyết các trường hợp \textbf{Nhập nhằng}. Ví dụ: Khi User tìm ``Gift Card \$50'', có hàng trăm kết quả giống hệt nhau về từ khóa. Lúc này, User Embedding giúp đẩy đúng thương hiệu mà User hay mua lên Top đầu, giúp mô hình đạt độ chính xác gần như tuyệt đối.
-    \end{itemize}
+\begin{itemize}
+    \item \textbf{Năng lực thu hồi vượt trội trên không gian lớn:} Trên tập All Beauty (không gian tìm kiếm lớn, độ thưa thớt cao), mô hình Đề xuất đánh bại SASRec về khả năng thu hồi (Hit Rate) ở mọi mốc cắt. Đặc biệt ở mốc $K=50$, mô hình tìm ra được $19.30\%$ sản phẩm đúng so với mức $17.95\%$ của SASRec. Điều này khẳng định sự bổ trợ từ các vector đặc trưng hình ảnh và văn bản đã cung cấp mạng lưới ngữ nghĩa vững chắc, giúp hệ thống không bỏ sót các sản phẩm hiếm (Cold-start items).
     
-    \item \textbf{Kết luận:} Tỷ lệ phối hợp $\alpha=0.7$ và $\beta=0.3$ là điểm cân bằng lý tưởng, đảm bảo hệ thống vừa trả về kết quả đúng ý định tìm kiếm, vừa hợp gu người dùng.
-\end{enumerate}
+    \item \textbf{Hiệu quả ổn định trên các tập dữ liệu khác nhau:} Kết quả tại Bảng \ref{tab:gift_card} cho thấy trên tập dữ liệu có quy mô nhỏ hơn như Gift Card, mô hình đề xuất đạt được hiệu suất rất ấn tượng với Hit Rate @10 xấp xỉ 50\% và MRR đạt gần 25\%. Điều này cho thấy khả năng thích ứng tốt của kiến trúc User Tower đối với các hành vi mua sắm có mục đích rõ ràng.
+    
+    \item \textbf{Sự đánh đổi giữa Thu hồi và Xếp hạng:} Trong khi SASRec có phần nhỉnh hơn về NDCG/MRR tại các mốc Top thấp (do khả năng "học thuộc" các sản phẩm phổ biến), thì mô hình Đề xuất tập trung vào việc đưa được nhiều sản phẩm đúng lọt vào danh sách ứng viên hơn. Đây là đặc tính quan trọng của pha \textit{Candidate Generation} trong các hệ thống gợi ý công nghiệp, nơi mục tiêu ưu tiên là tối đa hóa tỷ lệ không bỏ sót sản phẩm mục tiêu.
+\end{itemize}
 
-\subsubsection*{Kết luận về chiến lược}
-Chiến lược Reranking với không gian ứng viên mở rộng ($k=100$) kết hợp cùng tỷ lệ trộn hợp lý ($\alpha=0.7$) đã chứng minh tính hiệu quả vượt trội. Nó biến hệ thống từ một công cụ tìm kiếm khô khan thành một trợ lý ảo thông minh, vừa biết lắng nghe yêu cầu hiện tại, vừa thấu hiểu gu thẩm mỹ quá khứ của người dùng.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \section{Kết quả thực nghiệm}
+
+% \subsection{Quá trình huấn luyện}
+% Do kiến trúc Two-Tower được huấn luyện theo quy trình hai giai đoạn, chúng tôi theo dõi và phân tích sự biến thiên của hàm mất mát riêng biệt cho từng mạng. Việc giám sát này không chỉ giúp phát hiện các hiện tượng bất thường như Overfitting hay Underfitting mà còn cung cấp cái nhìn sâu sắc về khả năng học đặc trưng của mô hình.
+
+% \subsubsection*{Giai đoạn 1: Huấn luyện Item Tower}
+% Trong giai đoạn này, mục tiêu là tối ưu hóa không gian biểu diễn chung giữa Văn bản và Hình ảnh. Mô hình được huấn luyện trong 70 Epochs với hàm mất mát Contrastive Loss.
+
+% % [PLACEHOLDER CHO ẢNH ITEM TOWER LOSS]
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.9\textwidth]{Images/item_tower_loss.png} 
+%     %\framebox[0.9\textwidth]{\rule{0pt}{7cm} [Hình ảnh: Biểu đồ Loss của Item Tower (70 Epochs)]}
+%     \caption{Diễn biến hàm mất mát trong quá trình huấn luyện Item Tower}
+%     \label{fig:item_loss}
+% \end{figure}
+
+% \textbf{Phân tích Hình \ref{fig:item_loss}:}
+% Quá trình huấn luyện mô hình ghi nhận sự hội tụ ổn định và tích cực thông qua biểu đồ biến thiên của hàm mất mát. Cụ thể, giá trị Loss giảm mượt mà từ mốc khởi điểm $\sim 21.4$ xuống còn $\sim 12.6$ sau 70 epochs mà không xuất hiện các dấu hiệu bất thường như dao động mạnh hay phân kỳ. Sự ổn định số học này minh chứng cho tính hợp lý của tốc độ học (Learning Rate = $2e^{-5}$) đã được thiết lập. Đáng chú ý, đường cong Loss của tập Validation luôn duy trì khoảng cách rất nhỏ và biến thiên đồng dạng với tập Train, khẳng định mô hình đã tránh được hiện tượng quá khớp. Thay vì ghi nhớ máy móc các mẫu dữ liệu, mạng nơ-ron đã thực sự nắm bắt được mối tương quan ngữ nghĩa trừu tượng giữa tiêu đề văn bản và hình ảnh minh họa. Kết quả này đóng vai trò then chốt, đảm bảo các vector đặc trưng sản phẩm Item Embeddings đầu ra sở hữu tính phân biệt cao, tạo tiền đề vững chắc cho độ chính xác của các thuật toán gợi ý ở giai đoạn tiếp theo.
+
+% \subsubsection*{Giai đoạn 2: Huấn luyện User Tower}
+% Sau khi cố định trọng số của Item Tower, chúng tôi tiến hành huấn luyện User Tower để mô hình hóa chuỗi hành vi người dùng. Quá trình này diễn ra trong 26 Epochs với cơ chế dừng sớm.
+
+% % [PLACEHOLDER CHO ẢNH USER TOWER LOSS]
+% \begin{figure}[H]
+%     \centering
+%      \includegraphics[width=0.9\textwidth]{Images/loss_chart.png}
+%     %\framebox[0.9\textwidth]{\rule{0pt}{7cm} [Hình ảnh: Biểu đồ Loss của User Tower (26 Epochs)]}
+%     \caption{Diễn biến hàm mất mát trong quá trình huấn luyện User Tower}
+%     \label{fig:user_loss}
+% \end{figure}
+
+% \textbf{Phân tích Hình \ref{fig:user_loss}:}
+% Khác biệt với diễn biến của Item Tower, quá trình huấn luyện User Tower ghi nhận tốc độ hội tụ nhanh chóng, đạt trạng thái ổn định chỉ sau khoảng 3 đến 5 Epochs đầu tiên với hàm Loss giảm từ mức khởi điểm $\sim 2.94$ xuống vùng $\sim 2.35$. Ngay sau giai đoạn này, mô hình bước vào vùng bão hòa kéo dài từ Epoch 10 đến Epoch 26, nơi mức cải thiện của Validation Loss trở nên không đáng kể (dao động $0.001 - 0.002$). Đây là đặc trưng điển hình của các bài toán dự đoán chuỗi trên tập dữ liệu thưa, phản ánh việc mô hình đã khai thác tối đa các mẫu hành vi tuần tự hiện hữu trong lịch sử tương tác giới hạn của người dùng. Để tối ưu hóa hiệu suất trong bối cảnh này, chiến lược \textit{Model Checkpointing} đã được áp dụng nhằm lưu lại phiên bản mô hình tốt nhất tại Epoch 26 với giá trị Loss đạt $2.3488$, phục vụ cho quá trình kiểm thử cuối cùng.
+
+% \subsubsection*{Tổng hợp đánh giá quá trình huấn luyện}
+% Sự chênh lệch rõ rệt trong động học huấn luyện giữa hai nhánh mạng không phải là yếu tố ngẫu nhiên, mà phản ánh chính xác độ phức tạp nội tại của từng loại dữ liệu đầu vào. Cụ thể, \textbf{Item Tower} đòi hỏi một chu trình huấn luyện kéo dài tới 70 Epochs do phải giải quyết bài toán khó khăn nhất: lấp đầy khoảng cách ngữ nghĩa từ dữ liệu thô. Mạng nơ-ron phải học cách trích xuất và tổng hợp các đặc trưng mức thấp từ điểm ảnh và câu chữ để tạo ra các biểu diễn trừu tượng, một quá trình tối ưu hóa trên không gian chiều cực lớn và đầy nhiễu.\\
+
+% Ở chiều ngược lại, sự hội tụ nhanh chóng của \textbf{User Tower} là kết quả trực tiếp của chiến lược huấn luyện phân tầng. Do đầu vào của tháp này là các vector đặc trưng đã được tinh chế từ giai đoạn trước, mô hình được giải phóng khỏi gánh nặng xử lý tín hiệu sơ cấp. Thay vào đó, nhiệm vụ của nó được khu trú vào việc nhận diện các quy luật sắp xếp và nắm bắt sự phụ thuộc chuỗi trong hành vi người dùng. Vì hoạt động trên không gian vector mật độ cao và ít chiều hơn, bề mặt tối ưu hóa của User Tower trở nên trơn tru hơn, dẫn đến tốc độ hội tụ vượt trội.
+% Việc tách rời hai giai đoạn này giúp chúng tôi kiểm soát tốt hơn quá trình tối ưu hóa và tiết kiệm tài nguyên tính toán đáng kể so với việc huấn luyện End-to-End toàn bộ hệ thống cùng lúc.
+
+% \subsection{Kết quả đánh giá chính}
+% Bảng \ref{tab:main_results} tóm tắt hiệu năng định lượng của mô hình Hybrid Pipeline trên tập kiểm thử tại hai ngưỡng cắt quan trọng là $K=10$ và $K=20$. Các chỉ số này phản ánh khả năng dự đoán chính xác hành vi tiêu dùng tiếp theo của hệ thống.
+
+% \begin{table}[H]
+%     \centering
+%     \caption{Kết quả đánh giá hiệu năng mô hình Hybrid trên tập Test}
+%     \label{tab:main_results}
+%     \vspace{0.2cm}
+%     \begin{tabular}{l c c}
+%         \toprule
+%         \textbf{Độ đo (Metric)} & \textbf{@Top-10} & \textbf{@Top-20} \\
+%         \midrule
+%         Recall (Hit Rate) & 0.9923 & 0.9943 \\
+%         MRR (Mean Reciprocal Rank) & 0.8616 & 0.8618 \\
+%         NDCG & 0.8941 & 0.8946 \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+
+% % [PLACEHOLDER CHO BIỂU ĐỒ]
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1.0\textwidth]{Images/metrics_bar_chart.png}
+%     %\framebox[1.0\textwidth]{\rule{0pt}{6cm} [Hình ảnh: Biểu đồ cột so sánh Recall, NDCG, MRR]}
+%     \caption{Biểu đồ trực quan hóa hiệu năng các độ đo tại Top-10 và Top-20}
+%     \label{fig:metrics_bar}
+% \end{figure}
+
+% \subsubsection*{Phân tích và Bình luận chi tiết}
+% Dựa trên số liệu từ Bảng \ref{tab:main_results} và Hình \ref{fig:metrics_bar}, chúng ta có thể rút ra những nhận xét quan trọng sau về hiệu quả của mô hình:
+
+% \paragraph*{1. Khả năng bao phủ tuyệt đối (Recall tiệm cận 1.0):}
+% Kết quả thực nghiệm ghi nhận chỉ số Recall@10 đạt mức ấn tượng \textbf{0.9923}, tương đương với việc hệ thống nắm bắt chính xác nhu cầu mua sắm của người dùng trong hơn 99\% các phiên kiểm thử. Điều này có nghĩa là sản phẩm đích thực hầu như luôn hiện diện trong danh sách 10 gợi ý đầu tiên, một hiệu suất hiếm thấy đối với các bài toán gợi ý trên tập dữ liệu thưa. Đáng chú ý, khi mở rộng phạm vi tìm kiếm lên 20 sản phẩm, mức tăng trưởng hiệu suất là không đáng kể, chênh lệch dưới $0.002$. Sự bão hòa sớm này cho thấy mô hình hoạt động cực kỳ dứt khoát: nó xác định đúng đối tượng ngay từ những bước đầu tiên mà không cần dựa vào danh sách gợi ý dài dòng. Từ góc độ ứng dụng, đặc điểm này có ý nghĩa to lớn trong việc tối ưu hóa giao diện người dùng trên thiết bị di động, nơi không gian hiển thị bị giới hạn và người dùng thường có xu hướng ít kiên nhẫn khi phải cuộn trang quá nhiều.
+
+% \paragraph*{2. Chất lượng xếp hạng vượt trội:}
+% Bên cạnh khả năng tìm kiếm chính xác, User Tower còn thể hiện năng lực sắp xếp thứ tự ưu tiên vượt trội, được phản ánh rõ nét qua chỉ số MRR@10 đạt \textbf{0.8616}. Trong ngữ cảnh của bài toán xếp hạng, nếu coi $MRR=1.0$ là trạng thái lý tưởng và $MRR=0.5$ tương ứng với vị trí thứ hai, thì con số $0.86$ cho phép suy luận rằng trong đại đa số các trường hợp, sản phẩm mục tiêu đang nằm cố định ở vị trí \textbf{Top-1 hoặc Top-2}. Nhận định này càng được củng cố bởi chỉ số NDCG@10 đạt \textbf{0.8941}, khẳng định hệ thống không chỉ đưa sản phẩm đúng vào danh sách mà còn đẩy nó lên những vị trí dễ nhìn thấy nhất. Việc tối đa hóa thứ hạng này giúp giảm thiểu ma sát trong trải nghiệm tìm kiếm, giúp người dùng ra quyết định nhanh chóng mà không tốn nhiều nỗ lực sàng lọc.
+
+% \paragraph*{3. Hiệu quả của kiến trúc Đa phương thức:}
+% Thành tựu đạt được các chỉ số cao kỷ lục này trên tập dữ liệu Amazon Gift Cards—vốn có độ thưa dữ liệu lên tới 99.8\%—là minh chứng thực nghiệm vững chắc cho giả thuyết nghiên cứu ban đầu. Cụ thể, khi dữ liệu tương tác hành vi trở nên quá khan hiếm để các thuật toán Lọc cộng tác truyền thống hoạt động hiệu quả, sự bổ sung thông tin từ các nhánh ngữ nghĩa BERT và thị giác ViT đã đóng vai trò cứu cánh quyết định. Mô hình Two-Tower đã thành công trong việc thiết lập mối liên kết ngầm ẩn giữa sở thích trừu tượng của người dùng và các đặc tính nội dung đa phương thức của sản phẩm. Thay vì chỉ đơn thuần đếm tần suất tương tác, hệ thống đã thực sự hiểu được nội dung sản phẩm để đưa ra gợi ý, chứng minh sức mạnh của hướng tiếp cận Content-based hiện đại trong việc giải quyết bài toán Cold-start và dữ liệu thưa.\\
+
+% Mô hình Two-Tower đã thành công trong việc học được mối liên kết ngầm ẩn giữa sở thích người dùng và đặc tính nội dung của sản phẩm, thay vì chỉ dựa vào việc đếm số lần tương tác như các phương pháp truyền thống.
+
+% \section{Phân tích vai trò từng thành phần}
+
+% \subsection{Ảnh hưởng của Đa phương thức}
+% Để định lượng chính xác đóng góp của từng nguồn dữ liệu, chúng tôi thực hiện thí nghiệm cô lập. Trong đó, các nhánh đầu vào của mạng Fusion Gate lần lượt bị vô hiệu hóa, buộc mô hình chỉ được sử dụng một nguồn thông tin duy nhất để truy vấn.
+
+% Kết quả thực nghiệm trên tập kiểm thử được trình bày trong Bảng \ref{tab:ablation_results}.
+
+% \begin{table}[H]
+%     \centering
+%     \caption{Hiệu năng mô hình theo từng phương thức đầu vào}
+%     \label{tab:ablation_results}
+%     \vspace{0.2cm}
+%     \begin{tabular}{l c c p{5cm}}
+%         \toprule
+%         \textbf{Phương thức} & \textbf{Recall@10} & \textbf{MRR@10} & \textbf{Đánh giá} \\
+%         \midrule
+%         Chỉ Text & 0.9937 & 0.8611 & Hiệu năng tốt, đóng vai trò nền tảng. \\
+%         \textbf{Chỉ Image} & \textbf{0.9998} & \textbf{0.9153} & \textbf{Xuất sắc nhất.} Định danh chính xác tuyệt đối. \\
+%         Fusion & 0.9995 & 0.9009 & Đạt sự cân bằng tối ưu giữa độ chính xác và độ tin cậy. \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+
+% \subsection{Phân tích đặc thù miền dữ liệu và Hiệu quả Fusion}
+
+% Các kết quả từ Bảng \ref{tab:ablation_results} cho thấy những đặc điểm thú vị của tập dữ liệu Gift Cards, đồng thời làm sáng tỏ sự đánh đổi trade-off trong cơ chế kết hợp đa phương thức.
+
+% \subsubsection*{1. Sự thống trị của kênh Thị giác}
+% Kết quả thực nghiệm đối với chế độ \textbf{Image-Only} ghi nhận những chỉ số hiệu suất gần như tuyệt đối, với Recall tiệm cận $100\%$ và MRR vượt ngưỡng $0.91$. Thành tựu này phản ánh sâu sắc đặc thù của miền dữ liệu Thẻ quà tặng \textit{Gift Cards}, nơi hình ảnh đóng vai trò định danh cực kỳ mạnh mẽ. Khác với các sản phẩm điện tử tiêu dùng - vốn thường chia sẻ ngôn ngữ thiết kế công nghiệp tương đồng và khó phân biệt - mỗi tấm thẻ quà tặng đều sở hữu thiết kế đồ họa mang tính biểu tượng cao gắn liền với các dịp lễ cụ thể như hình ảnh Bánh sinh nhật, Cây thông Noel hay Nôi em bé. Chính nhờ sự khác biệt rõ rệt này, mô hình Vision Transformer đã phát huy tối đa năng lực trích xuất đặc trưng thị giác, cho phép hệ thống định danh chính xác mục đích và ngữ cảnh sử dụng của thẻ ngay cả khi thiếu vắng hoàn toàn thông tin văn bản.
+
+% \subsubsection*{2. Hạn chế về ngữ nghĩa của dữ liệu Văn bản}
+% Mặc dù chế độ Text-Only duy trì được mức Recall ấn tượng $\approx 99.37\%$, khả năng xếp hạng chi tiết, phản ánh qua chỉ số MRR, lại thua kém đáng kể so với phương thức xử lý hình ảnh. Nguyên nhân cốt lõi nằm ở hiện tượng \textit{trùng lặp ngữ nghĩa} trong dữ liệu văn bản. Cụ thể, tiêu đề sản phẩm thường chứa các cụm từ định danh chung chung lặp lại với tần suất cao như ``Amazon.com Gift Card'' hay ``Gift Card in a Box''. Sự thiếu hụt các từ khóa mang tính phân biệt khiến Text Encoder gặp trở ngại lớn trong việc phân định thứ tự ưu tiên giữa các sản phẩm cùng phân loại nhưng khác biến thể mẫu mã, dẫn đến sự sụt giảm tất yếu trong chất lượng xếp hạng.
+
+% \subsubsection*{3. Luận giải sự cần thiết của kiến trúc Fusion}
+% Một quan sát thực nghiệm đáng chú ý là hiệu năng của mô hình Fusion $0.9995$ thấp hơn một lượng rất nhỏ so với chế độ Image-Only $0.9998$. Tuy nhiên, độ lệch $0.0003$ này là \textbf{không đáng kể về mặt thống kê}, và việc duy trì kiến trúc Fusion vẫn được xác định là yêu cầu bắt buộc dựa trên hai luận điểm kỹ thuật then chốt:\\
+
+% Thứ nhất là bài toán \textbf{giải quyết xung đột tín hiệu}. Trong một số trường hợp biên, tín hiệu từ văn bản vốn có độ phân biệt thấp có thể gây nhiễu hoặc mâu thuẫn nhẹ với tín hiệu hình ảnh, làm giảm độ tự tin của mô hình khi ra quyết định xếp hạng, kéo MRR giảm nhẹ từ $0.91$ xuống $0.90$. Đây được xem là sự đánh đổi chấp nhận được để đổi lấy tính tổng quát hóa của mô hình.\\
+
+% Thứ hai, và quan trọng hơn, là yếu tố \textbf{Tính chịu lỗi} trong môi trường vận hành thực tế. Dữ liệu hình ảnh thường đối mặt với các rủi ro kỹ thuật cao như lỗi đường truyền, ảnh không tải được hoặc chất lượng suy giảm. Trong kịch bản đó, một hệ thống phụ thuộc đơn lẻ vào Image-Only sẽ đối mặt với nguy cơ ngưng trệ hoàn toàn. Ngược lại, kiến trúc Fusion với cơ chế cổng kiểm soát sẽ tự động điều hướng trọng số sang nhánh văn bản, vốn vẫn đảm bảo Recall $>99\%$. Nhờ đó, nhánh văn bản đóng vai trò như một \textbf{``Lưới an toàn''}, đảm bảo hệ thống luôn duy trì hoạt động ổn định và bền vững bất chấp các sự cố dữ liệu đầu vào.\\
+
+% \textbf{Kết luận:} Mặc dù Image là đặc trưng mạnh nhất, kiến trúc Fusion là giải pháp tối ưu về mặt kỹ thuật hệ thống, đảm bảo độ chính xác tiệm cận mức tuyệt đối đồng thời duy trì tính bền vững trước các nhiễu động dữ liệu thực tế.
+
+% \subsection{Hiệu quả của chiến lược Reranking}
+% \label{sec:reranking_analysis}
+
+% Trong kiến trúc đề xuất, chúng tôi áp dụng cơ chế truy xuất hai giai đoạn, một tiêu chuẩn vàng trong thiết kế các hệ thống gợi ý quy mô lớn. Giai đoạn này giải quyết bài toán cân bằng Trade-off giữa:
+% \begin{itemize}
+%     \item \textbf{Ý định nhất thời:} Người dùng đang tìm kiếm từ khóa gì? (Đại diện bởi \textit{Query Embedding}).
+%     \item \textbf{Sở thích dài hạn:} Người dùng thường thích thương hiệu nào, mệnh giá bao nhiêu? (Đại diện bởi \textit{User Embedding}).
+% \end{itemize}
+
+% Để tổng hợp hai nguồn thông tin này, hệ thống sử dụng hàm tổng hợp tuyến tính có trọng số:
+
+% \begin{equation}
+%     \text{Score}_{final}(u, i, q) = \alpha \cdot \text{Sim}(q, i) + \beta \cdot \text{Sim}(u, i)
+% \end{equation}
+
+% Trong đó:
+% \begin{itemize}
+%     \item $\text{Sim}(q, i)$: Điểm tương đồng giữa truy vấn (Text/Image) và sản phẩm (Retrieval Score).
+%     \item $\text{Sim}(u, i)$: Điểm tương đồng giữa vector người dùng và sản phẩm (Personalization Score).
+%     \item $\alpha, \beta$: Các siêu tham số kiểm soát mức độ ảnh hưởng, được thiết lập thực nghiệm là $\alpha=0.7, \beta=0.3$.
+% \end{itemize}
+
+% \subsubsection*{Vai trò then chốt của kích thước tập ứng viên ($k_{retrieval}$)}
+% Một trong những phát hiện quan trọng nhất trong quá trình thực nghiệm là sự tác động của siêu tham số $k_{retrieval}$ (số lượng ứng viên được chọn ở giai đoạn 1 để đưa vào giai đoạn 2). Chúng tôi so sánh hai kịch bản: $k_{retrieval}=10$ và $k_{retrieval}=100$.
+
+% Kết quả cho thấy việc thiết lập $k_{retrieval}=100$ mang lại hiệu năng vượt trội. Nguyên nhân nằm ở cơ chế \textbf{Hiệu ứng Phễu ngược} được phân tích dưới đây.
+
+% \paragraph*{1. Vấn đề Tunnel Vision khi $k$ nhỏ:}
+% Nếu ta chỉ lấy Top-10 sản phẩm có độ khớp văn bản cao nhất ($k_{retrieval}=10$):
+% \begin{itemize}
+%     \item Danh sách ứng viên lúc này bị chi phối hoàn toàn bởi sự trùng khớp từ khóa.
+%     \item \textbf{Hệ quả:} Không gian hoạt động của User Embedding bị giới hạn cực hẹp. Dù người dùng có sở thích đặc biệt, ví dụ: thích thẻ màu đỏ, thích hãng Starbucks, nhưng nếu các sản phẩm này nằm ở vị trí thứ 11, 12 trong danh sách Retrieval, chúng sẽ bị loại bỏ ngay lập tức.
+%     \item Lúc này, tham số $\beta$ trở nên vô nghĩa vì nó chỉ có thể đảo vị trí của 10 item đã được chọn sẵn, không thể đưa thêm các item phù hợp sở thích vào danh sách.
+% \end{itemize}
+
+% \paragraph*{2. Cơ chế Resurrection khi $k$ lớn:}
+% Khi mở rộng không gian tìm kiếm lên Top-100 ($k_{retrieval}=100$):
+% \begin{itemize}
+%     \item Hệ thống chấp nhận đưa vào những sản phẩm có độ khớp từ khóa thấp hơn, nằm ở vị trí 50-100. Đây thường là những sản phẩm có mô tả văn bản không hoàn toàn trùng khớp với query nhưng lại có đặc tính ẩn phù hợp với người dùng.
+%     \item \textbf{Ví dụ thực tế:}
+%     \begin{itemize}
+%         \item \textit{Query:} ``Happy Birthday Card''.
+%         \item \textit{User Profile:} Thường xuyên mua thẻ game PlayStation, Xbox.
+%         \item \textit{Giai đoạn 1 (Retrieval):} Các thẻ ``PlayStation'' có thể chỉ đứng hạng 80 vì tiêu đề của nó ít chứa chữ ``Happy Birthday'' so với các thẻ thiệp chúc mừng truyền thống.
+%         \item \textit{Giai đoạn 2 (Reranking):} Nhờ trọng số cá nhân hóa $\beta$, điểm số của thẻ ``PlayStation'' đang ở hạng 80 được cộng thêm một lượng lớn điểm tương đồng User-Item. Kết quả là nó ``lội ngược dòng'' vươn lên Top-5 trong danh sách cuối cùng.
+%     \end{itemize}
+% \end{itemize}
+
+% \subsubsection*{Phân tích độ nhạy của tham số trộn ($\alpha, \beta$)}
+% Để tối ưu hóa hàm mục tiêu Hybrid, chúng tôi khảo sát sự biến thiên hiệu năng của hệ thống khi thay đổi trọng số giữa tính năng Tìm kiếm ($\alpha$) và Cá nhân hóa ($\beta$) trên tập ứng viên đã lọc.
+
+% \begin{table}[H]
+%     \centering
+%     \caption{Tác động của trọng số $\alpha$ và $\beta$ lên độ chính xác}
+%     \label{tab:alpha_beta}
+%     \vspace{0.2cm}
+%     \begin{tabular}{c c c p{6.5cm}}
+%         \toprule
+%         $\alpha$ & $\beta$ & \textbf{Recall@10} & \textbf{Cơ chế xếp hạng} \\
+%         \midrule
+%         1.0 & 0.0 & 0.9715 & \textbf{Pure Search:} Xếp hạng hoàn toàn dựa trên độ khớp từ khóa/hình ảnh với truy vấn. \\
+%         0.0 & 1.0 & 0.8950 & \textbf{Pure Personalization:} Xếp hạng chỉ dựa trên lịch sử mua sắm, bỏ qua mức độ liên quan của từ khóa. \\
+%         \textbf{0.7} & \textbf{0.3} & \textbf{0.9923} & \textbf{Hybrid Optimal:} Kết hợp tối ưu điểm mạnh của cả hai. \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+
+% \textbf{Phân tích kết quả thực nghiệm:}
+
+% Từ Bảng \ref{tab:alpha_beta}, chúng ta rút ra các nhận định phù hợp với giả thuyết ban đầu:
+
+% \begin{enumerate}
+%     \item \textbf{Vai trò chủ đạo của Tìm kiếm:}
+%     Kịch bản \textit{Pure Search} đạt Recall rất cao ($0.9715$) so với \textit{Pure Personalization} ($0.8950$). Điều này khẳng định rằng trong bài toán Gift Cards, ý định tìm kiếm hiện tại thể hiện qua Query là yếu tố quan trọng nhất. Nếu hệ thống lờ đi độ khớp từ khóa (cho $\alpha=0$), nó sẽ dễ dàng gợi ý sai các sản phẩm mà người dùng thích nhưng không đúng chủ đề cần mua, ví dụ: thích thẻ Game nhưng đang tìm thẻ Spa.
+
+%     \item \textbf{Giá trị gia tăng của Cá nhân hóa:}
+%     Tuy nhiên, Search đơn thuần chưa phải là tốt nhất. Khi kết hợp thêm 30\% yếu tố cá nhân hóa ($\beta=0.3$), Recall tăng vọt từ $0.9715$ lên mức kỷ lục $0.9923$.
+%     \begin{itemize}
+%         \item Khoảng tăng trưởng $\sim 2.1\%$ này giải quyết các trường hợp \textbf{Nhập nhằng}. Ví dụ: Khi User tìm ``Gift Card \$50'', có hàng trăm kết quả giống hệt nhau về từ khóa. Lúc này, User Embedding giúp đẩy đúng thương hiệu mà User hay mua lên Top đầu, giúp mô hình đạt độ chính xác gần như tuyệt đối.
+%     \end{itemize}
+    
+%     \item \textbf{Kết luận:} Tỷ lệ phối hợp $\alpha=0.7$ và $\beta=0.3$ là điểm cân bằng lý tưởng, đảm bảo hệ thống vừa trả về kết quả đúng ý định tìm kiếm, vừa hợp gu người dùng.
+% \end{enumerate}
+
+% \subsubsection*{Kết luận về chiến lược}
+% Chiến lược Reranking với không gian ứng viên mở rộng ($k=100$) kết hợp cùng tỷ lệ trộn hợp lý ($\alpha=0.7$) đã chứng minh tính hiệu quả vượt trội. Nó biến hệ thống từ một công cụ tìm kiếm khô khan thành một trợ lý ảo thông minh, vừa biết lắng nghe yêu cầu hiện tại, vừa thấu hiểu gu thẩm mỹ quá khứ của người dùng.
 
 \section{Triển khai và Thử nghiệm trên Hệ thống thực tế}
 \label{sec:deployment}

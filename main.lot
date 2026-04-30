@@ -5,25 +5,19 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Minh họa cơ chế lấy mẫu kết hợp với kích thước lô $N=3$}}{44}{table.caption.25}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Minh họa cơ chế lấy mẫu kết hợp với kích thước lô $N=3$}}{42}{table.caption.25}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu User Reviews}}{56}{table.caption.33}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu Item Metadata}}{56}{table.caption.35}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Thống kê tỷ lệ dữ liệu khuyết trên Item Metadata}}{57}{table.caption.38}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Thống kê tập dữ liệu Amazon Gift Cards sau khi tiền xử lý}}{60}{table.caption.44}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Cấu hình siêu tham số cho Item Tower}}{64}{table.caption.52}%
-\contentsline {table}{\numberline {4.6}{\ignorespaces Cấu hình siêu tham số cho User Tower}}{64}{table.caption.54}%
-\contentsline {table}{\numberline {4.7}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Text Encoder}}{65}{table.caption.56}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu User Reviews}}{54}{table.caption.33}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Mô tả chi tiết các trường thông tin trong tập dữ liệu Item Metadata}}{55}{table.caption.35}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Thống kê tỷ lệ dữ liệu khuyết trên Item Metadata}}{56}{table.caption.38}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Thống kê tập dữ liệu Amazon Gift Cards sau khi tiền xử lý}}{59}{table.caption.44}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Cấu hình siêu tham số cho Item Tower}}{63}{table.caption.52}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Cấu hình siêu tham số cho User Tower}}{63}{table.caption.54}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Text Encoder}}{64}{table.caption.56}%
 \contentsline {table}{\numberline {4.8}{\ignorespaces Đặc tả luồng dữ liệu và kích thước trong Image Encoder}}{65}{table.caption.58}%
 \contentsline {table}{\numberline {4.9}{\ignorespaces Đặc tả luồng dữ liệu trong Tabular Encoder}}{65}{table.caption.60}%
 \contentsline {table}{\numberline {4.10}{\ignorespaces Đặc tả các luồng dữ liệu đầu vào cho User Tower}}{67}{table.caption.63}%
-\contentsline {table}{\numberline {4.11}{\ignorespaces Kết quả đánh giá hiệu năng mô hình Hybrid trên tập Test}}{72}{table.caption.80}%
-\contentsline {table}{\numberline {4.12}{\ignorespaces Hiệu năng mô hình theo từng phương thức đầu vào}}{74}{table.caption.86}%
-\contentsline {table}{\numberline {4.13}{\ignorespaces So sánh hiệu suất giữa các mô hình trên tập Cell Phones \& Accessories}}{77}{table.caption.94}%
-\contentsline {table}{\numberline {4.14}{\ignorespaces Tác động của trọng số $\alpha $ và $\beta $ lên độ chính xác}}{79}{table.caption.99}%
+\contentsline {table}{\numberline {4.11}{\ignorespaces Kết quả đánh giá độ tương quan chéo (Text $\rightarrow $ Image) trên hai tập dữ liệu}}{71}{table.caption.75}%
+\contentsline {table}{\numberline {4.12}{\ignorespaces Hiệu suất Gợi ý Toàn cục của mô hình Đề xuất trên tập Gift Card (1.307 sản phẩm)}}{72}{table.caption.76}%
+\contentsline {table}{\numberline {4.13}{\ignorespaces So sánh hiệu suất Gợi ý Toàn cục trên tập dữ liệu All Beauty (10.216 sản phẩm)}}{72}{table.caption.77}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {5.1}{\ignorespaces Ví dụ mẫu dữ liệu Triplet trong MS MARCO với Hard Negative}}{93}{table.caption.109}%
-\contentsline {table}{\numberline {5.2}{\ignorespaces Ví dụ minh họa và chiến lược gán nhãn nhị phân cho ESCI}}{96}{table.caption.111}%
-\contentsline {table}{\numberline {5.3}{\ignorespaces Ví dụ minh họa và chiến lược gán nhãn nhị phân cho ESCI}}{96}{table.caption.111}%
-\contentsline {table}{\numberline {5.4}{\ignorespaces Ví dụ minh họa quy trình sinh dữ liệu tổng hợp từ Review}}{97}{table.caption.112}%
-\contentsline {table}{\numberline {5.5}{\ignorespaces Kế hoạch thực hiện đề tài (15 Tuần)}}{100}{table.caption.113}%
