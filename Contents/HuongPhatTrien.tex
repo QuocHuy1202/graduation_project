@@ -1,8 +1,6 @@
-\chapter{Hướng phát triển}
+\chapter{Tổng kết và Hướng phát triển}
 
-\section{Tổng kết và Hướng phát triển}
-
-\subsection{Kết luận và Kết quả đạt được}
+\section{Kết luận và Kết quả đạt được}
 
 Đề tài đã hoàn thành các mục tiêu cốt lõi được đề ra, tập trung vào việc nghiên cứu và triển khai thành công hệ thống gợi ý đa phương thức tuần tự. Các kết quả nổi bật mà đồ án đã đạt được bao gồm:
 
@@ -12,7 +10,7 @@
     \item \textbf{Về mặt kỹ thuật:} Mã nguồn được xây dựng ổn định bằng thư viện \textit{PyTorch}, kết hợp trơn tru với các nền tảng lưu trữ cơ sở dữ liệu vector. Toàn bộ luồng xử lý từ làm sạch dữ liệu, xây dựng tháp người dùng và tháp sản phẩm cho đến suy luận cuối cùng đều được chuẩn hóa thành một đường ống thống nhất.
 \end{itemize}
 
-\subsection{Hạn chế của đề tài}
+\section{Hạn chế của đề tài}
 
 Mặc dù đã đạt được những kết quả khả quan, kiến trúc hiện tại và quá trình triển khai thực nghiệm của đồ án vẫn còn tồn tại một số giới hạn nhất định:
 
@@ -23,7 +21,7 @@ Mặc dù đã đạt được những kết quả khả quan, kiến trúc hi�
     \item \textbf{Giới hạn trong phương pháp đánh giá:} Các thử nghiệm và số liệu đo lường hiện tại hoàn toàn được thực hiện trên dữ liệu lịch sử ngoại tuyến. Đề tài chưa có điều kiện triển khai hệ thống vào một ứng dụng thực tiễn để tiến hành đối chứng song song nhằm đo lường các chỉ số tương tác và tỷ lệ chuyển đổi sinh lời thật sự từ người dùng.
 \end{itemize}
 
-\subsection{Hướng phát triển hệ thống}
+\section{Hướng phát triển hệ thống}
 
 Trong môi trường công nghiệp, việc đánh giá hệ thống gợi ý không chỉ dừng lại ở các chỉ số bề mặt như Hit Rate mà phải hướng tới tối ưu hóa toàn bộ phễu chuyển đổi dựa trên mức độ tương tác thực tế của người dùng. Một mô hình mới bắt buộc phải trải qua thử nghiệm A/B trực tiếp, nơi nhóm thử nghiệm sử dụng mô hình mới sẽ được so sánh song song với nhóm đối chứng dùng hệ thống cũ. Việc triển khai hệ thống mới ra diện rộng chỉ được thực hiện khi nó chứng minh được sự tăng trưởng vững chắc của các chỉ số tương tác cốt lõi Engagement Metric, điển hình như mức tăng 0.37\% mà thuật toán hiệu chỉnh của YouTube đã đạt được trong thực tế~\cite{9}. Về bản chất, Engagement Metric là các thước đo định lượng mức độ gắn kết và giá trị mà người dùng tạo ra sau cú nhấp chuột ban đầu, ví dụ như thời gian xem hết một video hay tỷ lệ tương tác sâu. Riêng đối với một sàn thương mại điện tử như Shopee, Engagement Metric sẽ tập trung vào hành vi mua sắm sinh ra lợi nhuận, tiêu biểu là tỷ lệ chuyển đổi đơn hàng Conversion Rate, tổng giá trị hàng hóa GMV, tỷ lệ bấm thêm vào giỏ hàng Add to Cart Rate, thời gian khách hàng nán lại đọc bình luận trên trang chi tiết sản phẩm Dwell Time, và tỷ lệ mua thành công mà không yêu cầu hoàn trả.
 
@@ -35,7 +33,7 @@ Kiến trúc hiện tại sử dụng Two-Tower cho pha truy xuất và Cross-En
 
 Về mặt hạ tầng, hệ thống cần được nâng cấp theo hướng phân tán để phục vụ quy mô lớn. Việc sử dụng cache như Redis giúp tăng tốc truy xuất dữ liệu, trong khi message queue hỗ trợ xử lý bất đồng bộ các yêu cầu. Ngoài ra, một lớp lọc thô dựa trên inverted index có thể được đặt trước bước tìm kiếm vector nhằm giảm không gian tìm kiếm và tối ưu hiệu năng, đảm bảo độ trễ thấp trong môi trường thực tế~\cite{46}.
 
-\subsection{Thu hoạch của sinh viên}
+\section{Thu hoạch của sinh viên}
 
 Quá trình thực hiện đồ án tốt nghiệp là một hành trình chuyển giao từ việc tiếp thu lý thuyết trên giảng đường sang việc giải quyết một bài toán kỹ thuật thực tế mang tính toàn diện. Thông qua việc nghiên cứu và phát triển hệ thống gợi ý đa phương thức, sinh viên đã gặt hái được những kinh nghiệm chuyên môn và kỹ năng thực hành vô giá, tạo tiền đề vững chắc cho con đường sự nghiệp trong lĩnh vực trí tuệ nhân tạo sau này.
 
@@ -43,7 +41,7 @@ Về mặt kỹ thuật chuyên môn, sinh viên đã từng bước vượt qua
 
 Về phương pháp nghiên cứu khoa học, đồ án đã rèn luyện thói quen tiếp cận tri thức trực tiếp từ các nguồn tài liệu gốc. Thay vì phụ thuộc vào các tài liệu hướng dẫn sẵn có, sinh viên đã hình thành kỹ năng phân tích, phản biện và tái hiện lại kiến trúc thuật toán từ các bài báo khoa học thuộc các hội nghị đầu ngành. Đồng thời, sự chuyển dịch tư duy từ việc chỉ quan tâm đến các độ đo đánh giá thuần túy sang việc nhìn nhận hệ thống dưới góc độ trải nghiệm người dùng cuối là một bước trưởng thành lớn trong nhận thức phát triển sản phẩm.
 
-Cuối cùng, việc liên tục đối mặt với những thách thức trong quá trình huấn luyện, từ những lần thuật toán suy giảm hiệu suất đến các lỗi tràn bộ nhớ, đã mài giũa kỹ năng gỡ lỗi (\textit{debugging}) hệ thống sâu, tính kiên định và khả năng quản lý thời gian độc lập. Những trải nghiệm này không chỉ củng cố nền tảng học thuật mà còn rèn luyện bản lĩnh thực chiến, giúp sinh viên Đại học Bách khoa tự tin đáp ứng những tiêu chuẩn khắt khe của môi trường công nghiệp thực tế.
+Cuối cùng, việc liên tục đối mặt với những thách thức trong quá trình huấn luyện, từ những lần thuật toán suy giảm hiệu suất đến các lỗi tràn bộ nhớ, đã mài giũa kỹ năng debugging hệ thống sâu, tính kiên định và khả năng quản lý thời gian độc lập. Những trải nghiệm này không chỉ củng cố nền tảng học thuật mà còn rèn luyện bản lĩnh thực chiến, giúp sinh viên Đại học Bách khoa tự tin đáp ứng những tiêu chuẩn khắt khe của môi trường công nghiệp thực tế.
 
 
 

@@ -79,15 +79,14 @@
 \contentsline {subsection}{\numberline {4.4.1}Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức}{63}{subsection.4.4.1}%
 \contentsline {subsection}{\numberline {4.4.2}Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}{64}{subsection.4.4.2}%
 \contentsline {section}{\numberline {4.5}Đánh giá Cross-Encoder}{66}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Thiết lập Thực nghiệm (Experimental setup)}{66}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.1}Thiết lập Thực nghiệm}{66}{subsection.4.5.1}%
 \contentsline {subsection}{\numberline {4.5.2}Kết quả Thực nghiệm}{67}{subsection.4.5.2}%
-\contentsline {subsection}{\numberline {4.5.3}Triển khai Hệ thống và Demo thực tế}{68}{subsection.4.5.3}%
-\contentsline {subsubsection}{\numberline {4.5.3.1}Giao diện người dùng (User Interface)}{68}{subsubsection.4.5.3.1}%
-\contentsline {subsubsection}{\numberline {4.5.3.2}Video Demo hệ thống (Mã QR)}{71}{subsubsection.4.5.3.2}%
-\contentsline {subsubsection}{\numberline {4.5.3.3}Phân tích một ca sử dụng thực tế}{71}{subsubsection.4.5.3.3}%
-\contentsline {chapter}{\numberline {5}Hướng phát triển}{73}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Tổng kết và Hướng phát triển}{73}{section.5.1}%
-\contentsline {subsection}{\numberline {5.1.1}Kết luận và Kết quả đạt được}{73}{subsection.5.1.1}%
-\contentsline {subsection}{\numberline {5.1.2}Hạn chế của đề tài}{73}{subsection.5.1.2}%
-\contentsline {subsection}{\numberline {5.1.3}Hướng phát triển hệ thống}{74}{subsection.5.1.3}%
-\contentsline {subsection}{\numberline {5.1.4}Thu hoạch của sinh viên}{75}{subsection.5.1.4}%
+\contentsline {section}{\numberline {4.6}Triển khai Hệ thống và Demo thực tế}{68}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Giao diện người dùng}{68}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Video Demo hệ thống}{71}{subsection.4.6.2}%
+\contentsline {subsubsection}{\numberline {4.6.2.1}Phân tích một ca sử dụng thực tế}{71}{subsubsection.4.6.2.1}%
+\contentsline {chapter}{\numberline {5}Tổng kết và Hướng phát triển}{73}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Kết luận và Kết quả đạt được}{73}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Hạn chế của đề tài}{73}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Hướng phát triển hệ thống}{74}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Thu hoạch của sinh viên}{75}{section.5.4}%

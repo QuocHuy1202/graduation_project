@@ -377,7 +377,7 @@ Kết quả thực nghiệm này là tiền đề hoàn hảo để lý giải c
 
 Mô hình đề xuất dựa trên kiến trúc Bi-Encoder Đa phương thức được kiểm chứng và đối sánh trực tiếp với cấu hình cơ sở SASRec, một mô hình chỉ sử dụng học nhúng mã định danh truyền thống. Thực nghiệm được tiến hành trên ba kịch bản dữ liệu có độ khó tăng dần bao gồm tập Gift Card siêu thưa thớt, tập All Beauty 3-core với không gian ứng viên lớn và tập All Beauty 5-core tập trung vào bài toán khởi động lạnh toàn phần. Lưu ý rằng thông báo giới hạn không gian ứng viên xuất hiện trong nhật ký hệ thống chỉ là chuỗi định dạng tĩnh từ cấu hình cũ, thực tế kịch bản kiểm thử đã được chạy trên toàn bộ không gian của từng tập dữ liệu, minh chứng qua việc có thể đo lường tại mốc giới hạn lên đến 5000.
 
-\begin{table}[!ht]
+\begin{table}[H]
 \centering
 
 % --- BẢNG 1 ---
@@ -440,9 +440,9 @@ Sự tương quan giữa mô hình đề xuất và cấu hình cơ sở SASRec 
 
 \section{Đánh giá Cross-Encoder}
 
-\subsection{Thiết lập Thực nghiệm (Experimental setup)}
+\subsection{Thiết lập Thực nghiệm}
 
-\subsubsection*{Tập dữ liệu (Datasets)}
+\subsubsection*{Tập dữ liệu}
 Nghiên cứu sử dụng tập dữ liệu công khai Amazon Product Dataset (phiên bản 5-core), tập trung kiểm thử trên phân khúc Cell Phones \& Accessories \cite{23}. Để xây dựng câu truy vấn mô phỏng hành vi tìm kiếm thực tế, hệ thống trích xuất tên các danh mục (categories) của sản phẩm, sau đó tiến hành loại bỏ các từ dừng (stop words), từ trùng lặp và dấu câu để tạo thành câu truy vấn cốt lõi \cite{23}. Nếu một sản phẩm thuộc nhiều danh mục khác nhau, một câu truy vấn sẽ được chọn ngẫu nhiên để đại diện. 
 
 Để kiến tạo môi trường huấn luyện và kiểm thử đảm bảo tính logic về mặt thời gian của dữ liệu chuỗi hành vi, hệ thống áp dụng chiến lược phân chia dữ liệu tương tự các mô hình cơ sở. Cụ thể, đối với một chuỗi hành vi mua sắm gồm tổng cộng $n$ tương tác của một người dùng, các tương tác từ vị trí 1 đến $n-2$ được sử dụng để xây dựng tập huấn luyện (Train), tương tác ở vị trí thứ $n-1$ được dành riêng cho tập xác thực (Validation) nhằm tinh chỉnh siêu tham số, và tương tác cuối cùng ở vị trí thứ $n$ được sử dụng làm tập kiểm thử cuối cùng để đánh giá hiệu suất.
@@ -502,10 +502,10 @@ Thứ hai, mô hình đề xuất đã tạo ra một sự bứt phá về ngư�
 
 Cuối cùng, sự hiện diện của bộ trộn Mixing MLP ở \textbf{Giai đoạn 2 (Phase 2)} tiếp tục thiết lập một đỉnh cao mới. Bằng cách dự đoán trọng số nội suy động dựa trên ngữ cảnh truy vấn và mật độ hồ sơ, hệ thống đẩy mức MRR lên \textbf{0.4961}, NDCG@10 lên \textbf{0.5551} và HitRate@10 vươn tới mốc \textbf{0.7740} (tăng tương đối 1.7\% cho HitRate so với Phase 1). Sự gia tăng đồng bộ này xác nhận rằng việc điều tiết tín hiệu linh hoạt mang lại khả năng xếp hạng chính xác và tự nhiên hơn đáng kể so với việc cố định tỷ lệ cá nhân hóa.
 
-\subsection{Triển khai Hệ thống và Demo thực tế}
+\section{Triển khai Hệ thống và Demo thực tế}
 Để minh chứng cho tính khả thi và đánh giá trực quan hiệu quả của các mô hình học máy đã nghiên cứu, đồ án đã tiến hành xây dựng và triển khai một ứng dụng web hoàn chỉnh với luồng tương tác rõ ràng.
 
-\subsubsection{Giao diện người dùng (User Interface)}
+\subsection{Giao diện người dùng}
 Giao diện (Frontend) được thiết kế theo xu hướng tối giản và chia thành 4 phân hệ trang chính, phản ánh chuẩn xác luồng nghiệp vụ của một nền tảng thương mại điện tử cá nhân hóa:
 
 \begin{itemize}
@@ -551,7 +551,7 @@ Giao diện (Frontend) được thiết kế theo xu hướng tối giản và c
 \textbf{Lưu ý về phạm vi triển khai:} 
 Cần nhấn mạnh rằng, phiên bản Frontend hiện tại được xây dựng dưới định dạng nguyên mẫu. Mục tiêu thiết kế tối thượng của giao diện này là trực quan hóa luồng đi của dữ liệu và kiểm chứng tính khả thi của các thuật toán học máy trong môi trường thực tế. Do đó, hệ thống cố tình lược bỏ các module thương mại điện tử rườm rà (như giỏ hàng, cổng thanh toán) để tập trung hoàn toàn vào luồng cá nhân hóa. Trong tương lai, Frontend này cung cấp một nền tảng mở, sẵn sàng tích hợp các phân hệ quản lý bán hàng toàn diện và tối ưu hóa trải nghiệm đa nền tảng.
 
-\subsubsection{Video Demo hệ thống (Mã QR)}
+\subsection{Video Demo hệ thống}
 Do giới hạn của văn bản in ấn không thể truyền tải hết các hiệu ứng tương tác thời gian thực, toàn bộ quá trình trải nghiệm hệ thống đã được ghi hình. Quý Thầy/Cô có thể sử dụng thiết bị di động quét mã QR dưới đây để xem video trình diễn các tính năng cốt lõi.
 
 \begin{figure}[H]
