@@ -118,13 +118,13 @@ Tập dữ liệu cung cấp thông tin đa phương thức để xây dựng Th
 
 Quy trình tiền xử lý được chia thành 4 giai đoạn chính nhằm giảm nhiễu và tối ưu hóa dữ liệu đầu vào cho kiến trúc đa phương thức:
 
-\subsubsection{Giai đoạn 1: Làm sạch và Lọc dữ liệu}
+\subsubsection{Làm sạch và Lọc dữ liệu}
 \begin{itemize}
     \item \textbf{Xử lý giá trị khuyết:} Loại bỏ các mẫu thiếu tiêu đề sản phẩm; sử dụng trung vị để điền khuyết cho trường giá cả; và thay thế các trường mô tả rỗng bằng chuỗi ký tự trống.
     \item \textbf{Lọc tương tác:} Áp dụng kỹ thuật k-core ($k=3$) để loại bỏ người dùng có ít hơn 3 tương tác (nhóm cold-start) và sản phẩm xuất hiện ít hơn 2 lần, đảm bảo mô hình có đủ thông tin để học được sự phụ thuộc chuỗi.
 \end{itemize}
 
-\subsubsection{Giai đoạn 2: Xử lý đặc trưng phi cấu trúc}
+\subsubsection{Xử lý đặc trưng phi cấu trúc}
 \begin{itemize}
     \item \textbf{Văn bản:} Nối các trường thông tin ngữ nghĩa theo công thức:
     \begin{equation}
@@ -138,7 +138,7 @@ Quy trình tiền xử lý được chia thành 4 giai đoạn chính nhằm gi�
     Bước này giúp tối ưu hóa đầu vào cho mạng Vision Transformer.
 \end{itemize}
 
-\subsubsection{Giai đoạn 3: Xử lý dữ liệu bảng}
+\subsubsection{Xử lý dữ liệu bảng}
 \begin{itemize}
     \item \textbf{Biến phân loại:} Chuyển đổi sang số nguyên thông qua Label Encoding. Đối với biến đa trị (danh mục sản phẩm), hệ thống dùng Multi-hot Encoding kết hợp Average Pooling để tạo vector đại diện.
     \item \textbf{Biến số:} Chuẩn hóa bằng Standard Scaler:
@@ -148,7 +148,7 @@ Quy trình tiền xử lý được chia thành 4 giai đoạn chính nhằm gi�
     Riêng các biến có phân bố lệch trái mạnh (như lượt hữu ích) sẽ được biến đổi logarit $x' = \log(1 + x)$ trước khi chuẩn hóa để mô hình hội tụ tốt hơn.
 \end{itemize}
 
-\subsubsection{Giai đoạn 4: Xây dựng chuỗi tương tác}
+\subsubsection{Xây dựng chuỗi tương tác}
 Dữ liệu được gom nhóm theo định danh người dùng và sắp xếp tăng dần theo thời gian. Mẫu huấn luyện được tạo bằng cơ chế Cửa sổ trượt: sử dụng chuỗi lịch sử $H_t = \{i_1, ..., i_{t-1}\}$ để dự đoán sản phẩm mục tiêu $i_t$. Các chuỗi ngắn được đệm phần tử rỗng bên trái kết hợp cùng Attention Mask để triệt tiêu nhiễu trong quá trình tính toán của mạng Transformer.
 
 Kết quả của quá trình tiền xử lý là các Tensor định dạng PyTorch sẵn sàng được đưa
@@ -245,8 +245,8 @@ Quá trình huấn luyện áp dụng chiến lược phân tầng: hoàn thiệ
 
 Để đánh giá định lượng hiệu năng hệ thống cho bài toán dự đoán sản phẩm tiếp theo, đồ án sử dụng bộ ba chỉ số tiêu chuẩn. Tại mỗi bước thời gian $t$, người dùng $u$ tương tác với duy nhất một sản phẩm thực tế $i_{true}$. Nhiệm vụ của mô hình là xếp hạng sản phẩm này cao nhất có thể trong danh sách $K$ gợi ý $R_u$.
 
-\subsection{Recall@K \cite{43}}
-Đo lường khả năng bao phủ của mô hình, trả lời câu hỏi: Sản phẩm mục tiêu có xuất hiện trong Top-K gợi ý hay không? Độ đo này không quan tâm đến thứ tự xếp hạng bên trong danh sách.
+\subsection{Recall@K }
+Đo lường khả năng bao phủ của mô hình, trả lời câu hỏi: Sản phẩm mục tiêu có xuất hiện trong Top-K gợi ý hay không? \cite{47} Độ đo này không quan tâm đến thứ tự xếp hạng bên trong danh sách.
 
 \begin{equation}
     \text{Recall@K} = \frac{1}{|U|} \sum_{u \in U} \mathbb{I}(i_{true}^{(u)} \in R_u[:K])
@@ -254,21 +254,32 @@ Quá trình huấn luyện áp dụng chiến lược phân tầng: hoàn thiệ
 
 Trong đó, $|U|$ là tổng số người dùng, $\mathbb{I}(\cdot)$ là hàm chỉ thị nhận giá trị $1$ nếu đúng và $0$ nếu sai.
 
-\subsection{MRR@K\cite{44}}
-Thứ hạng nghịch đảo trung bình đánh giá độ chính xác xếp hạng một cách khắt khe. Điểm số tỷ lệ nghịch với vị trí của sản phẩm đúng: sản phẩm xếp càng thấp, điểm bị phạt càng mạnh (ví dụ: top 1 đạt $1.0$, top 2 chỉ còn $0.5$).
+\subsection{MRR@K}
+Thứ hạng nghịch đảo trung bình đánh giá độ chính xác xếp hạng một cách khắt khe\cite{48}. Điểm số tỷ lệ nghịch với vị trí của sản phẩm đúng: sản phẩm xếp càng thấp, điểm bị phạt càng mạnh (ví dụ: top 1 đạt $1.0$, top 2 chỉ còn $0.5$).
 
 \begin{equation}
     \text{MRR@K} = \frac{1}{|U|} \sum_{u \in U} \left( \frac{1}{\text{rank}(i_{true}^{(u)})} \cdot \mathbb{I}(\text{rank}(i_{true}^{(u)}) \le K) \right)
 \end{equation}
 
-\subsection{NDCG@K\cite{43}}
-Lợi nhuận tích lũy chiết khấu chuẩn hóa là độ đo tối ưu nhất để đánh giá chất lượng xếp hạng tổng thể. Khác với MRR phạt tuyến tính, NDCG sử dụng hàm logarit để giảm trừ điểm số mượt mà hơn, phản ánh chính xác sự suy giảm chú ý của người dùng khi lướt xem danh sách.
+\subsection{NDCG@K}
+Lợi nhuận tích lũy chiết khấu chuẩn hóa là độ đo tối ưu nhất để đánh giá chất lượng xếp hạng tổng thể \cite{47}. Khác với MRR phạt tuyến tính, NDCG sử dụng hàm logarit để giảm trừ điểm số mượt mà hơn, phản ánh chính xác sự suy giảm chú ý của người dùng khi lướt xem danh sách.
 
 \begin{equation}
     \text{NDCG@K} = \frac{1}{|U|} \sum_{u \in U} \frac{1}{\log_2(\text{rank}(i_{true}^{(u)}) + 1)} \cdot \mathbb{I}(\text{rank}(i_{true}^{(u)}) \le K)
 \end{equation}
 
 Sự kết hợp của ba chỉ số này mang lại góc nhìn toàn diện: Recall đo độ phủ, MRR đo độ chính xác tuyệt đối ở vị trí đầu, và NDCG đo chất lượng trải nghiệm xếp hạng tổng thể.
+
+
+
+
+
+
+
+
+
+
+
 \section{Đánh giá Toàn trình và Chất lượng Lời giải thích LLM}
 
 \subsection{Phân tích độ trễ toàn hệ thống}

@@ -315,7 +315,7 @@ Dựa trên các kết quả thực nghiệm được công bố bởi Kang và 
 
 Ưu điểm thứ hai nằm ở hiệu suất tính toán và khả năng mở rộng. Khác với tính chất tuần tự bắt buộc của mạng hồi quy khiến quá trình xử lý không thể tận dụng triệt để sức mạnh của GPU, các phép toán ma trận trong SASRec có thể được thực thi song song trên toàn bộ chiều dài chuỗi. Sự cải tiến này mang lại lợi ích to lớn về mặt tốc độ; các thử nghiệm cho thấy thời gian huấn luyện của SASRec nhanh hơn gấp mười lần so với các mô hình dựa trên mạng hồi quy hoặc tích chập, cho phép hệ thống dễ dàng mở rộng để xử lý các tập dữ liệu quy mô lớn.
 
-\subsection{Kiến trúc Hai tháp cho Truy xuất Ứng viên}
+\subsection{Kiến trúc Two tower cho Truy xuất Ứng viên}
 
 \noindent \textbf{Bối cảnh và Vấn đề Quy mô}
 
@@ -370,7 +370,7 @@ Sau khi giai đoạn Retrieval hoàn thành nhiệm vụ thu hẹp không gian t
 
 \subsection{Lý thuyết Cross Encoder}
 
-Mô hình Cross-Encoder là một kiến trúc mạng nơ-ron học sâu được xây dựng trực tiếp trên nền tảng của khối mã hóa (Encoder) thuộc mô hình Transformer, do Vaswani và cộng sự đề xuất vào năm 2017 \cite{vaswani2017attention}. Sự trỗi dậy mạnh mẽ của Cross-Encoder trong lĩnh vực xếp hạng thông tin bắt đầu từ khi Nogueira và Cho (2019) ứng dụng thành công kiến trúc BERT vào bài toán đánh giá mức độ liên quan của văn bản \cite{nogueira2019passage}. Nguyên lý hoạt động cốt lõi của Cross-Encoder nằm ở cách nó xử lý dữ liệu đầu vào và khai thác cơ chế tự chú ý.
+Mô hình Cross-Encoder là một kiến trúc mạng nơ-ron học sâu được xây dựng trực tiếp trên nền tảng của khối mã hóa (Encoder) thuộc mô hình Transformer, do Vaswani và cộng sự đề xuất vào năm 2017 \cite{49}. Sự trỗi dậy mạnh mẽ của Cross-Encoder trong lĩnh vực xếp hạng thông tin bắt đầu từ khi Nogueira và Cho (2019) ứng dụng thành công kiến trúc BERT vào bài toán đánh giá mức độ liên quan của văn bản \cite{50}. Nguyên lý hoạt động cốt lõi của Cross-Encoder nằm ở cách nó xử lý dữ liệu đầu vào và khai thác cơ chế tự chú ý.
 
 \begin{figure}[H]
     \centering
@@ -387,7 +387,7 @@ Kết quả của toàn bộ quá trình tương tác chéo này được hội 
 
 \subsection{So sánh Cross Encoder và Bi Encoder}
 
-Để hiểu rõ lý do tại sao kiến trúc hệ thống hiện đại bắt buộc phải duy trì hai giai đoạn với hai mô hình khác biệt, cần phải phân tích sự tương phản sâu sắc về cơ chế hoạt động cũng như sự đánh đổi giữa Cross-Encoder và Bi-Encoder. Nghiên cứu của Reimers và Gurevych (2019) về Sentence-BERT đã chỉ ra một cách hệ thống những ranh giới kỹ thuật này \cite{reimers2019sentence}.
+Để hiểu rõ lý do tại sao kiến trúc hệ thống hiện đại bắt buộc phải duy trì hai giai đoạn với hai mô hình khác biệt, cần phải phân tích sự tương phản sâu sắc về cơ chế hoạt động cũng như sự đánh đổi giữa Cross-Encoder và Bi-Encoder. Nghiên cứu của Reimers và Gurevych (2019) về Sentence-BERT đã chỉ ra một cách hệ thống những ranh giới kỹ thuật này \cite{51}.
 
 \begin{figure}[H]
     \centering

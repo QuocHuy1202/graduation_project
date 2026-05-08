@@ -142,7 +142,7 @@ Tương tự như mô đun ngôn ngữ, chiến lược Trích xuất Đặc tr�
 Dựa trên sơ đồ kiến trúc tại Hình \ref{fig:image_module}, luồng xử lý hình ảnh được hiện thực hóa qua ba giai đoạn nối tiếp:
 
 \begin{itemize}
-    \item \textbf{Giai đoạn 1: Tiền xử lý (Preprocessing):} Nhằm đảm bảo tương thích với trọng số huấn luyện trước, mỗi hình ảnh được thay đổi kích thước về $224 \times 224$ pixels, chuyển đổi thành tensor \textit{Channel-first} trong khoảng $[0.0, 1.0]$, và cuối cùng được chuẩn hóa Z-score theo phân phối thống kê của tập ImageNet để đẩy nhanh tốc độ hội tụ.
+    \item \textbf{Giai đoạn 1: Tiền xử lý:} Nhằm đảm bảo tương thích với trọng số huấn luyện trước, mỗi hình ảnh được thay đổi kích thước về $224 \times 224$ pixels, chuyển đổi thành tensor \textit{Channel-first} trong khoảng $[0.0, 1.0]$, và cuối cùng được chuẩn hóa Z-score theo phân phối thống kê của tập ImageNet để đẩy nhanh tốc độ hội tụ.
     
     \item \textbf{Giai đoạn 2: Trích xuất đặc trưng và Chiếu không gian:} Các lô hình ảnh được đưa qua mô hình nền ViT tĩnh để sinh ra các vector đặc trưng thô. Ngay sau đó, một lớp tuyến tính (\texttt{self.proj}) thực hiện phép biến đổi không gian:
     \begin{equation}
@@ -342,209 +342,7 @@ $$\mathcal{L}_{\text{I} \rightarrow \text{U}} = - \frac{1}{N} \sum_{i=1}^N \log 
 
 Giá trị mất mát tổng thể $\mathcal{L}_{\text{Total}}$ là trung bình cộng của hai chiều tính toán trên. Sức ép tối ưu hóa từ môi trường tương phản khốc liệt này đóng vai trò chốt chặn, buộc mạng lưới nơ-ron phải quy hoạch không gian biểu diễn một cách rành mạch. Đây là tiền đề sống còn giúp thuật toán Tìm kiếm Lân cận Gần nhất ANN có thể truy xuất ứng viên siêu tốc và chính xác trong môi trường thực tế.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-% \section{Xây dựng Tháp Người dùng}
-
-% \subsection{Tổng quan và Nền tảng Kỹ thuật}
-% Tháp người dùng đảm nhận vai trò mô hình hóa sở thích và hành vi của người dùng dựa trên lịch sử tương tác. Khác biệt với các phương pháp lọc cộng tác truyền thống vốn coi sở thích là yếu tố tĩnh, module này tiếp cận bài toán dưới góc độ Gợi ý Tuần tự (\textit{Sequential Recommendation}). Mục tiêu cốt lõi là học được một vector biểu diễn người dùng $\mathbf{u}_t$ tại thời điểm $t$, sao cho vector này bao hàm được ý định mua sắm tiếp theo dựa trên chuỗi $n$ tương tác quá khứ $S = \{i_1, i_2, \dots, i_t\}$, trong đó $i_k$ là sản phẩm mà người dùng đã tương tác tại bước thứ $k$.
-
-% Về mặt nền tảng kỹ thuật, hệ thống sử dụng kiến trúc Transformer Encoder lấy cảm hứng từ mô hình SASRec \cite{7}. Việc lựa chọn kiến trúc này cho phép mô hình vượt qua hạn chế của các mạng RNN hay CNN truyền thống trong việc nắm bắt các mối quan hệ phụ thuộc dài hạn, từ đó hiểu sâu hơn về sự chuyển dịch trong thị hiếu người dùng theo thời gian.
-
-% \subsection{Cơ chế Biểu diễn Người dùng}
-% Để kiến tạo không gian biểu diễn người dùng phong phú, hệ thống xử lý chuỗi dữ liệu đầu vào thu được từ giai đoạn tiền xử lý. Mỗi phần tử trong chuỗi này là một tổ hợp thông tin bao gồm nội dung nhận xét của người dùng về sản phẩm và vector đặc trưng $\mathbf{v}_{\text{item}}$ của chính sản phẩm đó. Để đồng bộ hóa dữ liệu văn bản phi cấu trúc vào không gian tính toán chung, nhóm thực hiện biến đổi các nhận xét thông qua bộ mã hóa chuyên biệt dưới đây.
-
-% \subsubsection{ReviewTextEncoder và Chiến lược Chia sẻ Trọng số}
-% Trong kiến trúc Tháp Người dùng, thành phần mã hóa văn bản chịu trách nhiệm chuyển đổi nội dung bình luận tổng hợp thành các vector đặc trưng ngữ nghĩa. Một đặc điểm kiến trúc quan trọng trong thiết kế của hệ thống là việc áp dụng cơ chế Chia sẻ Trọng số (\textit{Weight Sharing}). Cụ thể, bộ mã hóa văn bản trong Tháp Người dùng không được khởi tạo độc lập mà sử dụng chung kiến trúc mạng và toàn bộ bộ tham số đã được huấn luyện của bộ mã hóa trong Tháp Sản phẩm. Điều này đồng nghĩa với việc các văn bản đánh giá của người dùng và mô tả sản phẩm đều được xử lý qua cùng một mô hình ngôn ngữ tiền huấn luyện và cùng một lớp chiếu không gian.
-
-% Chiến lược chia sẻ trọng số này mang lại ba lợi ích kỹ thuật thiết yếu. Thứ nhất, nó đảm bảo sự đồng bộ tuyệt đối về không gian ngữ nghĩa, giúp các văn bản từ phía người dùng và sản phẩm được ánh xạ vào cùng một hệ quy chiếu vector, tạo điều kiện thuận lợi cho mô hình trong việc so sánh và tìm kiếm sự tương đồng giữa lời nhận xét và mô tả sản phẩm. Thứ hai, cơ chế này giúp tối ưu hóa tài nguyên tính toán bằng cách giảm đáng kể số lượng tham số cần lưu trữ, tránh việc hệ thống phải duy trì hai mô hình ngôn ngữ lớn riêng biệt. Cuối cùng, Tháp Người dùng có thể thừa hưởng trực tiếp khả năng hiểu ngôn ngữ đã được tinh chỉnh từ quá trình huấn luyện Tháp Sản phẩm, giúp quá trình hội tụ diễn ra nhanh hơn.
-
-% Về mặt cài đặt kỹ thuật, module này tiếp nhận đầu vào là danh sách các chuỗi văn bản đánh giá trong lịch sử hành vi và trả về một tensor có kích thước $[B, S, D_{\text{latent}}]$, tương ứng với kích thước lô, độ dài chuỗi lịch sử và kích thước vector đặc trưng $256$ chiều.
-
-% \subsubsection{ReviewTabularEncoder: Mô-đun Mã hóa Cấu trúc Đánh giá}
-% Mô-đun \texttt{ReviewTabularEncoder} chịu trách nhiệm mã hóa các thông tin định lượng và định danh gắn liền với bài đánh giá, bao gồm ba trường dữ liệu cốt lõi: điểm đánh giá (\textit{Rating}) trong thang đo $1-5$, số lượt bình chọn hữu ích (\textit{Helpful Votes}) và trạng thái xác thực mua hàng (\textit{Verified Purchase}). Mục tiêu của mô-đun là chuyển đổi các tín hiệu thô này thành một vector đặc trưng thống nhất, bổ sung ngữ cảnh tin cậy cho nội dung văn bản.
-
-% \vspace{0.3cm}
-% \noindent \textbf{Kiến trúc Mạng và Các Khối Xử lý}
-
-% Hệ thống được thiết kế với ba khối xử lý chuyên biệt tương ứng với đặc thù của từng loại dữ liệu. Đối với thuộc tính phân loại như trạng thái xác thực mua hàng, hệ thống sử dụng lớp \texttt{nn.Embedding} để chuyển đổi dữ liệu rời rạc sang không gian vector liên tục. Không gian nhúng được thiết lập với 3 trạng thái bao gồm giá trị đệm, đã mua và chưa xác thực, được ánh xạ vào vector có kích thước mặc định là $4$ chiều.
-
-% Đối với dữ liệu số học, một mạng Perceptron đa lớp (MLP) được thiết kế để biến đổi cặp giá trị điểm số và lượt bình chọn từ không gian 2 chiều sang không gian đặc trưng cao chiều hơn. Kiến trúc mạng bao gồm lớp ẩn $64$ chiều kết hợp với hàm kích hoạt ReLU, sau đó nén xuống $32$ chiều. Thiết kế này cho phép mô hình nắm bắt các tương tác phi tuyến tính phức tạp giữa điểm số và mức độ tin cậy của cộng đồng, ví dụ như sự khác biệt ngữ nghĩa giữa một đánh giá điểm thấp nhưng nhận được nhiều sự đồng tình so với một đánh giá điểm thấp nhưng ít được quan tâm.
-
-% Tại tầng xử lý cuối cùng, Khối Hợp nhất (\textit{Fusion Block}) chịu trách nhiệm tổng hợp thông tin từ nhánh số học $32$ chiều và nhánh phân loại $4$ chiều. Vector ghép nối có kích thước tổng thể là $36$ được đưa qua một mạng nơ-ron đa lớp để tạo ra đầu ra cuối cùng. Điểm đáng lưu ý trong thiết kế là lớp cuối cùng được cấu hình là lớp tuyến tính thuần túy không kèm hàm kích hoạt. Thiết kế này cho phép vector đầu ra nhận các giá trị thực trong toàn miền $(-\infty, +\infty)$, giúp bảo toàn sự phong phú của thông tin (\textit{information richness}) trước khi được tích hợp vào các lớp tiếp theo của Tháp Người dùng.
-
-% \vspace{0.3cm}
-% \noindent \textbf{Quy trình Xử lý Luồng Dữ liệu}
-
-% Quy trình xử lý diễn ra theo trình tự chặt chẽ nhằm đảm bảo tính toàn vẹn của dữ liệu. Đầu vào bao gồm điểm số, lượt bình chọn và trạng thái xác thực sau khi được làm sạch và chuẩn hóa sẽ được phân tách vào các nhánh xử lý tương ứng. Trạng thái xác thực đi qua lớp Embedding để tạo vector $\mathbf{v}_{\text{cat}}$, trong khi điểm số và lượt bình chọn đi qua mạng chiếu số học để tạo vector $\mathbf{v}_{\text{num}}$. Hai thành phần này sau đó được ghép nối thành vector tổng hợp $\mathbf{v}_{\text{concat}}$ theo công thức:
-% \begin{equation}
-%     \mathbf{v}_{\text{concat}} = [\mathbf{v}_{\text{num}}; \mathbf{v}_{\text{cat}}]
-% \end{equation}
-% Cuối cùng, vector tổng hợp được đưa qua mạng Fusion để tạo ra biểu diễn vector đầu ra, đại diện cho ngữ cảnh cấu trúc toàn diện của bài đánh giá.
-
-% \subsubsection{Cổng Hợp nhất Người dùng (User Fusion Gate)}
-
-% Cổng \texttt{GatingFusionLayer} đóng vai trò trung tâm trong việc tổng hợp vector biểu diễn tương tác của người dùng. Nhiệm vụ cốt lõi của thành phần này là kết hợp vector định danh sản phẩm $\mathbf{v}_{\text{item}}$ thu được từ Tháp Sản phẩm với ngữ cảnh tương tác cụ thể, bao gồm nội dung đánh giá $\mathbf{v}_{\text{text}}$ và các chỉ số định lượng $\mathbf{v}_{\text{tabular}}$. Mục tiêu là tạo ra một vector duy nhất $\mathbf{h}_{\text{seq}}$ đại diện cho một bước trong chuỗi hành vi thông qua cơ chế \textit{Gating}, cho phép mô hình tự động điều chỉnh mức độ đóng góp của từng nguồn thông tin dựa trên ngữ cảnh thực tế.
-
-% \vspace{0.3cm}
-% \noindent \textbf{Kiến trúc và Các Khối Xử lý}
-
-% Về mặt kiến trúc, module bao gồm hai khối xử lý song song. Khối Chiếu và Đồng bộ sử dụng ba lớp tuyến tính riêng biệt để đưa các vector đầu vào có kích thước khác nhau về cùng một không gian chiều chung $d_{\text{model}} = 256$, chuẩn bị cho quá trình cộng gộp. Song song đó, Mạng \textit{Gating} được thiết kế dưới dạng một mạng perceptron đa lớp ($\text{Linear} \to \text{ReLU} \to \text{Linear}$) tiếp nhận toàn bộ dữ liệu ghép nối đầu vào để tính toán điểm số tầm quan trọng cho từng thành phần Item, Text và Tabular.
-
-% \vspace{0.3cm}
-% \noindent \textbf{Quy trình Xử lý}
-
-% Quy trình xử lý diễn ra tuần tự qua ba bước. Đầu tiên, các vector đặc trưng được chiếu sang không gian chung và áp dụng hàm kích hoạt phi tuyến ReLU để tăng khả năng biểu diễn. Kế đến, hệ thống thực hiện tính toán trọng số thông qua hàm Softmax, tái sử dụng cơ chế hợp nhất động tương tự như đã trình bày tại phần Tháp Sản phẩm, nhưng áp dụng cho ngữ nghĩa kết hợp giữa sản phẩm và phản hồi người dùng. Kết quả đầu ra là một tensor có kích thước $[B, S, D_{\text{latent}}]$, sẵn sàng làm đầu vào cho mạng \textit{Transformer Encoder} để mô hình hóa chuỗi thời gian.
-
-% \subsubsection{Module Mã hóa Vị trí (Positional Encoding)}
-
-% Trong kiến trúc Tháp Người dùng, chuỗi hành vi lịch sử được xử lý thông qua mạng Transformer. Một đặc điểm cố hữu của cơ chế \textit{Self-Attention} là tính bất biến hoán vị, nghĩa là mô hình xử lý tập hợp đầu vào song song mà không tự nhận biết được thứ tự trước sau của các phần tử. Tuy nhiên, đối với bài toán gợi ý tuần tự, thứ tự tương tác đóng vai trò tối quan trọng, chẳng hạn như hành vi mua điện thoại thường mang tính tiền đề và diễn ra trước khi mua ốp lưng. Để khắc phục hạn chế này, module \texttt{PositionalEncoding} được thiết kế nhằm bổ sung thông tin về vị trí tương đối hoặc tuyệt đối vào các vector biểu diễn trước khi chúng được đưa vào các lớp Attention.
-
-% \vspace{0.3cm}
-% \noindent \textbf{Phương pháp Mã hóa Sinusoidal}
-
-% Hệ thống áp dụng phương pháp Mã hóa Sinusoidal cố định theo kiến trúc Transformer nguyên bản. Phương pháp này tận dụng các hàm lượng giác với tần số biến thiên để tạo ra một đặc trưng vị trí độc nhất cho mỗi bước thời gian.
-
-
-% Dựa trên đề xuất của Vaswani và cộng sự \cite{12}, giá trị mã hóa tại vị trí $pos$ và chiều $i$ trong không gian vector kích thước $d_{\text{model}}$ được xác định bởi công thức toán học sau:
-% \begin{align}
-%     \text{PE}_{(pos, 2i)} &= \sin\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right) \\
-%     \text{PE}_{(pos, 2i+1)} &= \cos\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)
-% \end{align}
-% Trong đó, các chiều chẵn $2i$ được áp dụng hàm Sine và các chiều lẻ $2i+1$ được áp dụng hàm Cosine. Việc kết hợp hai hàm lượng giác này cho phép mô hình lan truyền và ngoại suy thông tin vị trí một cách hiệu quả ngay cả đối với các chuỗi dài hơn độ dài đã gặp trong quá trình huấn luyện.
-
-% \noindent \textbf{Chi tiết Kỹ thuật và Quy trình Cài đặt}
-
-% Mô-đun được hiện thực hóa dưới dạng một lớp kế thừa từ \texttt{nn.Module} với quy trình xử lý được tối ưu hóa ngay từ bước khởi tạo. Cụ thể, một ma trận vị trí \texttt{pe} có kích thước $[\texttt{max\_len}, 1, d_{\text{model}}]$ được tính toán trước và lưu trữ vào bộ nhớ đệm thông qua cơ chế \texttt{register\_buffer}. Kỹ thuật này cho phép hệ thống ghi nhận ma trận như một phần trạng thái bền vững của mô hình nhưng không tham gia vào quá trình cập nhật gradient, giúp cố định thông tin vị trí và giảm tải số lượng tham số cần tối ưu.
-
-% Trong quá trình lan truyền xuôi, các vector vị trí tương ứng được cộng trực tiếp vào vector đặc trưng đầu vào theo công thức:
-% \begin{equation}
-%     \mathbf{x} = \mathbf{x} + \mathbf{PE}[:\texttt{x.size(0)}]
-% \end{equation}
-% Phép toán cộng tuyến tính này đóng vai trò quyết định giúp cơ chế \textit{Attention} phân biệt được các thực thể giống nhau nhưng xuất hiện tại các thời điểm khác nhau trong chuỗi hành vi, đảm bảo tính thứ tự của dữ liệu. Nhằm tăng cường khả năng tổng quát hóa, một lớp \texttt{Dropout} với tỷ lệ mặc định $0.1$ được áp dụng ngay sau bước cộng mã hóa. Thao tác này giúp ngăn chặn hiện tượng quá khớp bằng cách buộc mô hình học các mẫu cấu trúc tổng quát thay vì phụ thuộc thái quá vào thông tin vị trí tuyệt đối.
-
-% Trong ngữ cảnh cụ thể của hệ thống gợi ý, thành phần này nắm giữ vai trò then chốt trong việc mô hình hóa tính gần đây và nguyên tắc nhân quả. Nó cung cấp cơ sở tham chiếu để mô hình nhận thức được khoảng cách thời gian giữa các tương tác, từ đó tạo điều kiện cho cơ chế \textit{Self-Attention} phân bổ trọng số hợp lý: ưu tiên cao hơn cho các hành vi gần đây đại diện cho sở thích ngắn hạn, đồng thời vẫn duy trì ngữ cảnh dài hạn để đảm bảo độ chính xác trong việc dự báo hành động tiếp theo.
-
-% \subsubsection{Cơ chế Tạo và Tổng hợp Vector Người dùng}
-
-% Nhiệm vụ cốt lõi của phân hệ này là thực hiện chuyển đổi chuỗi các trạng thái ẩn tuần tự — vốn là đầu ra từ mạng \textit{Transformer} — thành một vector duy nhất đại diện cho chân dung sở thích toàn diện của người dùng. Quy trình này được xây dựng dựa trên sự kết hợp chặt chẽ giữa kỹ thuật mô hình hóa chuỗi thời gian và các phương pháp tổng hợp thông tin có chọn lọc.
-
-% \noindent \textbf{Quy trình Xử lý và Tổng hợp Vector Người dùng}
-
-
-
-% Sơ đồ minh họa luồng xử lý dữ liệu tuần tự bên trong Tháp Người dùng, được thiết kế để chuyển đổi lịch sử hành vi phức tạp thành một vector đại diện sở thích duy nhất. Quá trình này diễn ra qua bốn giai đoạn xử lý phân tầng từ dưới lên trên:
-
-% \begin{itemize}
-%     \item \textbf{1. Tầng Mã hóa Đặc trưng Chia sẻ (\textit{Shared Encoders Layer}):} \\
-%     Tại mỗi bước thời gian trong chuỗi hành vi, hệ thống tiếp nhận bộ ba dữ liệu đầu vào gồm nội dung văn bản đánh giá, thông tin bảng số liệu và định danh sản phẩm. Các luồng dữ liệu này được đưa qua khối các bộ mã hóa chuyên biệt (\textit{Encoders}). Điểm đặc biệt trong thiết kế này là cơ chế chia sẻ trọng số (\textit{Share weight}), nghĩa là cùng một bộ tham số mã hóa được sử dụng lặp lại cho mọi bước thời gian và đồng bộ hoàn toàn với các bộ mã hóa tại Tháp Sản phẩm. Điều này đảm bảo tính nhất quán về không gian đặc trưng giữa hai tháp mô hình.
-
-%     \item \textbf{2. Tầng Hợp nhất Cục bộ (\textit{Fusion Gate}):} \\
-%     Sau khi trích xuất đặc trưng sơ cấp, tại mỗi bước thời gian, các vector thành phần được đưa qua cổng hợp nhất \textit{Fusion Gate}. Module này chịu trách nhiệm tổng hợp ba nguồn thông tin không đồng nhất thành một vector đại diện duy nhất (\textit{Vector Review}), gói gọn toàn bộ ngữ cảnh tương tác của người dùng tại thời điểm đó.
-
-%     \item \textbf{3. Tầng Mô hình hóa Tuần tự (\textit{Sequence Modeling Layer}):} \\
-%     Để mô hình nhận thức được thứ tự của các hành vi, giải thuật Mã hóa Vị trí (\textit{Positional Encoding}) được cộng trực tiếp vào các vector đặc trưng. Chuỗi vector sau khi đã tích hợp thông tin vị trí được đưa vào khối \textit{Transformer Encoder Block}. Tại đây, cơ chế \textit{Self-Attention} cho phép mô hình học các mối quan hệ phụ thuộc dài hạn và nắm bắt sự chuyển dịch trong thị hiếu người dùng qua thời gian.
-% \end{itemize}
-
-% Giai đoạn tiếp theo tập trung vào việc Tổng hợp Đặc trưng. Do độ dài lịch sử hành vi của người dùng mang tính biến thiên, hệ thống áp dụng kỹ thuật \textit{Masked Mean Pooling} để nén toàn bộ chuỗi trạng thái ẩn từ Transformer thành một vector đại diện duy nhất. Để thực hiện điều này, mặt nạ đệm ban đầu được xử lý và mở rộng chiều tương thích với tensor dữ liệu, trong đó các vị trí chứa thông tin thực được gán trọng số $1$ và vị trí đệm nhận giá trị $0$. Hệ thống tiến hành nhân từng phần tử giữa đầu ra mô hình và mặt nạ trọng số nhằm triệt tiêu hoàn toàn các vector tại vị trí đệm về vector $\mathbf{0}$, sau đó cộng dồn các đặc trưng dọc theo trục thời gian. Vector đại diện cuối cùng được xác định bằng cách chia tổng thu được cho số lượng hành vi thực tế, với việc bổ sung một hằng số nhỏ $\epsilon$ vào mẫu số để đảm bảo tính ổn định số học:
-% \begin{equation}
-%     \mathbf{u}_{\text{pooled}} = \frac{\sum_{t=1}^{T} (\mathbf{h}_t \cdot m_t)}{\sum_{t=1}^{T} m_t + \epsilon}
-% \end{equation}
-% Trong đó $\mathbf{h}_t$ là trạng thái ẩn tại bước $t$ và $m_t$ là giá trị mặt nạ nhị phân.
-
-% \vspace{0.2cm}
-
-% Quy trình khép lại bằng giai đoạn Tinh chỉnh và Chuẩn hóa. Vector trung bình sau khi tính toán được đưa qua một lớp Tuyến tính cuối cùng đóng vai trò như bộ chuyển đổi đặc trưng cao cấp, tối ưu hóa cho việc so khớp với sản phẩm. Đầu ra cuối cùng trải qua phép chuẩn hóa L2 để đưa về độ dài đơn vị trên mặt cầu, đảm bảo khoảng cách giữa người dùng và sản phẩm được đo lường chính xác và nhất quán thông qua độ tương đồng Cosine.
-
-% \section{Chiến lược Huấn luyện Hai giai đoạn}
-
-% Việc tối ưu hóa đồng thời các hàm mất mát tương phản nội bộ tháp sản phẩm và toàn cục giữa hai tháp trong một đồ thị tính toán duy nhất thường dẫn đến hiện tượng xung đột đạo hàm, đồng thời tiêu tốn lượng lớn tài nguyên bộ nhớ VRAM. Để khắc phục thách thức này và đảm bảo mô hình hội tụ ổn định, đồ án đề xuất áp dụng chiến lược huấn luyện hai giai đoạn. Quá trình này tách biệt việc thấu hiểu nội dung sản phẩm và việc nắm bắt hành vi người dùng thành hai bước tuần tự
-
-% \subsection{Giai đoạn 1: Tiền huấn luyện độc lập Tháp Sản phẩm}
-
-% Trong giai đoạn đầu tiên, để ngăn chặn tín hiệu nhiễu từ chuỗi lịch sử tương tác, cấu trúc Tháp Người dùng bị loại bỏ hoàn toàn khỏi đồ thị tính toán. Hệ thống chỉ tập trung cấp phát tài nguyên phần cứng để tối ưu hóa mạng nơ-ron của Tháp Sản phẩm. Đồ án sử dụng kho dữ liệu sản phẩm tĩnh bao gồm hình ảnh, văn bản mô tả và các thuộc tính dạng bảng làm tập dữ liệu huấn luyện.
-
-% Thành phần cốt lõi trong chiến lược tối ưu hóa của hệ thống là hàm mất mát dựa trên nguyên lý Học tương phản. Cụ thể, đồ án áp dụng biến thể \textit{Symmetric InfoNCE Loss}, phương pháp đã chứng minh hiệu quả vượt trội qua sự thành công của mô hình CLIP \cite{13}. Khác với các hàm mất mát truyền thống, phương pháp này thực hiện tính toán độ tương đồng chéo giữa các cặp dữ liệu đa phương thức theo cả hai chiều nhằm đồng bộ hóa không gian biểu diễn chung. Mục tiêu tối thượng là tối ưu hóa không gian vector sao cho các cặp dữ liệu tương ứng như hình ảnh và văn bản của cùng một sản phẩm sẽ có vector biểu diễn gần nhau do lực hút, trong khi các cặp dữ liệu không tương ứng bị đẩy ra xa nhau do lực đẩy.
-
-% Mặc dù hàm mất mát \textit{InfoNCE} thể hiện sự ưu việt trong việc đồng bộ hóa không gian biểu diễn toàn cục, nó vẫn bộc lộ hạn chế khi xử lý các tập dữ liệu có độ hạt mịn (fine-grained) và độ tương đồng nội nhóm cao, điển hình như miền dữ liệu Amazon Beauty. Trong không gian này, các mặt hàng thường có sự chồng chéo lớn về đặc trưng (ví dụ: các sản phẩm mỹ phẩm cùng chủng loại nhưng khác thương hiệu). Hàm \textit{InfoNCE} có xu hướng phân bổ lực đẩy đồng đều lên mọi mẫu âm tính trong lô, dẫn đến việc thiếu sự tập trung cần thiết để phân tách các sản phẩm cực kỳ giống nhau.
-
-% Để khắc phục hạn chế của hàm mất mát InfoNCE khi xử lý các tập dữ liệu có độ tương đồng nội nhóm cao, đồ án tích hợp thêm hàm Batch-Hard Triplet Loss vào giai đoạn tinh chỉnh. Thay vì dàn trải lực tối ưu đồng đều, phương pháp này chỉ tập trung xử lý mẫu đối nghịch khó nhất, tức là sản phẩm nhiễu có vị trí gần với mục tiêu nhất trong không gian vector. Dựa trên ma trận tương đồng Cosine giữa hai tập hợp biểu diễn, mô hình thiết lập một ranh giới an toàn $m$ nhằm ép buộc độ tương đồng của cặp dữ liệu mục tiêu phải luôn vượt trội hơn mẫu âm tính khó nhất một khoảng tối thiểu bằng $m$. Quá trình này được tính toán đối xứng theo cả hai chiều để đảm bảo tính đồng nhất của kiến trúc Hai tháp. Sự kết hợp giữa khả năng quy hoạch không gian toàn cục của InfoNCE và khả năng tinh chỉnh chi tiết cục bộ của Batch-Hard Triplet Loss giúp hệ thống xây dựng một không gian nhúng mạnh mẽ, qua đó phân biệt chính xác các mặt hàng có đặc điểm cực kỳ giống nhau trong những miền dữ liệu phức tạp.
-
-% \noindent \textbf{Vai trò chiến lược trong hệ thống gợi ý}
-
-% Trong kiến trúc đa phương thức của đề tài, hàm mất mát tương phản đóng vai trò then chốt trong việc định hình không gian biểu diễn. Chức năng quan trọng nhất của nó là đồng bộ hóa không gian vector, hoạt động như một lực hấp dẫn để kéo các biểu diễn đặc trưng từ các nguồn dữ liệu phân tán như văn bản, hình ảnh và dữ liệu bảng về cùng một không gian ngữ nghĩa thống nhất. Bên cạnh đó, thông qua việc phân biệt rõ ràng giữa các cặp tương ứng và không tương ứng trong lô dữ liệu, mô hình học được khả năng trích xuất các đặc trưng độc đáo mang tính phân biệt cao. Đây là tiền đề quan trọng giúp tối ưu hóa khả năng truy xuất ứng viên, nâng cao độ chính xác trong việc tìm kiếm và gợi ý sản phẩm phù hợp.
-
-% \subsection{Giai đoạn 2: Tinh chỉnh toàn cục đa tháp}
-
-% \noindent \textbf{Cơ chế Mẫu âm tính kết hợp}
-
-% Hàm mất mát toàn cục được thiết kế dựa trên sự kết hợp giữa chiến lược lấy mẫu âm tính trong lô và cơ chế tiêm mẫu âm tính rõ ràng. Thông thường, hệ thống chỉ tận dụng các sản phẩm khác trong cùng một lô huấn luyện làm mẫu đối nghịch giả định, với rủi ro rằng người dùng có thể vẫn thích chúng nhưng chưa có cơ hội tương tác. Để tối ưu hóa không gian biểu diễn và tận dụng tối đa phản hồi thực tế, đồ án bổ sung thêm cho mỗi người dùng một vector đại diện cho sản phẩm mà họ đã trực tiếp đánh giá thấp.
-
-% Giả sử một lô huấn luyện có kích thước $N=3$. Khi xem xét người dùng thứ nhất $u_1$, sản phẩm $v_1^+$ ở cùng chỉ số index được coi là cặp dương tính. Các sản phẩm $v_2^+$ và $v_3^+$ tự động trở thành mẫu âm tính trong lô. Đặc biệt, một sản phẩm $v_1^-$ do chính $u_1$ đánh giá thấp được ghép thêm vào không gian đối nghịch, tạo ra một rào cản ngữ nghĩa mạnh mẽ. Cơ chế này được minh họa chi tiết tại Bảng \ref{tab:in_batch_negatives}.
-
-% \begin{table}[H]
-%     \centering
-%     \caption{Minh họa cơ chế lấy mẫu kết hợp với kích thước lô $N=3$}
-%     \label{tab:in_batch_negatives}
-%     \renewcommand{\arraystretch}{1.5}
-%     \footnotesize
-%     \begin{tabularx}{\textwidth}{|>{\centering\arraybackslash}m{2.5cm}|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|>{\centering\arraybackslash}X|}
-%     \hline
-%     \textbf{Người dùng \textbackslash Sản phẩm} & \textbf{Sản phẩm 1 ($v_1^+$)} & \textbf{Sản phẩm 2 ($v_2^+$)} & \textbf{Sản phẩm 3 ($v_3^+$)} & \textbf{Mẫu đánh giá thấp ($v_i^-$)} \\ \hline
-%     \textbf{Người dùng 1 ($u_1$)} & \cellcolor{green!20}\textbf{Dương tính} & \cellcolor{red!10}Âm tính & \cellcolor{red!10}Âm tính & \cellcolor{gray!30}Âm tính rõ ràng ($v_1^-$) \\ \hline
-%     \textbf{Người dùng 2 ($u_2$)} & \cellcolor{red!10}Âm tính & \cellcolor{green!20}\textbf{Dương tính} & \cellcolor{red!10}Âm tính & \cellcolor{gray!30}Âm tính rõ ràng ($v_2^-$) \\ \hline
-%     \textbf{Người dùng 3 ($u_3$)} & \cellcolor{red!10}Âm tính & \cellcolor{red!10}Âm tính & \cellcolor{green!20}\textbf{Dương tính} & \cellcolor{gray!30}Âm tính rõ ràng ($v_3^-$) \\ \hline
-%     \end{tabularx}
-% \end{table}
-
-% \noindent \textbf{Quy trình Tính toán Toán học}
-
-% Quá trình tối ưu hóa diễn ra qua các bước tính toán tuần tự:
-
-% Đầu tiên, hệ thống xác lập ma trận tương đồng cơ sở từ tập vector người dùng $\mathbf{U}$ và tập vector sản phẩm mục tiêu $\mathbf{V}^+$ có cùng kích thước lô $N$. Mỗi phần tử của ma trận $\mathbf{S}$ kích thước $N \times N$ được tính bằng tích vô hướng và chuẩn hóa bởi tham số nhiệt độ $\tau$:
-% $$S_{i,j} = \frac{\mathbf{u}_i \cdot (\mathbf{v}_j^+)^T}{\tau}$$
-
-% Tham số $\tau$ đóng vai trò kiểm soát độ sắc nét của phân phối xác suất, giúp mô hình phân biệt tốt hơn các mẫu khó phân loại. Đồng thời, hệ thống tính toán riêng điểm số tương đồng giữa người dùng và sản phẩm họ đánh giá thấp:
-% $$E_i = \frac{\mathbf{u}_i \cdot (\mathbf{v}_i^-)^T}{\tau}$$
-
-% Tiếp theo, hệ thống thực hiện tính toán hàm mất mát theo hai chiều với sự bất đối xứng về mặt dữ liệu đối nghịch:
-
-% \noindent \textbf{Chiều từ người dùng đến sản phẩm:} Mục tiêu là hướng dẫn vector người dùng tìm đến đúng sản phẩm mục tiêu, đồng thời né tránh các sản phẩm của người khác trong lô và đặc biệt phải đẩy lùi sản phẩm bị đánh giá thấp. Không gian đối nghịch lúc này được mở rộng từ $N$ lên $N+1$. Hàm Cross-Entropy cho chiều này được công thức hóa như sau, với thành phần $\exp(E_i)$ đóng vai trò là hình phạt bổ sung dưới mẫu số:
-% $$\mathcal{L}_{\text{U} \rightarrow \text{I}} = - \frac{1}{N} \sum_{i=1}^N \log \frac{\exp(S_{i,i})}{\sum_{j=1}^N \exp(S_{i,j}) + \exp(E_i)}$$
-
-% \noindent \textbf{Chiều từ sản phẩm đến người dùng:} Để bảo toàn đặc tính phân cụm tự nhiên của phương pháp lọc cộng tác, chiều này không tích hợp tín hiệu âm tính rõ ràng. Các vector sản phẩm chỉ có nhiệm vụ tìm đúng người dùng đã tương tác với chúng giữa các tập hợp người dùng khác trong lô:
-% $$\mathcal{L}_{\text{I} \rightarrow \text{U}} = - \frac{1}{N} \sum_{i=1}^N \log \frac{\exp(S_{i,i})}{\sum_{j=1}^N \exp(S_{j,i})}$$
-
-% Cuối cùng, giá trị mất mát tổng thể $\mathcal{L}_{\text{Total}}$ là trung bình cộng của mất mát hai chiều này. Cải tiến này giúp hệ thống không chỉ nhạy bén trong việc gom cụm sở thích mà còn cực kỳ quyết liệt trong việc loại bỏ những ứng viên kém chất lượng ra khỏi không gian gợi ý.
-
-% \noindent \textbf{Vai trò chiến lược trong hệ thống gợi ý}
-
-% Trong kiến trúc Hai tháp, hàm mất mát tương phản đóng vai trò là xương sống toán học kết nối toàn bộ hệ thống. Khác với các phương pháp học sâu nguyên khối, kiến trúc đề xuất duy trì sự độc lập hoàn toàn giữa quá trình trích xuất chuỗi hành vi tại Tháp Người dùng và quá trình nội suy nội dung đa phương thức tại Tháp Sản phẩm. Hệ quả tất yếu là các vector đại diện sinh ra từ hai tháp này ban đầu tồn tại trong những không gian toán học hoàn toàn dị biệt. Sự can thiệp của cơ chế học tương phản giữa người dùng và sản phẩm đóng vai trò giải quyết triệt để sự phân ly này thông qua ba khía cạnh chiến lược:
-
-% Thứ nhất, hàm mất mát thiết lập một không gian nhúng chung cho toàn hệ thống. Thông qua cơ chế tối ưu hóa đối xứng, thuật toán ép buộc không gian sở thích của khách hàng và không gian đặc trưng của mặt hàng phải đồng bộ hóa với nhau. Phương pháp này hoạt động như một lực hấp dẫn, kéo vector thói quen mua sắm lại gần đúng với vector hình ảnh và mô tả của món đồ tương ứng. Quá trình này về bản chất là việc dạy cho hệ thống cách biên dịch mượt mà từ ngôn ngữ hành vi sang ngôn ngữ nội dung.
-
-% Thứ hai, phương pháp này tối ưu hóa trực tiếp cho bài toán truy xuất ứng viên siêu tốc. Khác với hàm mất mát phân loại truyền thống chỉ xuất ra điểm số xác suất tuyệt đối, học tương phản là đại diện tiêu biểu của nhóm học đo lường. Cơ chế này trực tiếp nhào nặn cấu trúc hình học của không gian thông qua lực hút các cặp dữ liệu tương ứng và lực đẩy các mẫu không liên quan. Việc không gian được quy hoạch rõ ràng và có tính phân cụm cao dựa trên khoảng cách hình học là điều kiện tiên quyết để thuật toán tìm kiếm lân cận gần nhất có thể hoạt động chính xác trên các cơ sở dữ liệu vector quy mô lớn.
-
-% Thứ ba, môi trường tương phản tạo ra sức mạnh phân biệt tương đối cực kỳ sắc bén. Việc đặt một sản phẩm mục tiêu vào giữa hàng loạt mẫu âm tính trong cùng một lô huấn luyện tạo ra một áp lực cạnh tranh khốc liệt. Mô hình không chỉ học cách nhận diện sản phẩm phù hợp một cách độc lập, mà còn buộc phải tinh chỉnh trọng số sao cho khoảng cách từ người dùng đến sản phẩm đích luôn ngắn hơn khoảng cách đến toàn bộ các mặt hàng nhiễu khác. Sức ép tối ưu hóa này buộc mạng lưới nơ-ron của cả hai tháp phải chắt lọc ra những đặc trưng mang tính định danh cao nhất, qua đó nâng cao độ chính xác tuyệt đối cho toàn bộ luồng gợi ý đa phương thức.
-
-
-\section{Giai đoạn 2: Re-ranker}
+\section{Khai phá tương tác sâu với Cross-Encoder}
 \subsection{Kiến trúc tổng quan Reranker}
 
 Trong lĩnh vực tìm kiếm thông tin, việc chỉ dựa vào độ phù hợp ngữ nghĩa giữa truy vấn và tài liệu thường không đáp ứng đủ nhu cầu đa dạng của người dùng. Ngược lại, việc áp dụng cá nhân hóa một cách cứng nhắc lại có nguy cơ làm giảm tính đa dạng của kết quả và khiến hệ thống trở nên thiếu minh bạch, khó kiểm soát. Từ đó, một bài toán cốt lõi được đặt ra là làm thế nào để kết hợp hài hòa giữa tín hiệu đối sánh ngữ nghĩa truyền thống và tín hiệu sở thích cá nhân, đồng thời cấp cho hệ thống khả năng tự động đánh giá và điều chỉnh mức độ cá nhân hóa tùy thuộc vào từng ngữ cảnh truy vấn cụ thể.
@@ -618,6 +416,32 @@ $$w = \text{sigmoid}(\text{MLP}([\mathbf{q}, len(q), P, s_d^q, s_d^u]))$$
 
 Sự tích hợp của mô hình trộn động đã biến kiến trúc xếp hạng từ một cỗ máy tính toán tĩnh thành một hệ thống thích ứng ngữ cảnh mang tính dự báo. Về bản chất, thành phần này vận hành như một bộ dự báo hiệu suất (performance predictor): bằng cách phân tích hình thái của câu truy vấn và độ phong phú của dữ liệu lịch sử, nó tự động đánh giá mức độ tin cậy của nhánh đối sánh ngữ nghĩa để từ đó đưa ra quyết định cấp phát trọng số tương ứng cho nhánh cá nhân hóa. Cơ chế điều tiết tinh vi này không những giải quyết thành công bài toán áp đảo phương thức mà còn đảm bảo sự dung hòa tuyệt đối giữa ý định tìm kiếm tức thời và thói quen tiêu dùng dài hạn, cho phép hệ thống cung cấp các kết quả tìm kiếm được cá nhân hóa một cách chừng mực và tự nhiên nhất.
 
+\subsection{Cơ chế sinh truy vấn tự động}
+
+\noindent \textbf{Vấn đề thiếu hụt dữ liệu}
+Trong các bài toán tìm kiếm và gợi ý ngữ nghĩa, để huấn luyện hiệu quả các mô hình học sâu như Bi-Encoder hay Cross-Encoder, tập dữ liệu cần cung cấp các cặp thông tin $(q, i^+)$. Trong đó, $q$ là câu truy vấn bằng ngôn ngữ tự nhiên của người dùng và $i^+$ là sản phẩm đích\ tương ứng. Tuy nhiên, các tập dữ liệu tương tác thực tế thường chỉ ghi nhận các hành vi ẩn như nhấp chuột, thêm vào giỏ hàng hoặc lịch sử giao dịch mà thiếu hụt hoàn toàn các câu truy vấn văn bản. Sự khuyết thiếu này tạo ra rào cản lớn, dẫn đến bài toán "khởi động lạnh" cho khâu trích xuất đặc trưng của hệ thống truy xuất.
+
+\noindent \textbf{Giải pháp Đề xuất: Tổng hợp dữ liệu bằng LLM}
+Để giải quyết triệt để nút thắt này, hệ thống áp dụng cơ chế sinh truy vấn tự động bằng cách tận dụng khả năng suy luận ngữ cảnh sâu của Mô hình Ngôn ngữ Lớn. LLM đóng vai trò như một cơ chế "dịch ngược", quan sát tương tác quá khứ và thông tin sản phẩm để nội suy ra ý định tìm kiếm của người dùng.
+
+Về mặt toán học, gọi $H_u = \{i_1, i_2, \dots, i_n\}$ là tập hợp các sản phẩm trong lịch sử tương tác của người dùng $u$, và $i_{target}$ là sản phẩm đích mà người dùng sẽ mua tiếp theo. Truy vấn nhân tạo $q_{synthetic}$ được sinh ra thông qua một hàm ánh xạ phi tuyến được tham số hóa bởi LLM:
+%không có reference
+$$q_{synthetic} = f_{LLM}\left( \text{Prompt}, H_u, M(i_{target}) \right)$$
+
+Trong đó, $M(i_{target})$ đại diện cho siêu dữ liệu của sản phẩm đích, bao gồm các thuộc tính như tiêu đề, danh mục và mô tả chi tiết.
+
+\noindent \textbf{Quy trình thực thi chi tiết}
+Cơ chế sinh tự động được vận hành theo một Pipeline khép kín gồm các bước sau:
+\begin{itemize}
+    \item \textbf{Bước 1 - Xây dựng ngữ cảnh:} Hệ thống trích xuất chuỗi hành vi mua sắm gần nhất của người dùng $H_u$ và kết hợp với đặc trưng của sản phẩm mục tiêu $i_{target}$. Việc kết hợp này giúp định hình cả thói quen cá nhân lẫn đặc tả kỹ thuật của sản phẩm.
+    \item \textbf{Bước 2 - Thiết kế Prompt:} Một bộ chỉ thị được thiết kế chuyên biệt nhằm ép buộc LLM hóa thân thành người dùng. LLM nhận yêu cầu với cấu trúc: \textit{"Dựa trên việc bạn đã từng quan tâm đến các sản phẩm $H_u$, và hiện tại bạn muốn tìm mua sản phẩm $i_{target}$, hãy sinh ra một câu tìm kiếm bằng ngôn ngữ tự nhiên mà bạn sẽ gõ vào hệ thống."}
+    \item \textbf{Bước 3 - Trích xuất và làm sạch văn bản:} Phản hồi từ LLM được backend xử lý thông qua các kỹ thuật phân tích cú pháp. Các đoạn hội thoại dư thừa, ký tự định dạng markdown hoặc lời chào đều được loại bỏ, chỉ giữ lại chuỗi văn bản truy vấn thuần túy.
+    \item \textbf{Bước 4 - Ghép cặp dữ liệu huấn luyện:} Truy vấn $q_{synthetic}$ vừa tạo sẽ được ghép nối trực tiếp với sản phẩm $i_{target}$ để tạo thành nhãn dữ liệu chuẩn. Cặp dữ liệu này sau đó được đưa vào tinh chỉnh mạng nơ-ron học biểu diễn không gian vector.
+\end{itemize}
+
+\noindent \textbf{Đánh giá ưu điểm của phương pháp}
+Cơ chế sinh truy vấn tự động không chỉ lấp đầy khoảng trống dữ liệu mà còn mang lại giá trị gia tăng to lớn cho độ mạnh mẽ của mô hình. Những câu truy vấn được tổng hợp chứa đựng sự đa dạng về mặt từ vựng, cấu trúc ngữ pháp và thói quen diễn đạt thực tế. Sự giao thoa giữa yếu tố cá nhân hóa từ lịch sử người dùng và yếu tố ngữ nghĩa từ mô tả sản phẩm giúp các mô hình AI sau huấn luyện đạt được khả năng tổng quát hóa vượt trội, sẵn sàng xử lý các long-tail queries phức tạp từ phía người dùng thực tế.
+
 \subsection{Chiến thuật Huấn luyện}
 
 \subsubsection*{Khởi tạo và thiết lập mô hình}
@@ -646,7 +470,7 @@ Bước sang giai đoạn thứ hai, trọng số của cả hai nhánh mã hóa
 
 \textbf{Cấu trúc dữ liệu và Mỏ neo:}
 Về mặt cấu trúc dữ liệu, Giai đoạn 2 tiếp tục kế thừa nguyên vẹn tập hợp dữ liệu gồm một mẫu tích cực và M mẫu tiêu cực. Tuy nhiên, hệ thống chèn thêm một điểm mỏ neo (anchor) nhân tạo vào tập điểm số với logit mục tiêu cố định $s_0 = 0$, đi kèm với nhãn mục tiêu điều chỉnh là $y_0$ (đóng vai trò là một siêu tham số). Sự can thiệp có chủ đích này, khi được kết hợp với phép nhân vô hướng từ tham số tỷ lệ (logit scale) liên tục cập nhật, sẽ tự động khuếch đại hoặc thu hẹp khoảng cách tương đối giữa các giá trị dự đoán, từ đó biến đổi vector điểm số thô ban đầu thành $s'_q$ và vector nhãn tương ứng thành $y'_q$.
-
+ 
 \textbf{Hàm mất mát và Ý nghĩa hiệu chuẩn:}
 Để ngăn chặn tình trạng mạng MLP sinh ra các dự đoán quá tự tin (overconfident predictions) dẫn đến hiện tượng sụp đổ phương thức (modality collapse), hệ thống từ bỏ hàm Softmax tiêu chuẩn và thay thế bằng hàm Scale Calibrating Softmax Objective \cite{30}:
 
@@ -654,62 +478,45 @@ $$ \mathcal{L}(y'_q, s'_q) = - \sum_{i=1}^M y'_q[i] \log \frac{e^{s'_q[i]}}{\sum
 
 Việc chèn biến neo $y_0$ vào hàm loss đóng vai trò như một cơ chế chính quy hóa (regularization) mang tính cấu trúc. Cụ thể, thành phần thứ hai của phương trình tạo ra một lực phạt nghiêm ngặt đối với các điểm số dự đoán quá lớn, trong khi thành phần thứ nhất đảm bảo các điểm số nhỏ không bị tiêu biến hoàn toàn. Dưới sự điều tiết kép của hàm loss hiệu chuẩn và tham số tỷ lệ (logit scale), trọng số w do $g_{Mix}$ sinh ra sẽ không bị cực đoan hóa về các thái cực tuyệt đối 0 hoặc 1. Thay vào đó, nó biến thiên một cách mượt mà, bám sát và phản chiếu đúng mức độ tin cậy thực tế của nhánh ngữ nghĩa, cho phép hệ thống tìm kiếm hòa trộn các tín hiệu cá nhân hóa một cách tự nhiên, chừng mực và đạt độ ổn định cao nhất.
 
+\section{Tinh chỉnh và Sinh lời giải thích với LLM}
 
+\subsection{Vai trò của LLM trong kiến trúc đường ống}
+Trong các hệ thống gợi ý truyền thống, kết quả từ các mô hình học sâu (Bi-Encoder, Cross-Encoder) thường là những điểm số định lượng (logits, probabilities) mang tính "hộp đen". Để giải quyết bài toán diễn giải và tăng độ tin cậy, hệ thống tích hợp Mô hình Ngôn ngữ Lớn vào giai đoạn cuối của đường ống dữ liệu (với hai vai trò cốt lõi:
 
-
-
-
-
-
-
-\section{Tích hợp LLM trong Giai đoạn Hậu Truy xuất}
-
-Trong kiến trúc tổng thể của hệ thống, Mô hình Ngôn ngữ Lớn Google Gemini được tích hợp vào giai đoạn hậu truy xuất (\textit{Post-Retrieval Stage}). Trong khi mô hình Two-Tower đóng vai trò bộ lọc thô (\textit{Coarse Filter}) giúp truy xuất nhanh các ứng viên tiềm năng dựa trên độ tương đồng vector, thì mô-đun LLM đảm nhận chức năng bộ lọc tinh và tác nhân giải thích (\textit{Explainable Agent}). Thành phần này tận dụng khả năng suy luận ngôn ngữ tự nhiên để cá nhân hóa trải nghiệm người dùng một cách sâu sắc hơn.
-
-\subsection{Quy trình Xử lý Dữ liệu}
-Quy trình tích hợp được thực hiện theo cơ chế suy luận trực tuyến (\textit{Online Inference}) thông qua bốn bước xử lý tuần tự:
-
-\begin{enumerate}
-    \item \textbf{Truy xuất Ứng viên:} \\
-    Đầu vào của mô-đun là danh sách Top-$K$ sản phẩm được trả về từ mô hình Two-Tower. Tại giai đoạn này, các sản phẩm mới chỉ được định danh đơn giản bằng mã ID và điểm số tương đồng vector.
+\begin{description}
+    \item[Bộ lọc cuối cùng:] \hfill \\
+    LLM đóng vai trò là tầng xếp hạng tinh. Thay vì chỉ dựa trên điểm số toán học, LLM nhận đầu vào là danh sách Top-K sản phẩm đã được lọc qua Cross-Encoder, kết hợp cùng truy vấn và toàn bộ lịch sử mua hàng. Khả năng hiểu ngữ cảnh sâu sắc giúp LLM đánh giá toàn diện sự phù hợp, từ đó đóng vai trò như một "giám khảo" tự động chọn lọc ra 1 đến 3 sản phẩm tối ưu nhất, loại bỏ các kết quả nhiễu mà mô hình nhúng có thể chấm điểm sai.
     
-    \item \textbf{Làm giàu Ngữ cảnh:} \\
-    Kế đến, hệ thống thực hiện các truy vấn cơ sở dữ liệu để chuyển đổi các ID vô hướng thành thông tin văn bản mang ý nghĩa ngữ nghĩa. Cụ thể:
-    \begin{itemize}
-        \item \textbf{Thông tin sản phẩm:} Hệ thống thu thập tiêu đề, mô tả ngắn, thông số kỹ thuật và giá tiền.
-        \item \textbf{Hồ sơ người dùng:} Hệ thống truy xuất chuỗi lịch sử tương tác gần nhất, bao gồm các sản phẩm đã xem, đã mua hoặc được đánh giá cao.
-    \end{itemize}
-    
-    \item \textbf{Kỹ thuật Prompt Engineering:} \\
-    Dữ liệu sau khi làm giàu được đưa vào một khuôn mẫu cấu trúc sẵn, thiết kế theo phương pháp \textit{Zero-shot} hoặc \textit{Few-shot}. Cấu trúc này bao gồm ba thành phần chính: định nghĩa vai trò của Gemini là một chuyên gia tư vấn, cung cấp dữ liệu ngữ cảnh (lịch sử người dùng, danh sách ứng viên), và cuối cùng là nhiệm vụ yêu cầu LLM phân tích mối liên hệ sở thích để chọn lọc sản phẩm phù hợp nhất kèm theo giải thích.
-    
-    \item \textbf{Sinh Phản hồi:} \\
-    Cuối cùng, Prompt hoàn chỉnh được gửi đến API của Gemini. Kết quả trả về là văn bản tự nhiên, sau đó được hệ thống phân tích (parse) để hiển thị lên giao diện Web Demo dưới dạng danh sách gợi ý đi kèm lời bình chi tiết.
-\end{enumerate}
+    \item[Bộ sinh lời giải thích:] \hfill \\
+    Đối với các sản phẩm được chọn, LLM chịu trách nhiệm sinh ra các văn bản tự nhiên để giải thích lý do gợi ý và đưa ra lời khuyên tổng quan. Việc minh bạch hóa quyết định (ví dụ: liên kết trực tiếp giữa tính năng của sản phẩm mới với sở thích trong lịch sử mua hàng) giúp nâng cao trải nghiệm cá nhân hóa và thuyết phục người dùng đưa ra quyết định mua sắm.
+\end{description}
 
-\subsection{Cấu trúc Prompt Minh họa}
-Để LLM thực hiện tác vụ chọn lọc và giải thích mà không cần áp dụng thuật toán xếp hạng lại phức tạp, nhóm nghiên cứu sử dụng cấu trúc Prompt định hướng ngữ nghĩa như sau:
+\subsection{Kỹ thuật thiết kế Prompt cho tác vụ gợi ý}
+Để LLM hoạt động ổn định như một API backend thay vì một chatbot hội thoại thông thường, kỹ thuật thiết kế Prompt được xây dựng chặt chẽ theo hướng tiếp cận \textbf{RAG} kết hợp với \textbf{Đầu ra có cấu trúc}.
 
-\begin{center}
-\fbox{
-    \begin{minipage}{0.95\textwidth}
-        \setlength{\parskip}{0.5em} % Tăng khoảng cách đoạn văn trong hộp
-        \textbf{System Instruction:} Bạn là một trợ lý AI chuyên nghiệp trong lĩnh vực thương mại điện tử.
-        
-        \textbf{User Context:} Người dùng này quan tâm đến [Danh sách lịch sử: iPhone 13, Ốp lưng MagSafe, Cáp sạc Type-C].
-        
-        \textbf{Candidate Items:} Dưới đây là danh sách sản phẩm tiềm năng:
-        \begin{itemize}
-            % Bỏ ngoặc vuông [], đưa ID ra ngoài và in đậm
-            \item \textbf{ID: 101} Tai nghe AirPods Pro (Chống ồn, Apple Ecosystem)
-            \item \textbf{ID: 102} Nồi cơm điện Sharp (1.8L, Nấu nhanh)
-            \item \textbf{ID: 103} Sạc dự phòng Anker (20000mAh, Sạc nhanh)
-        \end{itemize}
-        
-        \textbf{Instruction:} Dựa trên lịch sử quan tâm, hãy chọn ra các sản phẩm liên quan nhất từ danh sách ứng viên. Với mỗi sản phẩm được chọn, hãy viết một câu giải thích ngắn gọn, thuyết phục, chỉ ra mối liên hệ với sở thích cũ của họ.
-    \end{minipage}
-}
-\end{center}
+Cấu trúc Prompt được phân tách logic nhằm tối ưu hóa khả năng tuân thủ của mô hình:
+\begin{itemize}
+    \item \textbf{System Prompt:} Thiết lập vai trò (Trợ lý mua sắm AI), định nghĩa nhiệm vụ (phân tích lịch sử, chọn sản phẩm tốt nhất) và thiết lập các ràng buộc nghiêm ngặt (không bịa đặt thông tin, giới hạn số lượng kết quả).
+    \item \textbf{User Prompt:} Dữ liệu thực tế được tiêm vào từ các giai đoạn trước, bao gồm truy vấn hiện tại, lịch sử tương tác và metadata chi tiết của Top-K sản phẩm ứng viên.
+\end{itemize}
 
-\subsection{Vai trò của LLM trong Hệ thống}
-Trong cấu hình hiện tại, LLM không thay đổi thứ tự xếp hạng dựa trên điểm số mà hoạt động như một lớp hậu xử lý định tính (\textit{Qualitative Post-processing}). Cơ chế này giúp khắc phục điểm yếu hộp đen của mô hình Two-Tower bằng cách minh bạch hóa lý do gợi ý. Việc cung cấp thông tin giải thích giúp người dùng hiểu rõ sự phù hợp của sản phẩm, từ đó gia tăng niềm tin và cải thiện tỷ lệ chuyển đổi (\textit{Click-through Rate}) trên hệ thống.
+\noindent \textbf{Cấu trúc Prompt minh họa:}
+\begin{verbatim}
+[SYSTEM INSTRUCTION]
+You are a helpful AI shopping assistant. Your task is to analyze the user's 
+query, their purchase history, and a list of recommended products. 
+Select the best product(s) (1-3 items) from the list.
+You MUST respond ONLY with a valid JSON object adhering to the schema.
+
+[USER CONTEXT]
+--- USER QUERY ---
+{Câu tìm kiếm của người dùng}
+
+--- USER PURCHASE HISTORY ---
+{Danh sách các sản phẩm người dùng đã tương tác/mua gần đây}
+
+--- RECOMMENDED PRODUCTS FOR QUERY ---
+{Danh sách Top-K sản phẩm ứng viên kèm Tiêu đề, Tính năng, Giá, Đánh giá}
+\end{verbatim}
+
+Nhằm đảm bảo tính toàn vẹn của hệ thống tích hợp, LLM được ép buộc phải trả về dữ liệu tuân thủ một \textit{JSON Schema} định nghĩa sẵn. Lược đồ này bắt buộc mô hình phải trích xuất chính xác \texttt{selected\_item\_index}, \texttt{selected\_item\_title}, kèm theo lý do cho từng món hàng. Phương pháp này loại bỏ hoàn toàn rủi ro ảo giác định dạng, cho phép phía Frontend phân tích cú pháp và hiển thị mượt mà lên giao diện người dùng.

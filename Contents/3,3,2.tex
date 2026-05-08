@@ -1,9 +1,9 @@
 \subsection{Cơ chế sinh truy vấn tự động}
 
-\subsubsection{Vấn đề thiếu hụt dữ liệu}
+\noindent \textbf{Vấn đề thiếu hụt dữ liệu}
 Trong các bài toán tìm kiếm và gợi ý ngữ nghĩa, để huấn luyện hiệu quả các mô hình học sâu như Bi-Encoder hay Cross-Encoder, tập dữ liệu cần cung cấp các cặp thông tin $(q, i^+)$. Trong đó, $q$ là câu truy vấn bằng ngôn ngữ tự nhiên của người dùng và $i^+$ là sản phẩm đích\ tương ứng. Tuy nhiên, các tập dữ liệu tương tác thực tế thường chỉ ghi nhận các hành vi ẩn như nhấp chuột, thêm vào giỏ hàng hoặc lịch sử giao dịch mà thiếu hụt hoàn toàn các câu truy vấn văn bản. Sự khuyết thiếu này tạo ra rào cản lớn, dẫn đến bài toán "khởi động lạnh" cho khâu trích xuất đặc trưng của hệ thống truy xuất.
 
-\subsubsection{Giải pháp Đề xuất: Tổng hợp dữ liệu bằng LLM}
+\noindent \textbf{Giải pháp Đề xuất: Tổng hợp dữ liệu bằng LLM}
 Để giải quyết triệt để nút thắt này, hệ thống áp dụng cơ chế sinh truy vấn tự động bằng cách tận dụng khả năng suy luận ngữ cảnh sâu của Mô hình Ngôn ngữ Lớn. LLM đóng vai trò như một cơ chế "dịch ngược", quan sát tương tác quá khứ và thông tin sản phẩm để nội suy ra ý định tìm kiếm của người dùng.
 
 Về mặt toán học, gọi $H_u = \{i_1, i_2, \dots, i_n\}$ là tập hợp các sản phẩm trong lịch sử tương tác của người dùng $u$, và $i_{target}$ là sản phẩm đích mà người dùng sẽ mua tiếp theo. Truy vấn nhân tạo $q_{synthetic}$ được sinh ra thông qua một hàm ánh xạ phi tuyến được tham số hóa bởi LLM:
@@ -12,7 +12,7 @@ $$q_{synthetic} = f_{LLM}\left( \text{Prompt}, H_u, M(i_{target}) \right)$$
 
 Trong đó, $M(i_{target})$ đại diện cho siêu dữ liệu của sản phẩm đích, bao gồm các thuộc tính như tiêu đề, danh mục và mô tả chi tiết.
 
-\subsubsection{Quy trình thực thi chi tiết}
+\noindent \textbf{Quy trình thực thi chi tiết}
 Cơ chế sinh tự động được vận hành theo một Pipeline khép kín gồm các bước sau:
 \begin{itemize}
     \item \textbf{Bước 1 - Xây dựng ngữ cảnh:} Hệ thống trích xuất chuỗi hành vi mua sắm gần nhất của người dùng $H_u$ và kết hợp với đặc trưng của sản phẩm mục tiêu $i_{target}$. Việc kết hợp này giúp định hình cả thói quen cá nhân lẫn đặc tả kỹ thuật của sản phẩm.
@@ -21,5 +21,5 @@ Cơ chế sinh tự động được vận hành theo một Pipeline khép kín 
     \item \textbf{Bước 4 - Ghép cặp dữ liệu huấn luyện:} Truy vấn $q_{synthetic}$ vừa tạo sẽ được ghép nối trực tiếp với sản phẩm $i_{target}$ để tạo thành nhãn dữ liệu chuẩn. Cặp dữ liệu này sau đó được đưa vào tinh chỉnh mạng nơ-ron học biểu diễn không gian vector.
 \end{itemize}
 
-\subsubsection{Đánh giá ưu điểm của phương pháp}
+\noindent \textbf{Đánh giá ưu điểm của phương pháp}
 Cơ chế sinh truy vấn tự động không chỉ lấp đầy khoảng trống dữ liệu mà còn mang lại giá trị gia tăng to lớn cho độ mạnh mẽ của mô hình. Những câu truy vấn được tổng hợp chứa đựng sự đa dạng về mặt từ vựng, cấu trúc ngữ pháp và thói quen diễn đạt thực tế. Sự giao thoa giữa yếu tố cá nhân hóa từ lịch sử người dùng và yếu tố ngữ nghĩa từ mô tả sản phẩm giúp các mô hình AI sau huấn luyện đạt được khả năng tổng quát hóa vượt trội, sẵn sàng xử lý các long-tail queries phức tạp từ phía người dùng thực tế.

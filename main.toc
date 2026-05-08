@@ -1,6 +1,6 @@
 \thispagestyle {empty}
 \babel@toc {vietnamese}{}\relax 
-\contentsline {section}{Danh mục từ viết tắt}{3}{section*.8}%
+\contentsline {section}{Danh mục từ viết tắt}{2}{section*.7}%
 \contentsline {chapter}{\numberline {1}Tổng quan về đề tài}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Lý do chọn đề tài}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Mục tiêu đề tài}{2}{section.1.2}%
@@ -27,7 +27,7 @@
 \contentsline {section}{\numberline {2.5}Nắm bắt chuỗi hành vi trong ResSys}{20}{section.2.5}%
 \contentsline {subsection}{\numberline {2.5.1}Sự tiến hóa của các Hệ thống Gợi ý Tuần tự: Từ Markov đến RNN}{20}{subsection.2.5.1}%
 \contentsline {subsection}{\numberline {2.5.2}Kiến trúc SASRec}{20}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}Kiến trúc Hai tháp cho Truy xuất Ứng viên}{22}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.3}Kiến trúc Two tower cho Truy xuất Ứng viên}{22}{subsection.2.5.3}%
 \contentsline {section}{\numberline {2.6}Mô hình xếp hạng lại Reranking}{24}{section.2.6}%
 \contentsline {subsection}{\numberline {2.6.1}Lý thuyết Cross Encoder}{24}{subsection.2.6.1}%
 \contentsline {subsection}{\numberline {2.6.2}So sánh Cross Encoder và Bi Encoder}{25}{subsection.2.6.2}%
@@ -50,43 +50,44 @@
 \contentsline {subsection}{\numberline {3.2.3}Chiến lược Huấn luyện Hai giai đoạn}{41}{subsection.3.2.3}%
 \contentsline {subsubsection}{\numberline {3.2.3.1}Tiền huấn luyện độc lập Tháp Sản phẩm}{41}{subsubsection.3.2.3.1}%
 \contentsline {subsubsection}{\numberline {3.2.3.2}Tinh chỉnh toàn cục đa tháp}{42}{subsubsection.3.2.3.2}%
-\contentsline {section}{\numberline {3.3}Giai đoạn 2: Re-ranker}{43}{section.3.3}%
+\contentsline {section}{\numberline {3.3}Khai phá tương tác sâu với Cross-Encoder}{43}{section.3.3}%
 \contentsline {subsection}{\numberline {3.3.1}Kiến trúc tổng quan Reranker}{43}{subsection.3.3.1}%
 \contentsline {subsection}{\numberline {3.3.2}Embedding Cross Encoder}{45}{subsection.3.3.2}%
 \contentsline {subsection}{\numberline {3.3.3}Memory Encoder}{46}{subsection.3.3.3}%
 \contentsline {subsection}{\numberline {3.3.4}Mixing Model}{47}{subsection.3.3.4}%
-\contentsline {subsection}{\numberline {3.3.5}Chiến thuật Huấn luyện}{48}{subsection.3.3.5}%
-\contentsline {section}{\numberline {3.4}Tích hợp LLM trong Giai đoạn Hậu Truy xuất}{51}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}Quy trình Xử lý Dữ liệu}{51}{subsection.3.4.1}%
-\contentsline {subsection}{\numberline {3.4.2}Cấu trúc Prompt Minh họa}{51}{subsection.3.4.2}%
-\contentsline {subsection}{\numberline {3.4.3}Vai trò của LLM trong Hệ thống}{52}{subsection.3.4.3}%
-\contentsline {chapter}{\numberline {4}Thực nghiệm và Đánh giá}{53}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Mô tả tập dữ liệu}{53}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}Tổng quan về nguồn dữ liệu}{53}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}Phân tích chất lượng dữ liệu và Giá trị khuyết}{56}{subsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.1.3}Quy trình Tiền xử lý dữ liệu}{57}{subsection.4.1.3}%
-\contentsline {subsection}{\numberline {4.1.4}Phân tích độ thưa dữ liệu}{59}{subsection.4.1.4}%
-\contentsline {section}{\numberline {4.2}Thiết lập thực nghiệm}{61}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Môi trường phần cứng và phần mềm}{61}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Cấu hình Siêu tham số}{62}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Đầu vào và đầu ra}{63}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Xây dựng Item Tower}{63}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Xây dựng User Tower}{66}{subsection.4.3.2}%
-\contentsline {section}{\numberline {4.4}Các độ đo đánh giá}{68}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Recall@K}{68}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}MRR@K}{69}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.4.3}NDCG@K}{69}{subsection.4.4.3}%
-\contentsline {section}{\numberline {4.5}Đánh giá Hiệu suất Truy xuất sơ cấp Bi-Encoder}{70}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức}{71}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}{72}{subsection.4.5.2}%
-\contentsline {section}{\numberline {4.6}Triển khai và Thử nghiệm trên Hệ thống thực tế}{73}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}Kiến trúc hệ thống}{73}{subsection.4.6.1}%
-\contentsline {subsection}{\numberline {4.6.2}Quy trình xử lý một yêu cầu gợi ý}{75}{subsection.4.6.2}%
-\contentsline {subsection}{\numberline {4.6.3}Minh họa hệ thống}{76}{subsection.4.6.3}%
-\contentsline {section}{\numberline {4.7}Kết luận chương}{77}{section.4.7}%
-\contentsline {chapter}{\numberline {5}Hướng phát triển}{78}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Tổng kết và Hướng phát triển}{78}{section.5.1}%
-\contentsline {subsection}{\numberline {5.1.1}Kết luận và Kết quả đạt được}{78}{subsection.5.1.1}%
-\contentsline {subsection}{\numberline {5.1.2}Hạn chế của đề tài}{78}{subsection.5.1.2}%
-\contentsline {subsection}{\numberline {5.1.3}Hướng phát triển hệ thống}{79}{subsection.5.1.3}%
-\contentsline {subsection}{\numberline {5.1.4}Thu hoạch của sinh viên}{80}{subsection.5.1.4}%
+\contentsline {subsection}{\numberline {3.3.5}Cơ chế sinh truy vấn tự động}{48}{subsection.3.3.5}%
+\contentsline {subsection}{\numberline {3.3.6}Chiến thuật Huấn luyện}{49}{subsection.3.3.6}%
+\contentsline {section}{\numberline {3.4}Tinh chỉnh và Sinh lời giải thích với LLM}{52}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Vai trò của LLM trong kiến trúc đường ống}{52}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Kỹ thuật thiết kế Prompt cho tác vụ gợi ý}{52}{subsection.3.4.2}%
+\contentsline {chapter}{\numberline {4}Thực nghiệm và Đánh giá}{54}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Mô tả tập dữ liệu}{54}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Tổng quan về nguồn dữ liệu}{54}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Quy trình Tiền xử lý dữ liệu}{58}{subsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.2.1}Làm sạch và Lọc dữ liệu}{58}{subsubsection.4.1.2.1}%
+\contentsline {subsubsection}{\numberline {4.1.2.2}Xử lý đặc trưng phi cấu trúc}{59}{subsubsection.4.1.2.2}%
+\contentsline {subsubsection}{\numberline {4.1.2.3}Xử lý dữ liệu bảng}{59}{subsubsection.4.1.2.3}%
+\contentsline {subsubsection}{\numberline {4.1.2.4}Xây dựng chuỗi tương tác}{59}{subsubsection.4.1.2.4}%
+\contentsline {section}{\numberline {4.2}Thiết lập thực nghiệm}{59}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Môi trường và Phạm vi huấn luyện}{59}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Cấu hình Siêu tham số}{60}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Các độ đo đánh giá}{61}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Recall@K }{62}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}MRR@K}{62}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}NDCG@K}{62}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Đánh giá Hiệu suất Truy xuất sơ cấp Bi-Encoder}{62}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức}{63}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}{64}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Đánh giá Cross-Encoder}{66}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Thiết lập Thực nghiệm (Experimental setup)}{66}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Kết quả Thực nghiệm}{67}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}Triển khai Hệ thống và Demo thực tế}{68}{subsection.4.5.3}%
+\contentsline {subsubsection}{\numberline {4.5.3.1}Giao diện người dùng (User Interface)}{68}{subsubsection.4.5.3.1}%
+\contentsline {subsubsection}{\numberline {4.5.3.2}Video Demo hệ thống (Mã QR)}{71}{subsubsection.4.5.3.2}%
+\contentsline {subsubsection}{\numberline {4.5.3.3}Phân tích một ca sử dụng thực tế}{71}{subsubsection.4.5.3.3}%
+\contentsline {chapter}{\numberline {5}Hướng phát triển}{73}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Tổng kết và Hướng phát triển}{73}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Kết luận và Kết quả đạt được}{73}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Hạn chế của đề tài}{73}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}Hướng phát triển hệ thống}{74}{subsection.5.1.3}%
+\contentsline {subsection}{\numberline {5.1.4}Thu hoạch của sinh viên}{75}{subsection.5.1.4}%
