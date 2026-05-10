@@ -4,17 +4,18 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Minh họa cơ chế lấy mẫu kết hợp với kích thước lô $N=3$}}{42}{table.caption.24}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Minh họa cơ chế lấy mẫu kết hợp với kích thước lô $N=3$}}{43}{table.caption.24}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Thống kê mô tả số lượng người dùng, tương tác và sản phẩm trên các tập dữ liệu}}{55}{table.caption.31}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Mô tả các trường thông tin trong tập dữ liệu User Reviews}}{57}{table.caption.33}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Mô tả các trường thông tin trong tập dữ liệu Item Metadata}}{58}{table.caption.35}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Cấu hình siêu tham số cho Tháp Sản phẩm}}{60}{table.caption.37}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Cấu hình siêu tham số cho Tháp Người dùng}}{61}{table.caption.38}%
-\contentsline {table}{\numberline {4.6}{\ignorespaces Cấu hình siêu tham số của mô hình Cross-Encoder}}{61}{table.caption.39}%
-\contentsline {table}{\numberline {4.7}{\ignorespaces Kết quả đánh giá truy xuất chéo phương thức trên các tập dữ liệu và kịch bản}}{63}{table.caption.40}%
-\contentsline {table}{\numberline {4.8}{\ignorespaces So sánh Hiệu suất Gợi ý Toàn cục trên tập Gift Card với không gian 1.137 sản phẩm}}{65}{table.caption.41}%
-\contentsline {table}{\numberline {4.9}{\ignorespaces So sánh Hiệu suất Gợi ý Toàn cục trên tập All Beauty 3-core với không gian 10.216 sản phẩm}}{65}{table.caption.41}%
-\contentsline {table}{\numberline {4.10}{\ignorespaces So sánh Hiệu suất trên tập All Beauty 5-core kịch bản Khởi động lạnh toàn phần với không gian 6.710 sản phẩm}}{65}{table.caption.41}%
-\contentsline {table}{\numberline {4.11}{\ignorespaces So sánh hiệu suất giữa các mô hình trên tập Cell Phones \& Accessories}}{68}{table.caption.46}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Thống kê mô tả số lượng người dùng, tương tác và sản phẩm trên các tập dữ liệu}}{56}{table.caption.32}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Mô tả các trường thông tin trong tập dữ liệu User Reviews}}{57}{table.caption.34}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Mô tả các trường thông tin trong tập dữ liệu Item Metadata}}{58}{table.caption.36}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Cấu hình siêu tham số cho Tháp Sản phẩm}}{62}{table.caption.38}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Cấu hình siêu tham số cho Tháp Người dùng}}{62}{table.caption.39}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Cấu hình siêu tham số của mô hình Cross-Encoder}}{63}{table.caption.40}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Kết quả đánh giá truy xuất chéo phương thức trên các tập dữ liệu và kịch bản}}{65}{table.caption.41}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces So sánh hiệu suất truy xuất giữa hai phương pháp sinh truy vấn}}{66}{table.caption.42}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces So sánh Hiệu suất Gợi ý Toàn cục trên tập Gift Card với không gian 1.137 sản phẩm}}{68}{table.caption.43}%
+\contentsline {table}{\numberline {4.10}{\ignorespaces So sánh Hiệu suất Gợi ý Toàn cục trên tập All Beauty 3-core với không gian 10.216 sản phẩm}}{68}{table.caption.43}%
+\contentsline {table}{\numberline {4.11}{\ignorespaces So sánh Hiệu suất trên tập All Beauty 5-core kịch bản Khởi động lạnh toàn phần với không gian 6.710 sản phẩm}}{68}{table.caption.43}%
+\contentsline {table}{\numberline {4.12}{\ignorespaces So sánh hiệu suất giữa các mô hình trên tập Cell Phones \& Accessories}}{71}{table.caption.48}%
 \addvspace {10\p@ }

@@ -15,14 +15,15 @@
 \contentsline {figure}{\numberline {3.2}{\ignorespaces Quá trình Truy xuất sản phẩm}}{31}{figure.caption.20}%
 \contentsline {figure}{\numberline {3.3}{\ignorespaces Kiến trúc Item Tower: Quy trình mã hóa và hợp nhất dữ liệu Đa phương thức}}{33}{figure.caption.21}%
 \contentsline {figure}{\numberline {3.4}{\ignorespaces Quy trình Tính toán và Tổng hợp Đặc trưng Hình ảnh}}{35}{figure.caption.22}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Kiến trúc chi tiết Tháp Người dùng với cơ chế mô hình hóa chuỗi đa phương thức.}}{38}{figure.caption.23}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Kiến trúc tổng quan của mô hình xếp hạng lại (Reranker) kết hợp đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.}}{44}{figure.caption.25}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng xử lý và trích xuất đặc trưng độc lập của kiến trúc Embedding Cross-Encoder.}}{45}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Kiến trúc chi tiết Tháp Người dùng với cơ chế mô hình hóa chuỗi đa phương thức.}}{39}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Kiến trúc tổng quan của mô hình xếp hạng lại (Reranker) kết hợp đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.}}{45}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Sơ đồ luồng xử lý và trích xuất đặc trưng độc lập của kiến trúc Embedding Cross-Encoder.}}{46}{figure.caption.26}%
 \contentsline {figure}{\numberline {3.8}{\ignorespaces Cơ chế hoạt động của Memory Encoder phân tách thành hai luồng: Xử lý ngoại tuyến (chắt lọc hồ sơ đa vector) và Xử lý trực tuyến (đối chiếu và tính điểm cá nhân hóa).}}{47}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Luồng xử lý dữ liệu và cấu trúc Prompt cho tác vụ sinh lời giải thích bằng LLM}}{54}{figure.caption.31}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Trang Đăng nhập}}{69}{figure.caption.47}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Trang Chính}}{69}{figure.caption.48}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Trang Chi tiết sản phẩm}}{70}{figure.caption.49}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Trang Chatbot}}{70}{figure.caption.50}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Mã QR liên kết đến Video Demo thực tế của hệ thống}}{71}{figure.caption.51}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Trang Đăng nhập}}{72}{figure.caption.49}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Trang Chính}}{72}{figure.caption.50}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Trang Chi tiết sản phẩm}}{73}{figure.caption.51}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Trang Chatbot}}{73}{figure.caption.52}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Mã QR liên kết đến Video Demo thực tế của hệ thống}}{74}{figure.caption.53}%
 \addvspace {10\p@ }

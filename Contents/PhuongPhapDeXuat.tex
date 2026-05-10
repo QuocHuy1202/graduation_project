@@ -18,7 +18,7 @@ Về mặt vận hành, cốt lõi của hệ thống là một đường ống 
 \vspace{0.3cm}
 \noindent \textbf{Giai đoạn 1: Truy xuất ứng viên sơ cấp với kiến trúc Two-Tower}
 
-Khi người dùng đưa ra một yêu cầu tìm kiếm thông qua văn bản hoặc hình ảnh, hệ thống không thể lập tức quét qua hàng triệu sản phẩm bằng các mạng nơ-ron phức tạp do giới hạn nghiêm ngặt về độ trễ. Tại bước này, kiến trúc Two-Tower hay Bi-Encoder đóng vai trò như một bộ lọc thô siêu tốc. Dữ liệu đầu vào đi qua khối Query Encoder để nén thành một vector biểu diễn duy nhất. Vector này sau đó được đối chiếu với tập Item Vector Index đã được tính toán sẵn từ luồng ngoại tuyến thông qua thuật toán tìm kiếm láng giềng gần nhất xấp xỉ ANN. Kết hợp cùng khối User Vector Index làm nhiệm vụ lấy chuỗi hành vi lịch sử, hệ thống đã được vector hóa để thực hiện sàng lọc cá nhân hóa nhằm thu hẹp không gian tìm kiếm khổng lồ xuống còn một danh sách vài trăm ứng viên tiềm năng nhất.
+Khi người dùng đưa ra một yêu cầu tìm kiếm thông qua văn bản hoặc hình ảnh, hệ thống không thể lập tức quét qua hàng triệu sản phẩm bằng các mạng nơ-ron phức tạp do giới hạn nghiêm ngặt về độ trễ. Tại bước này, kiến trúc Two-Tower hay Bi-Encoder đóng vai trò như một bộ lọc thô siêu tốc. Điểm nhấn của kiến trúc là việc tận dụng trực tiếp nhánh mã hóa văn bản thuộc Tháp Sản phẩm (Item Tower) để đóng vai trò làm khối Query Encoder, qua đó ép buộc câu truy vấn tìm kiếm và các đặc trưng của sản phẩm được ánh xạ vào chung một không gian ngữ nghĩa. Dữ liệu đầu vào sẽ đi qua Query Encoder này để nén thành một vector biểu diễn duy nhất. Vector này sau đó được đối chiếu với tập Item Vector Index đã được tính toán sẵn từ luồng ngoại tuyến thông qua thuật toán tìm kiếm láng giềng gần nhất xấp xỉ ANN. Cuối cùng, kết hợp cùng khối User Vector Index làm nhiệm vụ lấy chuỗi hành vi lịch sử, hệ thống thực hiện sàng lọc cá nhân hóa nhằm thu hẹp không gian tìm kiếm khổng lồ xuống còn một danh sách vài trăm ứng viên tiềm năng nhất.
 
 \vspace{0.3cm}
 \noindent \textbf{Giai đoạn 2: Khai phá tương tác sâu với mạng Cross-Encoder}
@@ -200,6 +200,16 @@ Vector hợp nhất cuối cùng $\mathbf{v}_{\text{fused}}$ được đồ án 
 \end{equation}
 
 Để hoàn thiện, kết quả này trải qua phép chuẩn hóa L2 nhằm đưa vector về độ dài đơn vị. Bước chuẩn hóa này tạo ra vector đại diện sản phẩm hoàn chỉnh, đảm bảo tính ổn định và tính đẳng hướng tối đa khi tham gia vào các phép tính toán độ tương đồng Cosine trong không gian truy xuất toàn cục phía sau.
+
+\subsubsection{Tái sử dụng Tháp sản phẩm làm Query Encoder cho Tìm kiếm đa phương thức}
+
+Trong các hệ thống tìm kiếm hiện đại, việc đồng nhất không gian biểu diễn giữa câu truy vấn và thực thể sản phẩm là yếu tố kiên quyết để đạt được hiệu năng truy xuất cao. Thay vì xây dựng một kiến trúc Query Encoder hoàn toàn riêng biệt, đề tài đề xuất phương pháp tái sử dụng trực tiếp các nhánh xử lý của Item Tower để đảm nhiệm vai trò mã hóa truy vấn. 
+
+Về bản chất, một truy vấn đa phương thức từ người dùng bao gồm văn bản mô tả, hình ảnh ví dụ hoặc sự kết hợp của cả hai, mang những đặc trưng ngữ nghĩa rất tương đồng với thông tin định danh của sản phẩm. Bằng cách áp dụng cơ chế chia sẻ trọng số, nhánh mã hóa văn bản BERT và nhánh mã hóa hình ảnh ViT bên trong Item Tower sẽ đồng thời đóng vai trò là bộ trích xuất đặc trưng cho truy vấn. Quá trình tái sử dụng này không chỉ ép buộc các vector truy vấn và vector sản phẩm được ánh xạ vào cùng một không gian nhúng chung, giúp phép tính độ tương đồng cosine trở nên chính xác hơn, mà còn giảm thiểu đáng kể số lượng tham số cần huấn luyện, từ đó tối ưu hóa dung lượng bộ nhớ khi triển khai hệ thống thực tế.
+
+Trái ngược với quy trình mã hóa sản phẩm vốn yêu cầu đầy đủ các luồng thông tin, quá trình mã hóa truy vấn sẽ tự động điều chỉnh luồng dữ liệu thông qua cơ chế che giấu tại khối Fusion Gate. Theo đó, luồng văn bản và hình ảnh sẽ được kích hoạt linh hoạt dựa trên dạng đầu vào của người dùng. Nếu thao tác tìm kiếm được thực hiện bằng văn bản, nhánh BERT sẽ hoạt động; nếu bằng hình ảnh, nhánh ViT sẽ tiếp nhận xử lý; và trong trường hợp tìm kiếm kết hợp, cả hai nhánh sẽ cùng phối hợp trích xuất đặc trưng. Ngược lại, do các truy vấn thô từ người dùng thường không chứa các thuộc tính có cấu trúc dạng bảng như giá cả hay thương hiệu, luồng dữ liệu này sẽ được vô hiệu hóa hoàn toàn bằng cách truyền vào các vector rỗng. 
+
+Kết quả đầu ra từ khối Fusion Gate là một Query Embedding duy nhất, đại diện trọn vẹn cho ý định đa phương thức của người dùng và luôn ở trạng thái sẵn sàng để thực hiện truy xuất láng giềng gần nhất xấp xỉ trong không gian vector toàn cục.
 
 \subsection{Xây dựng Tháp Người dùng và Mô hình hóa Chuỗi hành vi}
 
@@ -452,7 +462,7 @@ Quá trình huấn luyện đồng thời (end-to-end) toàn bộ kiến trúc k
 
 Ngược lại, đối với nhánh mã hóa ký ức ($Enc_{Mem}$), hệ thống tái sử dụng trọng số từ mô hình tiền huấn luyện \texttt{sentence-transformers/multi-qa-mpnet-base-cos-v1}. Đây là một biến thể của kiến trúc MPNet đã được tinh chỉnh chuyên sâu để tối ưu hóa cho các tác vụ hỏi đáp và truy xuất thông tin dày đặc (dense retrieval) dựa trên độ đo tương đồng cosine. Nhằm đảm bảo hệ thống có thể hoạt động trơn tru và mở rộng quy mô trên các phần cứng GPU tiêu chuẩn mà không gặp hiện tượng tràn bộ nhớ, toàn bộ hệ số trọng lượng của nhánh $Enc_{Mem}$ được đóng băng (frozen) ngay từ đầu. Chiến lược đóng băng này cho phép hệ thống thực hiện trích xuất và tính toán trước toàn bộ không gian bộ nhớ của người dùng ($\mathcal{P}_u$) một cách ngoại tuyến (offline), giúp tiết kiệm đáng kể dung lượng bộ nhớ và tài nguyên tính toán cho các công đoạn tối ưu hóa phía sau.
 
-\subsubsection*{Giai đoạn 2 (Phase 2): Huấn luyện điều chuẩn $g_{Mix}$}
+\subsubsection*{Giai đoạn 1 (Phase 1): Huấn luyện tối ưu $Enc_{CE}$}
 
 Giai đoạn huấn luyện đầu tiên được thiết kế với mục tiêu duy nhất là tối ưu hóa khả năng phân tích và trích xuất điểm số phù hợp ngữ nghĩa ($s_d^q$) của mô-đun $Enc_{CE}$ từ các cặp truy vấn và tài liệu ứng viên. Trong toàn bộ pha này, mô hình trộn cùng với điểm số cá nhân hóa hoàn toàn bị loại bỏ khỏi luồng tính toán. Sự cô lập này ép buộc nhánh mã hóa chéo phải tự mình học cách phân biệt sự liên quan ngữ nghĩa một cách khách quan nhất mà không có bất kỳ sự định hướng nào từ thông tin hồ sơ lịch sử.
 
@@ -480,25 +490,50 @@ Việc chèn biến neo $y_0$ vào hàm loss đóng vai trò như một cơ ch�
 
 \section{Tinh chỉnh và Sinh lời giải thích với LLM}
 
-\subsection{Vai trò của LLM trong kiến trúc đường ống}
-Trong các hệ thống gợi ý truyền thống, kết quả từ các mô hình học sâu (Bi-Encoder, Cross-Encoder) thường là những điểm số định lượng (logits, probabilities) mang tính "hộp đen". Để giải quyết bài toán diễn giải và tăng độ tin cậy, hệ thống tích hợp Mô hình Ngôn ngữ Lớn vào giai đoạn cuối của đường ống dữ liệu (với hai vai trò cốt lõi:
+Trong các hệ thống gợi ý truyền thống, kết quả từ các mô hình học sâu (Bi-Encoder, Cross-Encoder) thường là những điểm số định lượng mang tính "hộp đen". Để giải quyết bài toán diễn giải và tăng độ tin cậy, hệ thống tích hợp Mô hình Ngôn ngữ Lớn vào giai đoạn cuối của đường ống dữ liệu với hai vai trò cốt lõi:
 
 \begin{description}
-    \item[Bộ lọc cuối cùng:] \hfill \\
-    LLM đóng vai trò là tầng xếp hạng tinh. Thay vì chỉ dựa trên điểm số toán học, LLM nhận đầu vào là danh sách Top-K sản phẩm đã được lọc qua Cross-Encoder, kết hợp cùng truy vấn và toàn bộ lịch sử mua hàng. Khả năng hiểu ngữ cảnh sâu sắc giúp LLM đánh giá toàn diện sự phù hợp, từ đó đóng vai trò như một "giám khảo" tự động chọn lọc ra 1 đến 3 sản phẩm tối ưu nhất, loại bỏ các kết quả nhiễu mà mô hình nhúng có thể chấm điểm sai.
-    
     \item[Bộ sinh lời giải thích:] \hfill \\
-    Đối với các sản phẩm được chọn, LLM chịu trách nhiệm sinh ra các văn bản tự nhiên để giải thích lý do gợi ý và đưa ra lời khuyên tổng quan. Việc minh bạch hóa quyết định (ví dụ: liên kết trực tiếp giữa tính năng của sản phẩm mới với sở thích trong lịch sử mua hàng) giúp nâng cao trải nghiệm cá nhân hóa và thuyết phục người dùng đưa ra quyết định mua sắm.
+    Đối với các sản phẩm được chọn, LLM chịu trách nhiệm sinh ra các văn bản tự nhiên để giải thích lý do gợi ý. Việc minh bạch hóa quyết định (ví dụ: liên kết trực tiếp giữa tính năng của sản phẩm mới với sở thích trong lịch sử mua hàng) giúp nâng cao trải nghiệm cá nhân hóa và thuyết phục người dùng.
+
+    \item[Bộ lọc cuối cùng:] \hfill \\
+    Thay vì chỉ dựa trên điểm số toán học, LLM nhận đầu vào là danh sách Top-K sản phẩm đã được lọc qua Cross-Encoder, kết hợp cùng truy vấn và toàn bộ lịch sử mua hàng. Khả năng hiểu ngữ cảnh sâu sắc giúp LLM đánh giá toàn diện sự phù hợp, từ đó đóng vai trò như một "giám khảo" tự động chọn ra 1 đến 3 sản phẩm tối ưu nhất, loại bỏ các kết quả nhiễu mà mô hình nhúng có thể chấm điểm sai.
 \end{description}
 
+\subsection{Đường ống sinh truy vấn lai}
+
+\noindent \textbf{Vấn đề khuyết thiếu dữ liệu truy vấn:} 
+Trong các bài toán tìm kiếm ngữ nghĩa, để huấn luyện hiệu quả các mô hình học sâu, tập dữ liệu cần cung cấp các cặp thông tin $(q, i^+)$, với $q$ là truy vấn của người dùng và $i^+$ là sản phẩm đích. Tuy nhiên, các tập dữ liệu thương mại điện tử thực tế thường chỉ ghi nhận hành vi ẩn như nhấp chuột hoặc mua hàng mà thiếu hụt hoàn toàn các câu truy vấn văn bản, tạo ra bài toán khởi động lạnh cho hệ thống.
+
+\noindent \textbf{Giải pháp đề xuất:} 
+Để giải quyết nút thắt này và khắc phục giới hạn của các mô hình ngôn ngữ lớn cỡ nhỏ khi xử lý các định dạng dữ liệu khác nhau, hệ thống đề xuất một đường ống sinh dữ liệu lai được chia làm hai luồng xử lý riêng biệt.
+
+Luồng thứ nhất tập trung sinh các truy vấn dài mang tính chất giao tiếp thông qua mô hình ngôn ngữ lớn. Hệ thống áp dụng cơ chế chưng cất tri thức, trong đó một mô hình thương mại cỡ lớn là Gemini 2.5 Flash đóng vai trò mô hình giáo viên để tổng hợp ra một tập dữ liệu chuẩn từ một phần nhỏ dữ liệu thô. Tiếp theo, tập dữ liệu này được dùng để tinh chỉnh mô hình mã nguồn mở Gemma 2B đóng vai trò mô hình học sinh. Sau khi tinh chỉnh, mô hình Gemma thực hiện nhiệm vụ dịch ngược bằng cách quan sát chuỗi lịch sử $H_u$ và siêu dữ liệu sản phẩm $M(i_{target})$ để nội suy ra ý định tìm kiếm của người dùng:
+$$q_{long} = f_{LLM}\left( \text{Prompt}, H_u, M(i_{target}) \right)$$
+
+Luồng thứ hai chuyên xử lý các truy vấn ngắn dạng từ khóa bằng thuật toán tự suy. Thực nghiệm cho thấy các mô hình ngôn ngữ nhỏ thường gặp hiện tượng ảo giác và mất kiểm soát định dạng khi bị ép buộc sinh các từ khóa ngắn, đặc biệt khi đối mặt với dữ liệu chứa đánh giá tiêu cực. Để khắc phục, hệ thống thiết kế một thuật toán rút trích đặc trưng dựa trên luật sử dụng biểu thức chính quy. Thuật toán này tự động bóc tách và ghép nối các trường dữ liệu cốt lõi như thương hiệu, loại sản phẩm và đặc tính vật lý từ siêu dữ liệu $M(i_{target})$:
+$$q_{short} = f_{Regex}\left( \text{Brand}, \text{Item Form}, \text{Core Title} \right)$$
+
+Việc kết hợp linh hoạt giữa năng lực suy luận ngữ nghĩa của mô hình ngôn ngữ lớn và tính chính xác tuyệt đối của thuật toán tự suy giúp hệ thống tạo ra một tập dữ liệu huấn luyện $(q, i^+)$ toàn diện. Phương pháp này đảm bảo bám sát cả hành vi tìm kiếm mang tính hội thoại lẫn thói quen gõ từ khóa truyền thống của người dùng trên môi trường thực tế.
+
 \subsection{Kỹ thuật thiết kế Prompt cho tác vụ gợi ý}
-Để LLM hoạt động ổn định như một API backend thay vì một chatbot hội thoại thông thường, kỹ thuật thiết kế Prompt được xây dựng chặt chẽ theo hướng tiếp cận \textbf{RAG} kết hợp với \textbf{Đầu ra có cấu trúc}.
+Để LLM hoạt động ổn định như một API backend trong khâu lọc cuối cùng (đã trình bày ở Mục 3.4.1), kỹ thuật thiết kế Prompt được xây dựng theo hướng tiếp cận RAG kết hợp với Đầu ra có cấu trúc (Structured Output).
 
 Cấu trúc Prompt được phân tách logic nhằm tối ưu hóa khả năng tuân thủ của mô hình:
 \begin{itemize}
-    \item \textbf{System Prompt:} Thiết lập vai trò (Trợ lý mua sắm AI), định nghĩa nhiệm vụ (phân tích lịch sử, chọn sản phẩm tốt nhất) và thiết lập các ràng buộc nghiêm ngặt (không bịa đặt thông tin, giới hạn số lượng kết quả).
-    \item \textbf{User Prompt:} Dữ liệu thực tế được tiêm vào từ các giai đoạn trước, bao gồm truy vấn hiện tại, lịch sử tương tác và metadata chi tiết của Top-K sản phẩm ứng viên.
+    \item \textbf{System Prompt:} Thiết lập vai trò (Trợ lý mua sắm AI), định nghĩa nhiệm vụ (phân tích lịch sử, chọn sản phẩm) và thiết lập ràng buộc nghiêm ngặt (không bịa đặt thông tin).
+    \item \textbf{User Prompt:} Dữ liệu thực tế được tiêm vào từ các giai đoạn trước, bao gồm truy vấn hiện tại, lịch sử tương tác và metadata chi tiết của Top-K ứng viên.
 \end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/call_llm_api.jpg} 
+    \vspace{0.5cm}
+    \caption{Luồng xử lý dữ liệu và cấu trúc Prompt cho tác vụ sinh lời giải thích bằng LLM}
+    \label{fig:llm_pipeline}
+\end{figure}
+
+Dựa trên luồng dữ liệu từ Hình \ref{fig:llm_pipeline}, cấu trúc Prompt thực tế được thiết kế như sau:
 
 \noindent \textbf{Cấu trúc Prompt minh họa:}
 \begin{verbatim}
@@ -513,10 +548,10 @@ You MUST respond ONLY with a valid JSON object adhering to the schema.
 {Câu tìm kiếm của người dùng}
 
 --- USER PURCHASE HISTORY ---
-{Danh sách các sản phẩm người dùng đã tương tác/mua gần đây}
+{Danh sách các sản phẩm người dùng đã mua gần đây}
 
 --- RECOMMENDED PRODUCTS FOR QUERY ---
-{Danh sách Top-K sản phẩm ứng viên kèm Tiêu đề, Tính năng, Giá, Đánh giá}
+{Danh sách Top-K sản phẩm ứng viên kèm Tiêu đề, Giá, Đánh giá}
 \end{verbatim}
 
-Nhằm đảm bảo tính toàn vẹn của hệ thống tích hợp, LLM được ép buộc phải trả về dữ liệu tuân thủ một \textit{JSON Schema} định nghĩa sẵn. Lược đồ này bắt buộc mô hình phải trích xuất chính xác \texttt{selected\_item\_index}, \texttt{selected\_item\_title}, kèm theo lý do cho từng món hàng. Phương pháp này loại bỏ hoàn toàn rủi ro ảo giác định dạng, cho phép phía Frontend phân tích cú pháp và hiển thị mượt mà lên giao diện người dùng.
+Nhằm đảm bảo tính toàn vẹn của hệ thống tích hợp, LLM được ép buộc phải trả về dữ liệu tuân thủ một \textit{JSON Schema} định nghĩa sẵn (bao gồm \texttt{selected\_item\_index}, \texttt{selected\_item\_title}, và \texttt{reason}). Phương pháp này loại bỏ rủi ro ảo giác định dạng, cho phép Frontend phân tích cú pháp và hiển thị trực tiếp lên giao diện.

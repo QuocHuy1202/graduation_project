@@ -17,34 +17,29 @@ Nội dung chương bao gồm mô tả tập dữ liệu, thiết lập môi tr�
 
 \subsection{Tổng quan về nguồn dữ liệu}
 
-Nghiên cứu sử dụng tập dữ liệu quy chuẩn \href{https://amazon-reviews-2023.github.io/}{Amazon Reviews 2023}. Nhằm đánh giá toàn diện tính tổng quát của mô hình, đồ án tiến hành thực nghiệm trên hai phân loại hàng hóa mang đặc thù riêng biệt. Phân loại thứ nhất là \textbf{Gift Cards} bao gồm các sản phẩm ít biến động về ngoại hình, với giá trị sử dụng phụ thuộc nhiều vào ngữ cảnh tặng quà và thương hiệu. Phân loại thứ hai là \textbf{Beauty} đại diện cho nhóm sản phẩm đa dạng, đòi hỏi khắt khe về các đặc trưng thị giác như màu sắc hay bao bì, cùng những thuộc tính chi tiết như loại da, thành phần và công dụng.
+Nghiên cứu sử dụng tập dữ liệu quy chuẩn \href{https://amazon-reviews-2023.github.io/}{Amazon Reviews 2023}. Toàn bộ dữ liệu được tổ chức thành hai tập tin JSON Lines liên kết chặt chẽ với nhau: Tập \textbf{User Reviews} lưu trữ lịch sử tương tác, đánh giá của người dùng và Tập \textbf{Item Metadata} lưu trữ thông tin sản phẩm đa phương thức bao gồm hình ảnh, mô tả văn bản và các đặc tính dạng bảng.
 
-Đặc biệt đối với phân loại \textbf{Beauty}, nghiên cứu thiết lập hai kịch bản xử lý dữ liệu nhằm thử thách các khía cạnh khác nhau của hệ thống gợi ý:
+Nhằm đánh giá toàn diện tính tổng quát của kiến trúc mạng, đồ án tiến hành thực nghiệm trên hai phân loại hàng hóa mang đặc thù đối lập:
+\begin{itemize}
+    \item \textbf{Gift Cards:} Bao gồm các sản phẩm ít biến động về ngoại hình, giá trị sử dụng phụ thuộc nhiều vào ngữ cảnh tặng quà và thương hiệu. 
+    \item \textbf{All Beauty:} Đại diện cho nhóm sản phẩm đa dạng, đòi hỏi khắt khe về các đặc trưng thị giác (màu sắc, bao bì) cùng những thuộc tính chi tiết (loại da, công dụng).
+    \item \textbf{Cell Phones \& Accessories:} Được sử dụng để đánh giá Cross Encoder với những mô hình lọc khác.
+\end{itemize}
 
-\textbf{Kịch bản 1: 3-core kết hợp Cold-start cho mục tiêu truy xuất (Retrieval Focus).} Quá trình này thực hiện lọc dữ liệu theo cấu trúc 3-core, tức là chỉ giữ lại người dùng và sản phẩm có ít nhất ba lượt tương tác, từ đó thu được một tập dữ liệu cơ sở gồm 2.216 sản phẩm. Để đánh giá khả năng truy xuất của mô hình trong điều kiện thiếu hụt dữ liệu hành vi, chúng tôi chủ động bổ sung thêm 8.000 sản phẩm hoàn toàn mới chưa từng phát sinh tương tác. Thiết lập này được thiết kế để kiểm chứng sức mạnh của các đặc trưng nội tại bao gồm hình ảnh, văn bản và thuộc tính trong việc định danh và tìm kiếm sản phẩm.
+Từ hai phân loại cốt lõi này, thông qua các bước tiền xử lý chuyên sâu, nghiên cứu thiết lập ba tập dữ liệu với mức độ thưa thớt và quy mô không gian mẫu khác nhau nhằm thử thách toàn diện năng lực của hệ thống (Chi tiết phương pháp trích xuất được trình bày tại Mục \ref{sec:preprocessing}). Thống kê mô tả về số lượng người dùng, sản phẩm và lượt tương tác trên các tập Huấn luyện (Train), Kiểm định (Validation) và Kiểm thử (Test) được tổng hợp tại Bảng \ref{tab:dataset_stats}.
 
-\textbf{Kịch bản 2: Long-tail Sequential phục vụ kiểm thử sản phẩm mới (Cold-item Testing).} Hướng tiếp cận này tập trung vào việc dự báo hành vi người dùng đối với các mặt hàng ít phổ biến. Trong thiết lập này, hệ thống yêu cầu người dùng phải có lịch sử tương tác đủ dày từ năm lượt trở lên. Mặt khác, tập kiểm thử được xây dựng bằng cách chỉ chọn những sản phẩm \textit{long-tail}, nghĩa là các mặt hàng chỉ xuất hiện duy nhất một lần trong toàn bộ tập dữ liệu, đồng thời chúng phải nằm ở vị trí cuối cùng trong chuỗi hành vi của người dùng. Đây là một bài toán khó nhằm đánh giá năng lực hiểu ngữ cảnh đa phương thức của khối tháp sản phẩm Item Tower khi không có sự trợ giúp từ kỹ thuật lọc cộng tác Collaborative Filtering.
-
-Toàn bộ dữ liệu được tổ chức thành hai tập tin JSON Lines liên kết chặt chẽ với nhau. Tập tin \textbf{User Reviews} có vai trò lưu trữ lịch sử, đánh giá và cảm nhận của người dùng. Tập tin còn lại là \textbf{Item Metadata} chịu trách nhiệm lưu trữ thông tin sản phẩm đa phương thức bao gồm hình ảnh, mô tả văn bản và các đặc tính dạng bảng.
-
-Để phục vụ cho quá trình huấn luyện và đánh giá hệ thống gợi ý, nghiên cứu tiến hành thực nghiệm trên ba kịch bản dữ liệu khác nhau, được trích xuất từ tập dữ liệu gốc Amazon Review Data. Các kịch bản này được thiết kế với mức độ thưa thớt và kích thước không gian mẫu khác nhau nhằm kiểm chứng toàn diện năng lực của kiến trúc Two-Tower. 
-
-Chi tiết về số lượng sản phẩm, số lượng người dùng và số lượt tương tác trên các tập Huấn luyện (Train), Kiểm định (Validation) và Kiểm thử (Test) được tổng hợp chi tiết tại Bảng \ref{tab:dataset_stats}.
-
-\begin{table}[ht]
+\begin{table}[H]
 \centering
 \caption{Thống kê mô tả số lượng người dùng, tương tác và sản phẩm trên các tập dữ liệu}
 \label{tab:dataset_stats}
 \renewcommand{\arraystretch}{1.2}
-
-% Lệnh resizebox giúp ép toàn bộ bảng vừa khít chiều rộng của đoạn văn bản
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llccc}
 \hline
 \textbf{Tập dữ liệu} & \textbf{Tập phân chia} & \textbf{Số lượng Người dùng} & \textbf{Số lượng Tương tác} & \textbf{Tổng số Sản phẩm} \\ \hline
 
 \multirow{4}{*}{\textbf{Gift Card}} 
-& Train & 59.143 & 62.456 & \multirow{4}{*}{1.307} \\
+& Train & 59.143 & 62.456 & \multirow{4}{*}{1.137} \\
 & Validation & 7.393 & 7.797 & \\
 & Test & 7.393 & 7.842 & \\
 & \textit{Tổng cộng} & \textit{-} & \textit{78.095} & \\ \hline
@@ -60,19 +55,25 @@ Chi tiết về số lượng sản phẩm, số lượng người dùng và s�
 & Validation & 274 & 2.313 & \\
 & Test & 241 & 1.758 & \\
 & \textit{Tổng cộng} & \textit{-} & \textit{14.108} & \\ \hline
+
+\multirow{4}{*}{\textbf{\begin{tabular}[c]{@{}l@{}}Phone \& Accessories\\(5-core, Leave-One-Out)\end{tabular}}} 
+& Train & 3.326 & 41.195 & \multirow{4}{*}{24.287} \\
+& Validation & 945 & 8.145 & \\
+& Test & 966 & 8.367 & \\
+& \textit{Tổng cộng} & \textit{-} & \textit{57.707} & \\ \hline
 \end{tabular}%
-} % Đóng ngoặc của lệnh resizebox
+}
 \end{table}
 
-Dựa vào Bảng \ref{tab:dataset_stats}, có thể thấy rõ đặc thù phân bố của từng kịch bản thử nghiệm:
+Dựa vào Bảng \ref{tab:dataset_stats}, có thể phân tách rõ đặc thù phân bố của bốn kịch bản thử nghiệm trong nghiên cứu:
 
-\begin{itemize}
-    \item \textbf{Tập Gift Card:} Đại diện cho kịch bản dữ liệu siêu thưa thớt. Dù sở hữu tới 78.095 tương tác, nhưng chúng bị phân mảnh trên một lượng khổng lồ người dùng (hơn 59.000 người ở tập Train). Trung bình mỗi người dùng chỉ có khoảng 1,05 lượt tương tác. Kịch bản này đóng vai trò là bài kiểm tra độ bền của hệ thống trong điều kiện người dùng mới hoàn toàn (User Cold-start).
-    
-    \item \textbf{Tập Beauty 3-core:} Đóng vai trò là tập dữ liệu cân bằng. Thông qua việc áp dụng bộ lọc mức độ ba, tức là chỉ giữ lại những người dùng và sản phẩm có ít nhất ba lượt tương tác, tổng số tương tác dù giảm xuống còn 11.198 lượt nhưng mật độ dữ liệu lại được cải thiện rõ rệt với trung bình xấp xỉ 5,5 tương tác trên mỗi người dùng. Đặc biệt, nhờ phương pháp lọc này, toàn bộ các sản phẩm mục tiêu cần dự đoán ở tập kiểm thử thực chất đều đã xuất hiện và được hệ thống học qua trong giai đoạn huấn luyện. Dù vậy, không gian ứng viên vẫn được chủ động mở rộng lên 10.216 sản phẩm bằng cách trộn thêm 8.000 mẫu nhiễu khởi động lạnh. Cách thiết lập này không chỉ tạo ra một môi trường lý tưởng để kiến trúc mạng Transformer học bắt các mẫu hành vi tuần tự, mà còn trở thành một bài kiểm tra khắt khe về năng lực phân biệt và chống nhiễu của hệ thống.
-    
-    \item \textbf{Tập All Beauty 5-core kịch bản Khởi động lạnh toàn phần:} Là kịch bản mang tính thử thách khắc nghiệt nhất. Bằng cách áp dụng bộ lọc mức độ năm nhằm giữ lại những người dùng có từ năm lượt tương tác trở lên, quá trình này đã cô đọng dữ liệu thành 14.108 tương tác chất lượng cao từ 1.094 người dùng lõi ở tập huấn luyện, đạt tỷ lệ trung bình lên tới 9,17 tương tác cho mỗi người dùng. Việc cung cấp cho mô hình một chuỗi hành vi lịch sử rất dày dặn nhưng lại yêu cầu dự đoán một sản phẩm mục tiêu hoàn toàn mới chưa từng xuất hiện trước đó đã tạo ra một bài toán khởi động lạnh toàn phần đúng nghĩa. Thiết lập này giúp kiểm chứng minh bạch khả năng tổng quát hóa và sức mạnh dung hợp đa phương thức của hệ thống khi đối mặt với các mặt hàng hoàn toàn xa lạ.
-\end{itemize}
+Kịch bản siêu thưa thớt được thể hiện qua tập thẻ quà tặng. Dù sở hữu tổng lượng tương tác lớn nhất với 78.095 lượt, dữ liệu lại bị phân mảnh trên một lượng khổng lồ người dùng. Với tỷ lệ trung bình chỉ khoảng 1,05 lượt tương tác cho mỗi người dùng, đây là bài kiểm tra độ bền của hệ thống trong điều kiện cực hạn của bài toán người dùng khởi động lạnh.
+
+Kịch bản chống nhiễu được thiết lập thông qua tập làm đẹp với bộ lọc mức độ ba. Kịch bản này có mật độ dữ liệu ổn định hơn khi đạt trung bình 5,5 tương tác trên mỗi người dùng. Đặc biệt, hệ thống phải tìm kiếm sản phẩm đích trong một không gian ứng viên bị cố tình làm nhiễu bởi 8.000 mặt hàng chưa từng phát sinh tương tác. Thiết lập này nhằm kiểm định khắt khe năng lực trích xuất đặc trưng nội tại từ hình ảnh và văn bản của mô hình.
+
+Kịch bản khởi động lạnh toàn phần sử dụng tập làm đẹp với bộ lọc mức độ năm. Tập dữ liệu này cung cấp chuỗi hành vi lịch sử chất lượng cao với 9,17 tương tác trên mỗi người dùng. Tuy nhiên, sản phẩm mục tiêu ở tập kiểm thử lại là những mặt hàng thuộc phần đuôi dài hoàn toàn mới mẻ. Kịch bản này đánh giá trực tiếp sức mạnh dung hợp đa phương thức của hệ thống khi không có sự trợ giúp từ các thuật toán lọc cộng tác truyền thống.
+
+Cuối cùng, kịch bản đối chiếu chuẩn được thực hiện trên tập điện thoại và phụ kiện với bộ lọc mức độ năm và phân chia theo giao thức Leave-One-Out. Đây là tập dữ liệu có mật độ tương tác dày đặc nhất với tỷ lệ xấp xỉ 12,38 lượt trên mỗi người dùng. Kết hợp với không gian sản phẩm khổng lồ lên tới 24.287 mặt hàng, thử nghiệm này tạo ra một thước đo toàn diện để so sánh trực tiếp với các mô hình nền tảng khác. Đặc thù của tập dữ liệu này cho phép đánh giá chuyên sâu năng lực khai thác chuỗi hành vi dài hạn, đồng thời đo lường mức độ hiệu quả khi xử lý các truy vấn dạng từ khóa ngắn so với truy vấn bằng ngôn ngữ tự nhiên.
 
 \subsubsection*{A. Chi tiết dữ liệu User Reviews}
 Tập dữ liệu này cung cấp chuỗi hành vi lịch sử để huấn luyện mô hình.
@@ -144,7 +145,7 @@ Tập dữ liệu cung cấp thông tin đa phương thức để xây dựng Th
         Điểm trung bình và tổng lượt đánh giá. Được chuẩn hóa số học trước khi đưa vào mạng nơ-ron để tránh chênh lệch thang đo. \\
         \hline
         \texttt{price} \newline \textit{(Float)} & 
-        Giá bán quy đổi. Các giá trị khuyết thiếu được xử lý bằng phương pháp gán giá trị trung vị. \\
+        Giá bán quy đổi. Trường này được loại bỏ do tỉ lệ NaN quá cao không thể sử dụng trung vị. \\
         \hline
         \texttt{features}, \texttt{description} \newline \& \texttt{details} & 
         Mô tả và thông số kỹ thuật. Bổ sung ngữ nghĩa cho tiêu đề, được gộp thành chuỗi văn bản cho mô hình mã hóa. \\
@@ -163,15 +164,23 @@ Tập dữ liệu cung cấp thông tin đa phương thức để xây dựng Th
 
 
 \subsection{Quy trình Tiền xử lý dữ liệu}
-\label{sec:preprocessing}
 
 Quy trình tiền xử lý được chia thành 4 giai đoạn chính nhằm giảm nhiễu và tối ưu hóa dữ liệu đầu vào cho kiến trúc đa phương thức:
 
 \subsubsection{Làm sạch và Lọc dữ liệu}
-\begin{itemize}
-    \item \textbf{Xử lý giá trị khuyết:} Loại bỏ các mẫu thiếu tiêu đề sản phẩm; sử dụng trung vị để điền khuyết cho trường giá cả; và thay thế các trường mô tả rỗng bằng chuỗi ký tự trống.
-    \item \textbf{Lọc tương tác:} Áp dụng kỹ thuật k-core ($k=3$) để loại bỏ người dùng có ít hơn 3 tương tác (nhóm cold-start) và sản phẩm xuất hiện ít hơn 2 lần, đảm bảo mô hình có đủ thông tin để học được sự phụ thuộc chuỗi.
-\end{itemize}
+\label{sec:preprocessing}
+
+Quá trình tiền xử lý khởi đầu bằng bước làm sạch các giá trị khuyết thiếu nhằm đảm bảo tính toàn vẹn của không gian đặc trưng. Các mẫu dữ liệu không chứa tiêu đề sản phẩm bị loại bỏ hoàn toàn do thiếu thông tin định danh cốt lõi. Các trường mô tả hoặc thuộc tính bị rỗng, hoặc chứa các ký tự rác từ hệ thống, sẽ được thay thế bằng chuỗi ký tự trống hoặc xử lý qua thuật toán rút trích bằng biểu thức chính quy để tận dụng tối đa thông tin từ các trường lân cận.
+
+Sau khi làm sạch, dữ liệu được đưa qua khâu lọc tương tác với các chiến lược chuyên biệt nhằm phục vụ cho từng kịch bản đánh giá của hệ thống. Đối với tập dữ liệu thẻ quà tặng, hệ thống chủ ý giữ nguyên cấu trúc phân mảnh tự nhiên thay vì cắt lọc gắt gao. Việc duy trì mật độ tương tác siêu thưa thớt này nhằm tạo ra một môi trường giả lập khắc nghiệt, phục vụ trực tiếp cho mục tiêu đánh giá sức chịu đựng của mô hình trước bài toán người dùng khởi động lạnh.
+
+Ngược lại, tập dữ liệu làm đẹp được xử lý qua hai chiến lược cắt lọc phức tạp hơn để kiểm thử năng lực mô hình hóa chuỗi tuần tự. Ở kịch bản thứ nhất, bộ lọc mức độ ba được áp dụng, yêu cầu người dùng và sản phẩm phải có tối thiểu ba lượt tương tác để hệ thống có đủ cơ sở học được sự phụ thuộc trong lịch sử mua sắm. Điểm nhấn của bước này là việc chủ động tiêm thêm 8.000 sản phẩm hoàn toàn mới vào không gian ứng viên. Kỹ thuật này tạo ra một tập kiểm thử chứa mật độ nhiễu cao, ép buộc hệ thống truy xuất phải dựa hoàn toàn vào đặc trưng đa phương thức nội tại của sản phẩm thay vì thuật toán lọc cộng tác truyền thống.
+
+Ở kịch bản thứ hai, nhằm tập trung vào bài toán dự báo mặt hàng ít phổ biến, dữ liệu được đi qua bộ lọc mức độ năm để cô đọng ra một tập người dùng có chuỗi hành vi lịch sử đủ dày dặn. Tính đột phá trong khâu thiết lập này nằm ở cách cấu trúc tập kiểm thử dựa trên phân phối đuôi dài. Cụ thể, hệ thống sẽ trích xuất những sản phẩm chỉ xuất hiện duy nhất một lần trong toàn bộ tập dữ liệu và đặt chúng vào vị trí dự đoán ở cuối chuỗi hành vi. Cách tiếp cận này triệt tiêu hoàn toàn sự thiên lệch về độ phổ biến, qua đó đánh giá minh bạch năng lực thấu hiểu ngữ cảnh đa phương thức của tháp sản phẩm trong điều kiện khởi động lạnh toàn phần.
+
+Cuối cùng, nhằm thiết lập một hệ quy chiếu khách quan để đối chiếu trực tiếp kết quả với các nghiên cứu đã công bố, tập dữ liệu điện thoại và phụ kiện được sử dụng dựa trên cấu trúc 5-core quy chuẩn từ Amazon. Khác với phương pháp tự cắt lọc mật độ áp dụng trên hai tập dữ liệu làm đẹp, nghiên cứu này kế thừa nguyên bản cấu trúc từ các nguồn dữ liệu tiền nhiệm, đồng thời thực hiện bước sàng lọc bổ sung để chỉ giữ lại những tương tác có điểm đánh giá từ bốn trở lên. Giao thức này nhằm đảm bảo mô hình được huấn luyện và kiểm thử trên các tập hành vi tích cực và có chất lượng cao nhất. 
+
+Toàn bộ dữ liệu sau đó được phân chia theo giao thức để lại một phần tử cuối cùng nhằm tạo ra một môi trường thực nghiệm có mật độ tương tác dày đặc, tối ưu cho việc đo lường năng lực khai thác các chuỗi hành vi dài hạn. Thiết lập này không chỉ đảm bảo tính công bằng khi so sánh hiệu năng với các bài báo nền tảng mà còn cung cấp một cơ sở dữ liệu quy mô lớn để đánh giá sức mạnh xử lý giữa các truy vấn dạng từ khóa ngắn truyền thống đối nghịch với các truy vấn bằng ngôn ngữ tự nhiên trong một không gian ứng viên khổng lồ.
 
 \subsubsection{Xử lý đặc trưng phi cấu trúc}
 \begin{itemize}
@@ -203,6 +212,15 @@ Dữ liệu được gom nhóm theo định danh người dùng và sắp xếp 
 Kết quả của quá trình tiền xử lý là các Tensor định dạng PyTorch sẵn sàng được đưa
 vào GPU để huấn luyện.
 
+\subsubsection{Tổng hợp và làm giàu dữ liệu truy vấn}
+
+Bên cạnh các bước làm sạch cơ sở, một khâu tiền xử lý đặc thù và mang tính quyết định của hệ thống là việc tổng hợp các câu truy vấn nhân tạo nhằm giải quyết bài toán thiếu hụt dữ liệu đầu vào. Quá trình này được thực thi thông qua đường ống sinh dữ liệu lai đã đề xuất ở phần kiến trúc. Đối với luồng truy vấn giao tiếp, hệ thống tiến hành trích xuất một tập mẫu từ dữ liệu thẻ quà tặng để đưa qua mô hình ngôn ngữ lớn thương mại thực hiện khâu chưng cất tri thức. Tập dữ liệu chuẩn thu được tiếp tục được dùng để tinh chỉnh mô hình mã nguồn mở nội bộ là Gemma. Thực nghiệm tiền xử lý cho thấy sau khi tinh chỉnh, mô hình này đã chứng minh năng lực thấu hiểu ngữ cảnh ấn tượng, tự động sinh ra các câu truy vấn dài có cấu trúc hội thoại bám sát ý định tìm kiếm thực tế của người dùng trên cả hai tập dữ liệu.
+
+Tuy nhiên, trong quá trình thực nghiệm đối với luồng sinh truy vấn từ khóa ngắn, hệ thống ghi nhận sự suy giảm hiệu suất nghiêm trọng từ mô hình ngôn ngữ cỡ nhỏ. Khi phải chịu áp lực từ các mệnh lệnh thu gọn độ dài hoặc khi đối mặt với dữ liệu nhiễu mang tính tiêu cực, mô hình thường xuyên gặp hiện tượng quá tải mệnh lệnh dẫn đến ảo giác. Kết quả là hệ thống liên tục trả về các chuỗi ký tự vô nghĩa, mã số ngẫu nhiên hoặc tự phát sinh các thông báo lỗi ảo. Để khắc phục triệt để tình trạng này và đảm bảo tính toàn vẹn cho dữ liệu huấn luyện, quá trình tiền xử lý đã thiết lập cơ chế chuyển hướng, áp dụng hoàn toàn thuật toán tự suy dựa trên luật cho phân nhánh truy vấn ngắn.
+
+Thuật toán tự suy tiến hành quét toàn bộ không gian dữ liệu bằng các biểu thức chính quy để bóc tách thông minh các trường thông tin. Các tiền tố rườm rà mang tính nhồi nhét từ khóa tối ưu hóa công cụ tìm kiếm trong tiêu đề sản phẩm được cắt tỉa triệt để nhằm thu hồi tên cốt lõi của mặt hàng. Phần tên cốt lõi này sau đó được tự động ghép nối linh hoạt với trường thương hiệu và phân loại hình thái sản phẩm. Đồng thời, thuật toán cũng tích hợp cơ chế lọc chủ động thông qua danh sách đen để quét sạch các giá trị khuyết bị hệ thống chuyển đổi lỗi thành chuỗi văn bản thông thường. 
+
+Kết quả của toàn bộ quy trình tiền xử lý lai này là việc biến đổi một tập dữ liệu ẩn thô sơ thành một tập dữ liệu đa phương thức hoàn chỉnh. Hệ thống đã tổng hợp thành công hàng chục ngàn cặp truy vấn và sản phẩm chất lượng cao không chứa nhiễu, tạo tiền đề dữ liệu vững chắc cho việc huấn luyện không gian nhúng của tháp sản phẩm trong các giai đoạn tiếp theo.
 
 \section{Thiết lập thực nghiệm}
 
@@ -370,6 +388,34 @@ Dựa vào các số liệu thống kê tại Bảng \ref{tab:cross_modal_retrie
 Kịch bản 3-core bao gồm 8.000 sản phẩm Cold-start được lấy đa dạng từ nhiều nhóm hàng, tạo ra một không gian vector có độ phân tán cao, giúp mạng Contrastive Learning phân biệt các cụm sản phẩm dễ dàng hơn. Ngược lại, việc lọc 5-core ở kịch bản sau vô hình trung đã khoanh vùng lại những sản phẩm phổ biến và có tính cạnh tranh cao nhất. Các mặt hàng này, điển hình như các sản phẩm cùng một bộ sưu tập mỹ phẩm, thường có sự đồng nhất lớn về mặt ngoại quan thị giác Image và cấu trúc mô tả Text. Đặc điểm này làm tăng tỷ lệ các mẫu âm tính khó Hard Negatives trong không gian vector, khiến bài toán phân loại trở nên tinh vi hơn và dẫn đến sự thay đổi nhẹ về mặt hiệu suất.
 
 Kết quả thực nghiệm này là tiền đề hoàn hảo để lý giải cho các đánh giá truy xuất người dùng tiếp theo. Việc Tháp Sản phẩm chứng minh được khả năng học và dung hợp thành công các đặc trưng hạt mịn tinh vi ngay cả trong không gian nhiễu và mang tính thử thách khắt khe như tập Beauty Full Cold-start sẽ mang lại sức mạnh nền tảng vững chắc. Từ đó, Tháp Người dùng User Tower có thể tận dụng biểu diễn đa phương thức chất lượng cao này để tạo ra sự đột phá trong gợi ý cá nhân hóa.
+
+\textbf{Đánh giá hiệu suất của đường ống sinh truy vấn lai.} 
+Để kiểm chứng năng lực trích xuất đặc trưng của Tháp Sản phẩm khi đóng vai trò là một Query Encoder xử lý các câu truy vấn từ người dùng, nghiên cứu tiến hành chạy kiểm thử Zero-history (không sử dụng chuỗi hành vi lịch sử). Thực nghiệm này đồng thời đóng vai trò là thước đo định lượng để đối chiếu chất lượng của hai phương pháp sinh dữ liệu đã được thảo luận ở phần tiền xử lý: truy vấn dài sinh bởi mô hình ngôn ngữ và truy vấn ngắn trích xuất bằng thuật toán tự suy.
+
+\begin{table}[H]
+\centering
+\caption{So sánh hiệu suất truy xuất giữa hai phương pháp sinh truy vấn}
+\label{tab:query_eval}
+\renewcommand{\arraystretch}{1.2}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llccccc}
+\hline
+\textbf{Tập dữ liệu} & \textbf{Phương pháp sinh} & \textbf{Hit Rate@10} & \textbf{Hit Rate@20} & \textbf{Hit Rate@50} & \textbf{NDCG@10} & \textbf{MRR@10} \\ \hline
+\multirow{2}{*}{\textbf{Gift Card}} 
+& Truy vấn dài (Mô hình ngôn ngữ) & 77.40\% & 85.33\% & 90.40\% & 47.38\% & \textbf{37.88\%} \\
+& Truy vấn ngắn (Thuật toán tự suy) & \textbf{87.36\%} & \textbf{92.58\%} & \textbf{96.08\%} & \textbf{48.09\%} & 35.69\% \\ \hline
+\multirow{2}{*}{\textbf{Beauty 5-core}} 
+& Truy vấn dài (Mô hình ngôn ngữ) & 42.21\% & 53.58\% & 66.84\% & 27.45\% & 22.90\% \\
+& Truy vấn ngắn (Thuật toán tự suy) & \textbf{78.94\%} & \textbf{85.89\%} & \textbf{92.83\%} & \textbf{62.14\%} & \textbf{56.85\%} \\ \hline
+\end{tabular}%
+}
+\end{table}
+
+Phân tích kết quả trên tập dữ liệu thẻ quà tặng cho thấy sự vượt trội của phương pháp sinh truy vấn ngắn dựa trên luật. Tỷ lệ trúng đích trong mười kết quả đầu tiên đạt 87,36 phần trăm, cao hơn khoảng 10 điểm phần trăm so với luồng truy vấn dài do mô hình ngôn ngữ sinh ra. Nguyên nhân cốt lõi xuất phát từ bản chất của ngành hàng thẻ quà tặng, nơi người dùng thường tìm kiếm trực tiếp bằng các từ khóa mang tên thương hiệu cụ thể thay vì sử dụng các câu mô tả ngữ nghĩa dài dòng. Mặc dù vậy, chỉ số thứ hạng đảo ngược trung bình của truy vấn dài lại nhỉnh hơn đôi chút, cho thấy khi mô hình ngôn ngữ bắt đúng được ngữ cảnh đặc thù, nó có khả năng đưa sản phẩm đích lên vị trí đầu tiên một cách chính xác.
+
+Sự chênh lệch về hiệu suất trở nên đặc biệt rõ rệt và mang tính quyết định khi quan sát thực nghiệm trên tập dữ liệu làm đẹp với thiết lập khởi động lạnh toàn phần. Đối với tập dữ liệu này, luồng truy vấn dài do mô hình ngôn ngữ sinh ra sụt giảm hiệu năng nghiêm trọng, chỉ đạt tỷ lệ trúng đích 42,21 phần trăm ở mười kết quả đầu tiên. Sự suy giảm này minh chứng cho hiện tượng ảo giác và quá tải mệnh lệnh của các mô hình ngôn ngữ cỡ nhỏ khi phải đối mặt với các mặt hàng hoàn toàn mới chưa từng xuất hiện trong tập huấn luyện. Các câu truy vấn hội thoại được sinh ra thường trở nên mơ hồ, làm loãng trọng số của các từ khóa quan trọng và khiến bộ mã hóa văn bản không thể đối sánh chính xác với không gian vector của sản phẩm.
+
+Ngược lại, luồng truy vấn ngắn được bóc tách bằng thuật toán tự suy đã chứng minh sức mạnh áp đảo khi đẩy tỷ lệ trúng đích lên tới 78,94 phần trăm, đồng thời giúp chỉ số chất lượng xếp hạng chuẩn hóa tăng hơn gấp đôi, từ 27,45 lên 62,14 phần trăm. Bằng cách chắt lọc chính xác thương hiệu, hình thái sản phẩm và tên cốt lõi, thuật toán tự suy đã loại bỏ hoàn toàn các hậu tố tối ưu hóa công cụ tìm kiếm rườm rà. Phương pháp này tạo ra một biểu diễn vector cực kỳ đặc, chứa đựng hàm lượng thông tin định danh cô đọng nhất. Từ những minh chứng thực nghiệm này, có thể khẳng định việc áp dụng thuật toán tự suy cho luồng truy vấn ngắn là một thiết kế mang tính chiến lược, giúp bảo chứng sự ổn định và độ chính xác của toàn bộ kiến trúc mạng học sâu trong môi trường thương mại điện tử khắc nghiệt.
 
 \subsection{Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}
 
