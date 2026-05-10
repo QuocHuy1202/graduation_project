@@ -426,32 +426,6 @@ $$w = \text{sigmoid}(\text{MLP}([\mathbf{q}, len(q), P, s_d^q, s_d^u]))$$
 
 Sự tích hợp của mô hình trộn động đã biến kiến trúc xếp hạng từ một cỗ máy tính toán tĩnh thành một hệ thống thích ứng ngữ cảnh mang tính dự báo. Về bản chất, thành phần này vận hành như một bộ dự báo hiệu suất (performance predictor): bằng cách phân tích hình thái của câu truy vấn và độ phong phú của dữ liệu lịch sử, nó tự động đánh giá mức độ tin cậy của nhánh đối sánh ngữ nghĩa để từ đó đưa ra quyết định cấp phát trọng số tương ứng cho nhánh cá nhân hóa. Cơ chế điều tiết tinh vi này không những giải quyết thành công bài toán áp đảo phương thức mà còn đảm bảo sự dung hòa tuyệt đối giữa ý định tìm kiếm tức thời và thói quen tiêu dùng dài hạn, cho phép hệ thống cung cấp các kết quả tìm kiếm được cá nhân hóa một cách chừng mực và tự nhiên nhất.
 
-\subsection{Cơ chế sinh truy vấn tự động}
-
-\noindent \textbf{Vấn đề thiếu hụt dữ liệu}
-Trong các bài toán tìm kiếm và gợi ý ngữ nghĩa, để huấn luyện hiệu quả các mô hình học sâu như Bi-Encoder hay Cross-Encoder, tập dữ liệu cần cung cấp các cặp thông tin $(q, i^+)$. Trong đó, $q$ là câu truy vấn bằng ngôn ngữ tự nhiên của người dùng và $i^+$ là sản phẩm đích\ tương ứng. Tuy nhiên, các tập dữ liệu tương tác thực tế thường chỉ ghi nhận các hành vi ẩn như nhấp chuột, thêm vào giỏ hàng hoặc lịch sử giao dịch mà thiếu hụt hoàn toàn các câu truy vấn văn bản. Sự khuyết thiếu này tạo ra rào cản lớn, dẫn đến bài toán "khởi động lạnh" cho khâu trích xuất đặc trưng của hệ thống truy xuất.
-
-\noindent \textbf{Giải pháp Đề xuất: Tổng hợp dữ liệu bằng LLM}
-Để giải quyết triệt để nút thắt này, hệ thống áp dụng cơ chế sinh truy vấn tự động bằng cách tận dụng khả năng suy luận ngữ cảnh sâu của Mô hình Ngôn ngữ Lớn. LLM đóng vai trò như một cơ chế "dịch ngược", quan sát tương tác quá khứ và thông tin sản phẩm để nội suy ra ý định tìm kiếm của người dùng.
-
-Về mặt toán học, gọi $H_u = \{i_1, i_2, \dots, i_n\}$ là tập hợp các sản phẩm trong lịch sử tương tác của người dùng $u$, và $i_{target}$ là sản phẩm đích mà người dùng sẽ mua tiếp theo. Truy vấn nhân tạo $q_{synthetic}$ được sinh ra thông qua một hàm ánh xạ phi tuyến được tham số hóa bởi LLM:
-%không có reference
-$$q_{synthetic} = f_{LLM}\left( \text{Prompt}, H_u, M(i_{target}) \right)$$
-
-Trong đó, $M(i_{target})$ đại diện cho siêu dữ liệu của sản phẩm đích, bao gồm các thuộc tính như tiêu đề, danh mục và mô tả chi tiết.
-
-\noindent \textbf{Quy trình thực thi chi tiết}
-Cơ chế sinh tự động được vận hành theo một Pipeline khép kín gồm các bước sau:
-\begin{itemize}
-    \item \textbf{Bước 1 - Xây dựng ngữ cảnh:} Hệ thống trích xuất chuỗi hành vi mua sắm gần nhất của người dùng $H_u$ và kết hợp với đặc trưng của sản phẩm mục tiêu $i_{target}$. Việc kết hợp này giúp định hình cả thói quen cá nhân lẫn đặc tả kỹ thuật của sản phẩm.
-    \item \textbf{Bước 2 - Thiết kế Prompt:} Một bộ chỉ thị được thiết kế chuyên biệt nhằm ép buộc LLM hóa thân thành người dùng. LLM nhận yêu cầu với cấu trúc: \textit{"Dựa trên việc bạn đã từng quan tâm đến các sản phẩm $H_u$, và hiện tại bạn muốn tìm mua sản phẩm $i_{target}$, hãy sinh ra một câu tìm kiếm bằng ngôn ngữ tự nhiên mà bạn sẽ gõ vào hệ thống."}
-    \item \textbf{Bước 3 - Trích xuất và làm sạch văn bản:} Phản hồi từ LLM được backend xử lý thông qua các kỹ thuật phân tích cú pháp. Các đoạn hội thoại dư thừa, ký tự định dạng markdown hoặc lời chào đều được loại bỏ, chỉ giữ lại chuỗi văn bản truy vấn thuần túy.
-    \item \textbf{Bước 4 - Ghép cặp dữ liệu huấn luyện:} Truy vấn $q_{synthetic}$ vừa tạo sẽ được ghép nối trực tiếp với sản phẩm $i_{target}$ để tạo thành nhãn dữ liệu chuẩn. Cặp dữ liệu này sau đó được đưa vào tinh chỉnh mạng nơ-ron học biểu diễn không gian vector.
-\end{itemize}
-
-\noindent \textbf{Đánh giá ưu điểm của phương pháp}
-Cơ chế sinh truy vấn tự động không chỉ lấp đầy khoảng trống dữ liệu mà còn mang lại giá trị gia tăng to lớn cho độ mạnh mẽ của mô hình. Những câu truy vấn được tổng hợp chứa đựng sự đa dạng về mặt từ vựng, cấu trúc ngữ pháp và thói quen diễn đạt thực tế. Sự giao thoa giữa yếu tố cá nhân hóa từ lịch sử người dùng và yếu tố ngữ nghĩa từ mô tả sản phẩm giúp các mô hình AI sau huấn luyện đạt được khả năng tổng quát hóa vượt trội, sẵn sàng xử lý các long-tail queries phức tạp từ phía người dùng thực tế.
-
 \subsection{Chiến thuật Huấn luyện}
 
 \subsubsection*{Khởi tạo và thiết lập mô hình}
@@ -488,18 +462,13 @@ $$ \mathcal{L}(y'_q, s'_q) = - \sum_{i=1}^M y'_q[i] \log \frac{e^{s'_q[i]}}{\sum
 
 Việc chèn biến neo $y_0$ vào hàm loss đóng vai trò như một cơ chế chính quy hóa (regularization) mang tính cấu trúc. Cụ thể, thành phần thứ hai của phương trình tạo ra một lực phạt nghiêm ngặt đối với các điểm số dự đoán quá lớn, trong khi thành phần thứ nhất đảm bảo các điểm số nhỏ không bị tiêu biến hoàn toàn. Dưới sự điều tiết kép của hàm loss hiệu chuẩn và tham số tỷ lệ (logit scale), trọng số w do $g_{Mix}$ sinh ra sẽ không bị cực đoan hóa về các thái cực tuyệt đối 0 hoặc 1. Thay vào đó, nó biến thiên một cách mượt mà, bám sát và phản chiếu đúng mức độ tin cậy thực tế của nhánh ngữ nghĩa, cho phép hệ thống tìm kiếm hòa trộn các tín hiệu cá nhân hóa một cách tự nhiên, chừng mực và đạt độ ổn định cao nhất.
 
-\section{Tinh chỉnh và Sinh lời giải thích với LLM}
+\section{Tích hợp Mô hình Ngôn ngữ Lớn trong kiến trúc hệ thống}
 
-Trong các hệ thống gợi ý truyền thống, kết quả từ các mô hình học sâu (Bi-Encoder, Cross-Encoder) thường là những điểm số định lượng mang tính "hộp đen". Để giải quyết bài toán diễn giải và tăng độ tin cậy, hệ thống tích hợp Mô hình Ngôn ngữ Lớn vào giai đoạn cuối của đường ống dữ liệu với hai vai trò cốt lõi:
+Sự bùng nổ của các mô hình ngôn ngữ lớn đã mở ra những hướng tiếp cận đột phá nhằm khắc phục các hạn chế cố hữu của hệ thống gợi ý truyền thống. Trong kiến trúc được đề xuất, mô hình ngôn ngữ không chỉ đóng vai trò là một công cụ hỗ trợ đơn thuần mà được tích hợp sâu vào toàn bộ đường ống dữ liệu, đảm nhiệm hai nhiệm vụ cốt lõi mang tính chiến lược ở cả giai đoạn đầu vào lẫn đầu ra của hệ thống.
 
-\begin{description}
-    \item[Bộ sinh lời giải thích:] \hfill \\
-    Đối với các sản phẩm được chọn, LLM chịu trách nhiệm sinh ra các văn bản tự nhiên để giải thích lý do gợi ý. Việc minh bạch hóa quyết định (ví dụ: liên kết trực tiếp giữa tính năng của sản phẩm mới với sở thích trong lịch sử mua hàng) giúp nâng cao trải nghiệm cá nhân hóa và thuyết phục người dùng.
+Nhiệm vụ thứ nhất tập trung vào khâu kiến tạo và làm giàu dữ liệu huấn luyện. Đối mặt với bài toán khuyết thiếu các câu truy vấn văn bản trong dữ liệu thương mại điện tử thực tế, hệ thống tận dụng khả năng thấu hiểu ngữ cảnh của mô hình ngôn ngữ để nội suy và tổng hợp tự động các truy vấn từ lịch sử tương tác. Quá trình sinh dữ liệu nhân tạo này giúp lấp đầy khoảng trống thông tin, cung cấp một tập dữ liệu chuẩn xác và phong phú để huấn luyện không gian nhúng cho các mạng học sâu.
 
-    \item[Bộ lọc cuối cùng:] \hfill \\
-    Thay vì chỉ dựa trên điểm số toán học, LLM nhận đầu vào là danh sách Top-K sản phẩm đã được lọc qua Cross-Encoder, kết hợp cùng truy vấn và toàn bộ lịch sử mua hàng. Khả năng hiểu ngữ cảnh sâu sắc giúp LLM đánh giá toàn diện sự phù hợp, từ đó đóng vai trò như một "giám khảo" tự động chọn ra 1 đến 3 sản phẩm tối ưu nhất, loại bỏ các kết quả nhiễu mà mô hình nhúng có thể chấm điểm sai.
-\end{description}
-
+Nhiệm vụ thứ hai nhằm giải quyết tính chất hộp đen của các mô hình học biểu diễn như Bi-Encoder hay Cross-Encoder. Trong các hệ thống gợi ý tiêu chuẩn, kết quả trả về thường chỉ là những điểm số định lượng toán học khô khan. Để giải quyết rào cản này, mô hình ngôn ngữ được tái sử dụng ở tầng cuối cùng của hệ thống làm bộ lọc tinh và diễn giải kết quả. Bằng cách tiếp nhận danh sách ứng viên đã qua sàng lọc kết hợp cùng toàn bộ lịch sử mua sắm, mô hình ngôn ngữ đóng vai trò như một giám khảo tự động, đánh giá toàn diện để chọn ra các sản phẩm tối ưu nhất. Quan trọng hơn, hệ thống tiến hành sinh các văn bản tự nhiên nhằm minh bạch hóa quyết định, liên kết trực tiếp giữa tính năng của sản phẩm với sở thích cá nhân, từ đó gia tăng đáng kể độ tin cậy và nâng cao trải nghiệm mua sắm của người dùng.
 \subsection{Đường ống sinh truy vấn lai}
 
 \noindent \textbf{Vấn đề khuyết thiếu dữ liệu truy vấn:} 

@@ -1,9 +1,9 @@
 # Fdb version 4
-["pdflatex"] 1778423539.87218 "c:/Users/USER/Desktop/New folder/graduation_project/main.tex" "main.pdf" "main" 1778423545.76475 0
+["pdflatex"] 1778425065.02806 "c:/Users/USER/Desktop/New folder/graduation_project/main.tex" "main.pdf" "main" 1778425071.1742 0
   "Contents/CoSoLyThuyet.tex" 1778295432 84633 b9deebe34bcdf7680e5be1f9c5edac47 ""
   "Contents/GioiThieu.tex" 1778254392 16685 ec837cf49734d995e7f50abaf08f6391 ""
   "Contents/HuongPhatTrien.tex" 1778254838 75422 c64bd0cac34ae34a2c841849a66f485d ""
-  "Contents/PhuongPhapDeXuat.tex" 1778411025 94636 b75cd409874445a6c66f850d7944e501 ""
+  "Contents/PhuongPhapDeXuat.tex" 1778425056 90124 1363203ff602988e94d6369e07d7676a ""
   "Contents/ThucNghiemVaDanhGia.tex" 1778423268 68901 e3b699cc3b544a5b87864e49c4d41193 ""
   "Images/Bi_vs_Cross-Encoder.png" 1766277416 13679 7b90c8747d2aa75bcf07cfead8b6b368 ""
   "Images/CBF.png" 1766058811 17296 de2ae475fbff0357326e9aa7208e6117 ""
@@ -317,12 +317,12 @@
   "c:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1765125629 5587484 30eee748fa419a911c40b0c750dd21ba ""
   "c:/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1765125805 3635706 0ef45c8b1aa95713a7a34a268cb566ae ""
   "c:/texlive/2025/texmf.cnf" 1765125612 713 e69b156964470283e0530f5060668171 ""
-  "main.aux" 1778423545 29978 881e2f4be4ccb81a0c19f4ca0cf52f2f "pdflatex"
-  "main.lof" 1778423545 3619 42edf736ab80485fe27c48b9df12a6b9 "pdflatex"
-  "main.lot" 1778423545 2440 1a2ddfaf195c13485e43a9c06305f19a "pdflatex"
-  "main.out" 1778423545 17260 4c29f73eb42b5cc5081452982b407dd4 "pdflatex"
+  "main.aux" 1778425070 29828 77c01fa9af7f04d72ccc7d0a7d9f2173 "pdflatex"
+  "main.lof" 1778425070 3619 ecd5641f83994fd028a59011fcd4b1f6 "pdflatex"
+  "main.lot" 1778425070 2440 fe6af2f18e44124ca23b38a0d189a438 "pdflatex"
+  "main.out" 1778425070 17022 189c8a323560d3bdfbc5c681daef9e3a "pdflatex"
   "main.tex" 1778254224 10800 1f26fa89103844d062c8c04f3bfd38ae ""
-  "main.toc" 1778423545 9877 38fa94614736977bffe1352308055cdd "pdflatex"
+  "main.toc" 1778425070 9768 dd2f4d09ef00eba8cd85819d3271f169 "pdflatex"
   (generated)
   "main.aux"
   "main.lof"
