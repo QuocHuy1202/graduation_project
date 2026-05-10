@@ -66,24 +66,24 @@
 \contentsline {subsection}{\numberline {4.1.2}Quy trình Tiền xử lý dữ liệu}{57}{subsection.4.1.2}%
 \contentsline {subsubsection}{\numberline {4.1.2.1}Làm sạch và Lọc dữ liệu}{57}{subsubsection.4.1.2.1}%
 \contentsline {subsubsection}{\numberline {4.1.2.2}Xử lý đặc trưng phi cấu trúc}{58}{subsubsection.4.1.2.2}%
-\contentsline {subsubsection}{\numberline {4.1.2.3}Xử lý dữ liệu bảng}{59}{subsubsection.4.1.2.3}%
-\contentsline {subsubsection}{\numberline {4.1.2.4}Xây dựng chuỗi tương tác}{59}{subsubsection.4.1.2.4}%
+\contentsline {subsubsection}{\numberline {4.1.2.3}Xử lý dữ liệu bảng}{58}{subsubsection.4.1.2.3}%
+\contentsline {subsubsection}{\numberline {4.1.2.4}Xây dựng chuỗi tương tác}{58}{subsubsection.4.1.2.4}%
 \contentsline {subsubsection}{\numberline {4.1.2.5}Tổng hợp và làm giàu dữ liệu truy vấn}{59}{subsubsection.4.1.2.5}%
-\contentsline {section}{\numberline {4.2}Thiết lập thực nghiệm}{60}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Môi trường và Phạm vi huấn luyện}{60}{subsection.4.2.1}%
+\contentsline {section}{\numberline {4.2}Thiết lập thực nghiệm}{59}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Môi trường và Phạm vi huấn luyện}{59}{subsection.4.2.1}%
 \contentsline {subsection}{\numberline {4.2.2}Cấu hình Siêu tham số}{60}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Các độ đo đánh giá}{62}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Recall@K }{62}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}MRR@K}{62}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}NDCG@K}{63}{subsection.4.3.3}%
-\contentsline {section}{\numberline {4.4}Đánh giá Hiệu suất Truy xuất sơ cấp Bi-Encoder}{63}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức}{63}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}{66}{subsection.4.4.2}%
-\contentsline {section}{\numberline {4.5}Đánh giá Cross-Encoder}{68}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Thiết lập Thực nghiệm}{68}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Kết quả Thực nghiệm}{69}{subsection.4.5.2}%
-\contentsline {section}{\numberline {4.6}Triển khai Hệ thống và Demo thực tế}{70}{section.4.6}%
-\contentsline {subsection}{\numberline {4.6.1}Giao diện người dùng}{70}{subsection.4.6.1}%
+\contentsline {section}{\numberline {4.3}Các độ đo đánh giá}{61}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Recall@K }{61}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}MRR@K}{61}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}NDCG@K}{61}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}Đánh giá Hiệu suất Truy xuất sơ cấp Bi-Encoder}{62}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Đánh giá chất lượng biểu diễn Tháp Sản phẩm đa phương thức}{62}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}{64}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Đánh giá Cross-Encoder}{66}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Đánh giá Cross Encoder trên bộ dữ liệu Phone \& Accessories}{67}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Đánh giá Cross Encoder trên bộ dữ liệu truy vấn sinh bởi LLM}{69}{subsection.4.5.2}%
+\contentsline {section}{\numberline {4.6}Triển khai Hệ thống và Demo thực tế}{71}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Giao diện người dùng}{71}{subsection.4.6.1}%
 \contentsline {subsection}{\numberline {4.6.2}Video Demo hệ thống}{73}{subsection.4.6.2}%
 \contentsline {subsubsection}{\numberline {4.6.2.1}Phân tích một ca sử dụng thực tế}{73}{subsubsection.4.6.2.1}%
 \contentsline {chapter}{\numberline {5}Tổng kết và Hướng phát triển}{75}{chapter.5}%
