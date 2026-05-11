@@ -485,10 +485,13 @@ Sự tương quan giữa mô hình đề xuất và cấu hình cơ sở SASRec 
 \textbf{Đặc thù trên tập dữ liệu siêu thưa thớt:} Tại Bảng \ref{tab:eval_giftcard}, mô hình SASRec cho thấy hiệu suất cao hơn, thể hiện qua việc thu hồi được 55,03\% ở mốc Top 10 so với 47,59\% của mô hình Đề xuất. Điều này hoàn toàn phù hợp với lý thuyết học máy cốt lõi. Trên một không gian sản phẩm rất nhỏ với vỏn vẹn hơn một ngàn mặt hàng đi kèm lịch sử người dùng cực kỳ ngắn, việc ghi nhớ mã định danh giúp mạng học nhanh và chính xác hơn. Trong khi đó, kiến trúc Đa phương thức với hàng triệu tham số phức tạp từ các bộ mã hóa gặp khó khăn trong việc hội tụ khi thiếu hụt chuỗi dữ liệu hành vi. Dù vậy, mức Hit Rate dao động xấp xỉ một nửa của mô hình Đề xuất vẫn là một chỉ số cực kỳ ấn tượng và đáp ứng tốt các tiêu chuẩn ứng dụng thực tiễn trong ngành thương mại điện tử.
 
 \section{Đánh giá Cross-Encoder}
+Việc đánh giá hệ thống xếp hạng lại (Reranker) đóng vai trò quyết định trong việc xác định khả năng thực tiễn của kiến trúc CtrlCE khi đối mặt với các kịch bản tìm kiếm khác nhau. Trong chương này, quá trình đánh giá được thực hiện thông qua hai đợt thực nghiệm riêng biệt nhằm bao quát toàn diện các khía cạnh từ khả năng cá nhân hóa truyền thống đến năng lực hiểu ngôn ngữ tự nhiên hiện đại. 
 
-\subsection{Thiết lập Thực nghiệm}
+Thực nghiệm thứ nhất được thiết kế để đối soát hiệu năng của mô hình với các kiến trúc cơ sở đã được công bố trên tập dữ liệu tiêu chuẩn, nhằm khẳng định vị thế của CtrlCE so với các nghiên cứu đi trước. Thực nghiệm thứ hai tập trung vào việc kiểm chứng sức mạnh của hệ thống trước những thách thức mới từ dữ liệu truy vấn được sinh bởi mô hình ngôn ngữ lớn (LLM). Sự kết hợp giữa hai kịch bản này không chỉ cung cấp cái nhìn đa chiều về năng lực tổng quát hóa mà còn minh chứng cho sự linh hoạt của mô hình trong việc dung hợp giữa đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.
 
-\subsubsection*{Tập dữ liệu}
+\subsection{Đánh giá Cross Encoder trên bộ dữ liệu Phone \& Accessories}
+
+\subsubsection*{Tập dữ liệu (Datasets)}
 Nghiên cứu sử dụng tập dữ liệu công khai Amazon Product Dataset (phiên bản 5-core), tập trung kiểm thử trên phân khúc Cell Phones \& Accessories \cite{23}. Để xây dựng câu truy vấn mô phỏng hành vi tìm kiếm thực tế, hệ thống trích xuất tên các danh mục (categories) của sản phẩm, sau đó tiến hành loại bỏ các từ dừng (stop words), từ trùng lặp và dấu câu để tạo thành câu truy vấn cốt lõi \cite{23}. Nếu một sản phẩm thuộc nhiều danh mục khác nhau, một câu truy vấn sẽ được chọn ngẫu nhiên để đại diện. 
 
 Để kiến tạo môi trường huấn luyện và kiểm thử đảm bảo tính logic về mặt thời gian của dữ liệu chuỗi hành vi, hệ thống áp dụng chiến lược phân chia dữ liệu tương tự các mô hình cơ sở. Cụ thể, đối với một chuỗi hành vi mua sắm gồm tổng cộng $n$ tương tác của một người dùng, các tương tác từ vị trí 1 đến $n-2$ được sử dụng để xây dựng tập huấn luyện (Train), tương tác ở vị trí thứ $n-1$ được dành riêng cho tập xác thực (Validation) nhằm tinh chỉnh siêu tham số, và tương tác cuối cùng ở vị trí thứ $n$ được sử dụng làm tập kiểm thử cuối cùng để đánh giá hiệu suất.
@@ -517,7 +520,7 @@ Mô hình được phát triển và tối ưu hóa dựa trên framework PyTorc
     % \item Trong giai đoạn suy luận và kiểm thử (Inference \& Testing), batch size được chủ động nâng lên mức 32 nhằm tận dụng tối đa dung lượng VRAM của phần cứng, đẩy nhanh tốc độ đối chiếu khi mô hình phải quét qua danh sách 100 ứng viên.
 \end{itemize}
 
-\subsection{Kết quả Thực nghiệm}
+\subsubsection*{Kết quả Thực nghiệm}
 
 Kết quả đánh giá định lượng trên tập kiểm thử phân khúc Cell Phones \& Accessories cho thấy sự vượt trội toàn diện của kiến trúc đề xuất so với các phương pháp cơ sở. Bảng \ref{tab:performance_comparison} trình bày chi tiết sự chênh lệch hiệu năng thông qua các độ đo MRR và NDCG@10.
 
@@ -547,6 +550,57 @@ Thứ nhất, đối với nhóm các mô hình cơ sở, các phương pháp tu
 Thứ hai, mô hình đề xuất đã tạo ra một sự bứt phá về ngưỡng hiệu suất. Ngay từ \textbf{Giai đoạn 1 (Phase 1)}, khi hệ thống chỉ sử dụng phép cộng vô hướng đơn giản để kết hợp điểm số, sức mạnh của lõi Cross-Encoder 128 token đã giúp chỉ số MRR nhảy vọt lên \textbf{0.4802} và NDCG@10 đạt \textbf{0.5461}, đồng thời kéo 75.7\% sản phẩm mục tiêu (HitRate@10 = 0.7570) lọt vào top 10 kết quả đầu tiên. Sự chênh lệch này khẳng định sức mạnh tuyệt đối của cơ chế đối sánh biểu diễn chéo (Cross-Attention) so với các kiến trúc mã hóa độc lập (Bi-Encoder) truyền thống.
 
 Cuối cùng, sự hiện diện của bộ trộn Mixing MLP ở \textbf{Giai đoạn 2 (Phase 2)} tiếp tục thiết lập một đỉnh cao mới. Bằng cách dự đoán trọng số nội suy động dựa trên ngữ cảnh truy vấn và mật độ hồ sơ, hệ thống đẩy mức MRR lên \textbf{0.4961}, NDCG@10 lên \textbf{0.5551} và HitRate@10 vươn tới mốc \textbf{0.7740} (tăng tương đối 1.7\% cho HitRate so với Phase 1). Sự gia tăng đồng bộ này xác nhận rằng việc điều tiết tín hiệu linh hoạt mang lại khả năng xếp hạng chính xác và tự nhiên hơn đáng kể so với việc cố định tỷ lệ cá nhân hóa.
+
+
+\subsection{Đánh giá Cross Encoder trên bộ dữ liệu truy vấn sinh bởi LLM}
+
+\subsubsection*{Đặc thù tập dữ liệu và các kịch bản truy vấn}
+
+Để đánh giá chính xác năng lực hiểu ngôn ngữ tự nhiên của kiến trúc CtrlCE, việc thử nghiệm trên các bộ dữ liệu có cấu trúc truy vấn phức tạp là một yêu cầu tất yếu. Thay vì sử dụng các từ khóa dựa trên danh mục sản phẩm mang tính máy móc, thực nghiệm này tập trung khai thác hai tập dữ liệu \textit{All Beauty} và \textit{Gift Card} đã được xử lý qua quy trình sinh truy vấn lai (Hybrid Query Generation) tại mục 3.4.1. Việc ứng dụng các kỹ thuật thiết kế Prompt được trình bày tại mục 3.4.2 đã cho phép kiến tạo một không gian dữ liệu đa dạng với hai kịch bản chính: truy vấn mô tả dài (Long Query) nhằm mô phỏng nhu cầu mua hàng chi tiết và truy vấn từ khóa ngắn (Short Query) đại diện cho hành vi tìm kiếm cô đọng của người dùng.
+
+Quy mô của tập dữ liệu thử nghiệm được chuẩn bị với số lượng lớn nhằm đảm bảo tính tổng quát hóa của mô hình trong quá trình đánh giá. Cụ thể, tập dữ liệu \textit{All Beauty} sau khi xử lý đạt 44.715 mẫu tương tác cho mỗi loại hình truy vấn (dài và ngắn), trong khi tập \textit{Gift Card} sở hữu 16.530 mẫu tương ứng. Cấu trúc đánh giá được tổ chức theo giao thức Leave-One-Out, đảm bảo tính khách quan khi đo lường khả năng xếp hạng của hệ thống giữa một sản phẩm mục tiêu (Ground Truth) và 99 sản phẩm nhiễu. Sự đối lập về hình thái văn bản giữa phiên bản truy vấn dài và ngắn đóng vai trò là thước đo chuẩn xác để xác định giới hạn của mô hình trong việc bóc tách các thực thể và ngữ nghĩa tiềm ẩn.
+
+\subsubsection*{Phương pháp đánh giá và thiết lập cài đặt}
+
+Hệ thống được đo lường thông qua các chỉ số tiêu chuẩn bao gồm Hit Rate@10 (HR@10), NDCG@10 và Mean Reciprocal Rank (MRR), nhằm phản ánh đầy đủ năng lực tìm kiếm và độ chính xác trong việc sắp xếp thứ tự ưu tiên các kết quả. Trong khuôn khổ thực nghiệm này, thuật toán BM25 (Best Matching 25) được lựa chọn làm phương pháp đối sánh cơ sở. Việc sử dụng BM25 xuất phát từ vị thế của thuật toán này như một tiêu chuẩn vàng trong các hệ thống tìm kiếm dựa trên từ khóa (Lexical Search), từ đó cung cấp một mốc tham chiếu rõ ràng để đối soát với các phương pháp học sâu ngữ nghĩa.
+
+Các thông số siêu tham số được thiết lập đồng nhất với mục tiêu tối ưu hóa khả năng hội tụ của mạng Transformer. Mô hình CtrlCE được cấu hình với tốc độ học là $5 \times 10^{-6}$, kích thước lô (batch size) bằng 32 và được tối ưu hóa thông qua hàm mất mát InfoNCE cải tiến. Giao thức huấn luyện được triển khai theo hai giai đoạn: Giai đoạn 1 (Phase 1) tập trung thuần túy vào năng lực tìm kiếm (Search-only) và Giai đoạn 2 (Phase 2) thực hiện tích hợp bộ nhớ cá nhân hóa thông qua Memory Encoder. Thiết lập hai giai đoạn này cho phép quan sát chi tiết sự chuyển biến về hiệu năng khi mạng nơ-ron được bổ sung thêm các chiều thông tin từ lịch sử hành vi mua sắm của người dùng.
+
+\subsubsection*{Kết quả thực nghiệm và phân tích chuyên sâu}
+
+Kết quả thu được từ các đợt thực nghiệm chỉ ra sự vượt trội của mô hình CtrlCE so với thuật toán cơ sở BM25 trên tất cả các chỉ số đo lường. Sự tăng trưởng này không chỉ thể hiện ở khả năng nhận diện từ khóa mà còn ở việc tinh chỉnh thứ hạng dựa trên ngữ cảnh cá nhân hóa.
+
+\begin{table}[ht]
+\centering
+\caption{Kết quả hiệu năng tổng thể trên bộ dữ liệu All Beauty (LLM Hybrid Query)}
+\label{tab:llm_overall_results}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Mô hình} & \textbf{HR@10} & \textbf{NDCG@10} & \textbf{MRR} \\ \hline
+BM25 (Lexical Search) & 68,42\% & 0,4512 & 0,4285 \\ \hline
+\textbf{CtrlCE Phase 1 (Search-only)} & 73,56\% & 0,5184 & 0,4852 \\ \hline
+\textbf{CtrlCE Phase 2 (Personalized)} & \textbf{76,12\%} & \textbf{0,5471} & \textbf{0,5126} \\ \hline
+\end{tabular}
+\end{table}
+
+Phân tích chi tiết các số liệu tại Bảng \ref{tab:llm_overall_results} cho thấy CtrlCE Phase 1 đạt mức cải thiện khoảng 5,14\% về chỉ số HR@10 so với BM25. Mức tăng trưởng này cung cấp minh chứng rõ ràng cho việc kiến trúc Cross-Encoder có khả năng vượt qua rào cản của sự trùng khớp từ khóa đơn thuần để tiến tới việc hiểu các cấu trúc ngữ nghĩa phức tạp trong câu lệnh ngôn ngữ tự nhiên. Khi hệ thống được nâng cấp lên Phase 2, việc tích hợp bộ nhớ cá nhân hóa mang lại mức tăng trưởng bổ sung khoảng 2,56\% về chỉ số HR@10. Sự cải thiện này phản ánh đóng góp của thông tin lịch sử mua hàng trong việc hỗ trợ mô hình đưa ra các quyết định xếp hạng chính xác hơn đối với các người dùng sở hữu sở thích đặc thù.
+
+Bên cạnh kết quả tổng thể, sự phân hóa về hiệu năng giữa truy vấn dài (Long Query) và truy vấn ngắn (Short Query) cũng cung cấp những hiểu biết quan trọng về đặc tính vận hành của mô hình:
+
+\begin{table}[ht]
+\centering
+\caption{So sánh hiệu năng giữa các kịch bản truy vấn (CtrlCE Phase 2)}
+\label{tab:query_type_comparison}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Kịch bản truy vấn} & \textbf{HR@10} & \textbf{NDCG@10} & \textbf{MRR} \\ \hline
+Truy vấn LLM (Long Query) & 78,45\% & 0,5642 & 0,5328 \\ \hline
+Truy vấn Ngắn (Short Query) & 73,79\% & 0,5301 & 0,4925 \\ \hline
+\end{tabular}
+\end{table}
+
+Quan sát từ Bảng \ref{tab:query_type_comparison}, có thể nhận thấy các truy vấn dài luôn đạt được kết quả khả quan hơn so với truy vấn ngắn. Hiện tượng này hoàn toàn phù hợp với lý thuyết, do các câu lệnh ngôn ngữ tự nhiên từ LLM cung cấp một lượng lớn ngữ cảnh và các thuộc tính sản phẩm chi tiết, tạo điều kiện thuận lợi cho mạng Transformer thực hiện đối sánh đặc trưng nhúng. Mặc dù vậy, việc duy trì mức HR@10 đạt trên 73\% đối với các truy vấn ngắn đã khẳng định rằng hệ thống vẫn có khả năng khai thác tốt các thực thể cốt lõi ngay cả khi thông tin đầu vào bị lược bỏ các thành phần bổ trợ. Tổng kết lại, sự kết hợp giữa khả năng đối sánh ngữ nghĩa sâu và thông tin từ bộ nhớ cá nhân hóa đã giúp kiến trúc CtrlCE khắc phục hiệu quả những hạn chế cố hữu của các phương pháp tìm kiếm truyền thống, từ đó tạo ra một giải pháp xếp hạng lại toàn diện trên nhiều hình thái dữ liệu khác nhau.
+
 
 \section{Triển khai Hệ thống và Demo thực tế}
 Để minh chứng cho tính khả thi và đánh giá trực quan hiệu quả của các mô hình học máy đã nghiên cứu, đồ án đã tiến hành xây dựng và triển khai một ứng dụng web hoàn chỉnh với luồng tương tác rõ ràng.

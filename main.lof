@@ -21,9 +21,9 @@
 \contentsline {figure}{\numberline {3.8}{\ignorespaces Cơ chế hoạt động của Memory Encoder phân tách thành hai luồng: Xử lý ngoại tuyến (chắt lọc hồ sơ đa vector) và Xử lý trực tuyến (đối chiếu và tính điểm cá nhân hóa).}}{47}{figure.caption.27}%
 \contentsline {figure}{\numberline {3.9}{\ignorespaces Luồng xử lý dữ liệu và cấu trúc Prompt cho tác vụ sinh lời giải thích bằng LLM}}{53}{figure.caption.31}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Trang Đăng nhập}}{71}{figure.caption.49}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Trang Chính}}{71}{figure.caption.50}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Trang Chi tiết sản phẩm}}{72}{figure.caption.51}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Trang Chatbot}}{72}{figure.caption.52}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Mã QR liên kết đến Video Demo thực tế của hệ thống}}{73}{figure.caption.53}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Trang Đăng nhập}}{71}{figure.caption.55}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Trang Chính}}{72}{figure.caption.56}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Trang Chi tiết sản phẩm}}{72}{figure.caption.57}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Trang Chatbot}}{73}{figure.caption.58}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Mã QR liên kết đến Video Demo thực tế của hệ thống}}{73}{figure.caption.59}%
 \addvspace {10\p@ }
