@@ -1,7 +1,7 @@
 import torch
 from huggingface_hub import hf_hub_download
 from sentence_transformers import CrossEncoder
-from models import TextEncoder, ImageEncoder, FusionGate, D_LATENT, device
+from models import TextEncoder, ImageEncoder, FusionGate,CtrlCERanker, D_LATENT, device
 from app.core.config import settings
 
 class MLManager:
@@ -33,15 +33,18 @@ class MLManager:
             path = self.download_from_hf(name)
             return torch.load(path, map_location=device, weights_only=False) if path else None
 
-        self.ITEM_EMBS_GPU = load_pt("item_embeddings.pt")
-        self.USER_EMBS_GPU = load_pt("user_embeddings.pt")
+        self.ITEM_EMBS_GPU = load_pt("beauty_item_embeddings.pt")
+        self.USER_EMBS_GPU = load_pt("beauty_user_embeddings.pt")
         
         if self.ITEM_EMBS_GPU is not None: self.ITEM_EMBS_GPU = self.ITEM_EMBS_GPU.to(device)
         if self.USER_EMBS_GPU is not None: self.USER_EMBS_GPU = self.USER_EMBS_GPU.to(device)
         
-        self.USER_MAP = load_pt("user_map.pt")
-        self.USER_DB = load_pt("users_db.pt") or {}
-        self.ITEM_META = load_pt("item_metadata.pt")
+        self.USER_MAP = load_pt("beauty_user_map.pt")
+        
+
+        # Kiểm tra nếu tải thành công (không phải None) thì gán, nếu lỗi/không có thì gán dictionary rỗng (hoặc DataFrame rỗng)
+        self.USER_DB = load_pt("beauty_user_db.pt")
+        self.ITEM_META = load_pt("beauty_item_metadata.pt")
         self.STATS = load_pt("stats.pt") or {'C': 3.0, 'm': 10.0}
         self.NUM_ITEMS = self.ITEM_EMBS_GPU.shape[0] if self.ITEM_EMBS_GPU is not None else 0
 
@@ -54,17 +57,23 @@ class MLManager:
             path = self.download_from_hf(name)
             if path: model.load_state_dict(torch.load(path, map_location=device, weights_only=False), strict=False)
 
-        load_weights(self.text_encoder, "text_encoder.pth")
-        load_weights(self.img_encoder, "img_encoder.pth")
-        load_weights(self.fusion_gate, "fusion_gate.pth")
+        load_weights(self.text_encoder, "beauty_text_encoder.pth")
+        load_weights(self.img_encoder, "beauty_img_encoder.pth")
+        load_weights(self.fusion_gate, "beauty_fusion_gate.pth")
 
         self.text_encoder.eval()
         self.img_encoder.eval()
         self.fusion_gate.eval()
 
         # 3. Load Cross-Encoder
-        print(" Đang tải Cross-Encoder...")
-        self.cross_encoder = CrossEncoder(settings.CROSS_ENCODER_REPO, device=device)
+        # 3. Load Custom Cross-Encoder (CtrlCE)
+        print(" Đang tải Custom Cross-Encoder (CtrlCE)...")
+        # Tải file trọng số của mô hình ranker từ repo Hugging Face
+        ctrlce_weights_path = self.download_from_hf("beauty_ctrlce_weights.pth")
+        
+        # Khởi tạo mô hình
+        self.cross_encoder = CtrlCERanker(weights_path=ctrlce_weights_path, device=device)
+        
         print(" Toàn bộ Model đã sẵn sàng!")
 
 # Khởi tạo biến toàn cục để các file khác import dùng chung

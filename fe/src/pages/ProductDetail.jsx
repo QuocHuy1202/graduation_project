@@ -1,7 +1,7 @@
 // src/pages/ProductDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import giftCardsRaw from '../assets/meta_Gift_Cards.jsonl?raw';
+import giftCardsRaw from '../assets/beautymetadata.jsonl?raw';
 import '../css/ProductDetail.css'; 
 
 function ProductDetail() {

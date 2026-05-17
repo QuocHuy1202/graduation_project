@@ -33,7 +33,7 @@ function App() {
               <path d="M35 20 Q 20 0, 50 10 Q 80 0, 65 20" fill="#fdcb6e" />
             </svg>
             
-            <span>GiftCard Store</span>
+            <span>Beauty Store</span>
           </div>
          <div className="nav-links">
             <Link to="/">Trang chủ</Link>
