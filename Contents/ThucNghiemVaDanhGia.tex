@@ -462,7 +462,7 @@ SASRec & 3.65\% & 6.27\% & 2.36\% & 2.81\% \\
 DuoRec & \textbf{5.46\%} & \textbf{8.45\%} & \textbf{3.52\%} & \textbf{4.43\%} \\ \hline
 \textbf{User tower đề xuất} & 2.48\% & 4.33\% & 1.51\% & 2.10\% \\ \hline
 \end{tabular}
-
+ 
 \end{table}
 
 \textbf{Trade off giữa lọc nội dung và lọc cộng tác:} Bảng \ref{tab:baseline_comparison} cho thấy mô hình đa phương thức đề xuất đạt Hit@10 là 4.33\%, xuất sắc vượt qua mô hình ngôn ngữ tuần tự hai chiều BERT4Rec với mức điểm 4.01\%, qua đó khẳng định sức mạnh định tuyến vượt trội của việc dung hợp đặc trưng hình ảnh và văn bản. Mặc dù vậy, hiệu năng của hệ thống vẫn xếp sau nhóm dẫn đầu thuần ID bao gồm SASRec và DuoRec vốn có Hit@10 cao nhất lên tới 8.45\%. Kết quả này phản ánh hoàn toàn chính xác bài toán đánh đổi hiệu năng có chủ đích. Trong môi trường dồi dào tín hiệu cộng tác, các kiến trúc thuần ID dễ dàng tối ưu hóa biểu đồ hành vi nhờ các vector tự do, trong khi mô hình đề xuất chịu sự ràng buộc của nút thắt cổ chai ngữ nghĩa. Tuy nhiên, việc chấp nhận suy giảm một phần độ chính xác trên nhóm sản phẩm cũ là sự đánh đổi thiết yếu nhằm thiết lập năng lực suy luận linh hoạt trên không gian khởi động lạnh toàn phần, một kịch bản mà toàn bộ các mạng ID truyền thống đều hoàn toàn bất lực.
@@ -680,7 +680,7 @@ Truy vấn Ngắn (Short Query) & 73,79\% & 0,5301 & 0,4925 \\ \hline
 
 Quan sát từ Bảng \ref{tab:query_type_comparison}, có thể nhận thấy các truy vấn dài luôn đạt được kết quả khả quan hơn so với truy vấn ngắn. Hiện tượng này hoàn toàn phù hợp với lý thuyết, do các câu lệnh ngôn ngữ tự nhiên từ LLM cung cấp một lượng lớn ngữ cảnh và các thuộc tính sản phẩm chi tiết, tạo điều kiện thuận lợi cho mạng Transformer thực hiện đối sánh đặc trưng nhúng. Mặc dù vậy, việc duy trì mức HR@10 đạt trên 73\% đối với các truy vấn ngắn đã khẳng định rằng hệ thống vẫn có khả năng khai thác tốt các thực thể cốt lõi ngay cả khi thông tin đầu vào bị lược bỏ các thành phần bổ trợ. Tổng kết lại, sự kết hợp giữa khả năng đối sánh ngữ nghĩa sâu và thông tin từ bộ nhớ cá nhân hóa đã giúp kiến trúc CtrlCE khắc phục hiệu quả những hạn chế cố hữu của các phương pháp tìm kiếm truyền thống, từ đó tạo ra một giải pháp xếp hạng lại toàn diện trên nhiều hình thái dữ liệu khác nhau.
 
-\subsection{Phân tích tác động của dữ liệu tổng hợp (Ablation Study)}
+\subsection{Phân tích tác động của dữ liệu tổng hợp}
 
 \subsubsection*{Thiết lập thực nghiệm}
 Hiệu năng của các mô hình xếp hạng trong hệ thống tìm kiếm phụ thuộc mật thiết vào chất lượng và sự đa dạng của dữ liệu huấn luyện. Để làm rõ vai trò của bộ dữ liệu sinh bởi LLM đối với năng lực của kiến trúc Ctrl-CE, thực nghiệm được thiết kế dựa trên tập dữ liệu chuẩn Amazon ESCI. Đây là bộ dữ liệu thực tế mô tả mối quan hệ giữa các câu truy vấn mua sắm và sản phẩm, được gán nhãn theo bốn mức độ liên quan: Exact, Substitute, Complement, và Irrelevant. Để chuẩn hóa quy trình đánh giá, các nhãn này được quy đổi về bài toán phân loại nhị phân, trong đó mô hình phải phân biệt giữa sản phẩm mục tiêu (Positive) và các sản phẩm không liên quan (Negative). Giao thức đánh giá được thực hiện qua phương pháp \textit{Leave-One-Out Ranking} với hai chỉ số chính là \textit{HR@10} và \textit{NDCG@10}.
