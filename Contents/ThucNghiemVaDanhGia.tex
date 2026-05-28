@@ -505,9 +505,68 @@ Sự chênh lệch lớn về hiệu năng tổng thể giữa hai mô hình đ�
 Điểm sáng lớn nhất của hệ thống đề xuất nằm ở mức hiệu năng đỉnh cao 3.45\% khi dung hợp đồng thời các luồng thông tin. Con số này cao hơn đáng kể so với hiệu suất của từng nhánh văn bản hay hình ảnh hoạt động độc lập. Kết quả này khẳng định cơ chế kết hợp của mô hình không hề gây ra tình trạng nhiễu loạn phương thức, mà ngược lại, đã tạo ra hiệu ứng cộng hưởng tương hỗ vô cùng mạnh mẽ. Các khuyết điểm về sự thưa thớt của dữ liệu bảng hay điểm mù của hình ảnh đã được bù đắp chéo bởi độ sâu ngữ nghĩa của văn bản. Việc dung hợp thành công này đã phá vỡ triệt để nút thắt cổ chai thông tin, cung cấp cho hệ thống một biểu diễn nội suy toàn vẹn nhất để thấu hiểu ý định người dùng trong kịch bản khởi động lạnh toàn phần.
 
 \section{Đánh giá Cross-Encoder}
+
 Việc đánh giá hệ thống xếp hạng lại (Reranker) đóng vai trò quyết định trong việc xác định khả năng thực tiễn của kiến trúc CtrlCE khi đối mặt với các kịch bản tìm kiếm khác nhau. Trong chương này, quá trình đánh giá được thực hiện thông qua hai đợt thực nghiệm riêng biệt nhằm bao quát toàn diện các khía cạnh từ khả năng cá nhân hóa truyền thống đến năng lực hiểu ngôn ngữ tự nhiên hiện đại. 
 
 Thực nghiệm thứ nhất được thiết kế để đối soát hiệu năng của mô hình với các kiến trúc cơ sở đã được công bố trên tập dữ liệu tiêu chuẩn, nhằm khẳng định vị thế của CtrlCE so với các nghiên cứu đi trước. Thực nghiệm thứ hai tập trung vào việc kiểm chứng sức mạnh của hệ thống trước những thách thức mới từ dữ liệu truy vấn được sinh bởi mô hình ngôn ngữ lớn (LLM). Sự kết hợp giữa hai kịch bản này không chỉ cung cấp cái nhìn đa chiều về năng lực tổng quát hóa mà còn minh chứng cho sự linh hoạt của mô hình trong việc dung hợp giữa đối sánh ngữ nghĩa và bộ nhớ cá nhân hóa.
+
+\subsection{Bộ dữ liệu sinh bởi LLM}
+
+Trong bài toán xếp hạng (ranking), chất lượng và quy mô của dữ liệu gán nhãn là yếu tố quyết định hiệu năng của mô hình. Tuy nhiên, việc xây dựng các tập dữ liệu gán nhãn thủ công trong các lĩnh vực chuyên sâu như All-Beauty thường đối mặt với chi phí lớn và khó khăn trong việc mở rộng quy mô. Để giải quyết rào cản này, nghiên cứu kế thừa phương pháp luận từ bài báo BLAIR \cite{blair2024}, trong đó khả năng suy luận của các mô hình ngôn ngữ lớn (LLM) được tận dụng để chuyển đổi các tương tác lịch sử người dùng thành các truy vấn tìm kiếm có cấu trúc. Hướng tiếp cận này cho phép tự động hóa quy trình sinh dữ liệu với độ chính xác cao, tạo ra các tập hợp dữ liệu không chỉ đa dạng về ngữ nghĩa mà còn sát với hành vi tìm kiếm thực tế.
+
+Dữ liệu nguồn được trích xuất từ tập Amazon Reviews 2023 All Beauty. Quy trình lựa chọn được thực hiện dựa trên các tiêu chí: đánh giá phải đạt xếp hạng từ 4 sao trở lên để đảm bảo tính tích cực, đồng thời phải có độ dài nội dung tối thiểu 25 ký tự nhằm cung cấp đủ ngữ cảnh ngữ nghĩa cho mô hình. Việc sinh dữ liệu tuân thủ đường ống sinh truy vấn lai (Hybrid Query Generation Pipeline) và kỹ thuật thiết kế câu lệnh (Prompt Engineering) đã được mô tả tại Mục 3.4.1 và Mục 3.4.2. Bộ dữ liệu cuối cùng bao gồm tổng cộng 20,074 truy vấn, được phân bổ đều cho hai loại hình: truy vấn ngắn và truy vấn dài, nhằm mô phỏng đa dạng các trạng thái ý định tìm kiếm của người dùng. Các thông số thống kê chi tiết được tổng hợp tại Bảng \ref{tab:dataset_stats_llm}.
+
+\begin{table}[h]
+\centering
+\caption{Thống kê mô tả của bộ dữ liệu sinh bởi LLM}
+\label{tab:dataset_stats_llm} % Nhãn này dùng để kết nối với lệnh \ref ở trên
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Thông số} & \textbf{Giá trị} \\ \hline
+Tổng số truy vấn (Tổng cộng) & 20,074 \\ \hline
+Số lượng truy vấn ngắn & 10,037 \\ \hline
+Số lượng truy vấn dài & 10,037 \\ \hline
+Độ dài trung bình (từ/query - Ngắn) & 6.15 \\ \hline
+Độ dài trung bình (từ/query - Dài) & 72.44 \\ \hline
+\end{tabular}
+\end{table}
+
+Để minh chứng cho khả năng ánh xạ từ trải nghiệm người dùng sang truy vấn tìm kiếm, Bảng \ref{tab:review_to_query_examples_bilingual} cung cấp các ví dụ thực tế được trích xuất từ tập dữ liệu. Các truy vấn này thể hiện sự chuyển đổi từ các mô tả cảm tính trong bài đánh giá sang các từ khóa tìm kiếm mang tính định hướng sản phẩm.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Ví dụ minh họa ánh xạ từ Review sang Query (Song ngữ)}
+\label{tab:review_to_query_examples_bilingual} 
+\renewcommand{\arraystretch}{1.5} 
+% Sử dụng cột X giúp tự động co dãn vừa khít \textwidth mà không bị tràn lề
+\begin{tabularx}{\textwidth}{X | X}
+\toprule
+\textbf{User Review (Bài đánh giá)} & \textbf{LLM-generated Query (Truy vấn)} \\ 
+\midrule
+"These lashes were great! They are long lasting and the BEST I have ever had and SUPER EASY to apply!" 
+
+\textit{(Cặp mi này tuyệt quá! Chúng rất bền, là loại tốt nhất tôi từng dùng và cực kỳ dễ gắn!)} & 
+"I am looking for a pack of long, volume 3D mink lashes that look natural and are easy to apply." 
+
+\textit{(Tôi muốn tìm bộ lông mi giả 3D mink dài, dày nhưng nhìn vẫn tự nhiên và dễ sử dụng.)} \\ 
+\midrule
+"It is a nice moisturizing cream... great for people whoever had sensitive skin or dry skin..." 
+
+\textit{(Đây là một loại kem dưỡng ẩm rất tốt... đặc biệt phù hợp cho những ai có làn da nhạy cảm hoặc da khô...)} & 
+"What is a gentle and effective moisturizer for sensitive skin that helps with dryness?" 
+
+\textit{(Đâu là loại kem dưỡng ẩm dịu nhẹ và hiệu quả cho da nhạy cảm giúp cải thiện tình trạng khô da?)} \\ 
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Tổng kết lại, bộ dữ liệu này đóng vai trò như một trình giả lập ý định tìm kiếm, vượt qua các hạn chế của việc gán nhãn từ khóa đơn thuần. Bằng cách kết hợp giữa dữ liệu thực tế và khả năng sinh ngữ cảnh của LLM, tập dữ liệu cung cấp một nền tảng huấn luyện vững chắc, giúp mô hình Ctrl-CE học được mối liên hệ sâu sắc giữa trải nghiệm thực tế và đặc tính sản phẩm. Đây là bước đệm quan trọng, tạo tiền đề cho các kết quả thực nghiệm được trình bày chi tiết trong Mục 4.5.4.
+
+
+Việc đánh giá hệ thống xếp hạng (Reranker) đóng vai trò quan trọng trong việc xác định khả năng thực tiễn của kiến trúc CtrlCE khi đối mặt với các kịch bản tìm kiếm khác nhau. Trong chương này, quá trình đánh giá được thực hiện thông qua hai đợt thực nghiệm riêng biệt nhằm bao quát toàn diện các khía cạnh từ khả năng cá nhân hóa truyền thống đến năng lực hiểu ngôn ngữ tự nhiên hiện đại. 
+
+Thực nghiệm thứ nhất được thiết kế để so sánh hiệu năng của mô hình với các kiến trúc cơ sở trên tập dữ liệu Phone \& Accessories. Thực nghiệm thứ hai tập trung vào việc kiểm chứng khả năng của hệ thống trước những thách thức mới từ dữ liệu truy vấn được sinh bởi mô hình ngôn ngữ lớn (LLM). Sự kết hợp giữa hai kịch bản này cung cấp cái nhìn đa chiều về năng lực tổng quát hóa và là minh chứng cho sự linh hoạt của mô hình trong việc kết hợp giữa so sánh ngữ nghĩa và cá nhân hóa.
 
 \subsection{Đánh giá Cross Encoder trên bộ dữ liệu Phone \& Accessories}
 
@@ -574,11 +633,11 @@ Cuối cùng, sự hiện diện của bộ trộn Mixing MLP ở \textbf{Giai �
 
 \subsection{Đánh giá Cross Encoder trên bộ dữ liệu truy vấn sinh bởi LLM}
 
-\subsubsection*{Đặc thù tập dữ liệu và các kịch bản truy vấn}
+Để kiểm chứng khả năng suy luận ngữ nghĩa của kiến trúc Cross-Encoder trong môi trường tìm kiếm thực tế, thực nghiệm này được thực hiện trên tập dữ liệu truy vấn tổng hợp từ LLM đã được xây dựng và mô tả tại Mục 4.5.2. Việc đánh giá mô hình trên bộ dữ liệu này mang tính chất tất yếu, bởi các từ khóa dựa trên danh mục sản phẩm (category-based keywords) truyền thống thường thiếu đi sự tự nhiên và các tầng ý nghĩa tiềm ẩn (latent intent) mà người dùng thực tế thường thể hiện trong quá trình tìm kiếm.
 
-Để đánh giá chính xác năng lực hiểu ngôn ngữ tự nhiên của kiến trúc CtrlCE, việc thử nghiệm trên các bộ dữ liệu có cấu trúc truy vấn phức tạp là một yêu cầu tất yếu. Thay vì sử dụng các từ khóa dựa trên danh mục sản phẩm mang tính máy móc, thực nghiệm này tập trung khai thác hai tập dữ liệu \textit{All Beauty} và \textit{Gift Card} đã được xử lý qua quy trình sinh truy vấn lai (Hybrid Query Generation) tại mục 3.4.1. Việc ứng dụng các kỹ thuật thiết kế Prompt được trình bày tại mục 3.4.2 đã cho phép kiến tạo một không gian dữ liệu đa dạng với hai kịch bản chính: truy vấn mô tả dài (Long Query) nhằm mô phỏng nhu cầu mua hàng chi tiết và truy vấn từ khóa ngắn (Short Query) đại diện cho hành vi tìm kiếm cô đọng của người dùng.
+Cấu trúc thử nghiệm được thiết kế nhằm khai thác triệt để hai kịch bản tìm kiếm có độ phức tạp khác nhau: truy vấn mô tả dài (Long Query), mô phỏng các nhu cầu mua hàng chi tiết và mang tính tư vấn, cùng truy vấn từ khóa ngắn (Short Query), đại diện cho hành vi tìm kiếm cô đọng. Sự đối lập về hình thái và độ dài văn bản giữa hai nhóm truy vấn này đóng vai trò là thước đo chuẩn xác để xác định giới hạn của kiến trúc Cross-Encoder trong việc bóc tách thực thể và các ẩn ý ngữ nghĩa.
 
-Quy mô của tập dữ liệu thử nghiệm được chuẩn bị với số lượng lớn nhằm đảm bảo tính tổng quát hóa của mô hình trong quá trình đánh giá. Cụ thể, tập dữ liệu \textit{All Beauty} sau khi xử lý đạt 44.715 mẫu tương tác cho mỗi loại hình truy vấn (dài và ngắn), trong khi tập \textit{Gift Card} sở hữu 16.530 mẫu tương ứng. Cấu trúc đánh giá được tổ chức theo giao thức Leave-One-Out, đảm bảo tính khách quan khi đo lường khả năng xếp hạng của hệ thống giữa một sản phẩm mục tiêu (Ground Truth) và 99 sản phẩm nhiễu. Sự đối lập về hình thái văn bản giữa phiên bản truy vấn dài và ngắn đóng vai trò là thước đo chuẩn xác để xác định giới hạn của mô hình trong việc bóc tách các thực thể và ngữ nghĩa tiềm ẩn.
+Trong quá trình đánh giá, mô hình được kiểm định khả năng xếp hạng (ranking) thông qua giao thức Leave-One-Out, đảm bảo tính khách quan khi đo lường sự phân biệt giữa một sản phẩm mục tiêu (Ground Truth) và các sản phẩm nhiễu (Hard Negatives). Việc thử nghiệm trên bộ dữ liệu quy mô lớn này không chỉ cung cấp các chỉ số định lượng về độ chính xác (Accuracy) và sự ổn định của mô hình, mà còn là minh chứng thực tiễn cho khả năng mở rộng của kiến trúc Cross-Encoder khi chuyển đổi từ các bộ dữ liệu gán nhãn thủ công sang các bộ dữ liệu có tính chất "giả lập hành vi" (behavioral simulation) được tạo bởi LLM. Các kết quả chi tiết thu được từ quy trình này sẽ là tiền đề để phân tích ảnh hưởng của dữ liệu tổng hợp đến sự hội tụ của mô hình trong Mục 4.5.4.
 
 \subsubsection*{Phương pháp đánh giá và thiết lập cài đặt}
 
@@ -621,6 +680,37 @@ Truy vấn Ngắn (Short Query) & 73,79\% & 0,5301 & 0,4925 \\ \hline
 
 Quan sát từ Bảng \ref{tab:query_type_comparison}, có thể nhận thấy các truy vấn dài luôn đạt được kết quả khả quan hơn so với truy vấn ngắn. Hiện tượng này hoàn toàn phù hợp với lý thuyết, do các câu lệnh ngôn ngữ tự nhiên từ LLM cung cấp một lượng lớn ngữ cảnh và các thuộc tính sản phẩm chi tiết, tạo điều kiện thuận lợi cho mạng Transformer thực hiện đối sánh đặc trưng nhúng. Mặc dù vậy, việc duy trì mức HR@10 đạt trên 73\% đối với các truy vấn ngắn đã khẳng định rằng hệ thống vẫn có khả năng khai thác tốt các thực thể cốt lõi ngay cả khi thông tin đầu vào bị lược bỏ các thành phần bổ trợ. Tổng kết lại, sự kết hợp giữa khả năng đối sánh ngữ nghĩa sâu và thông tin từ bộ nhớ cá nhân hóa đã giúp kiến trúc CtrlCE khắc phục hiệu quả những hạn chế cố hữu của các phương pháp tìm kiếm truyền thống, từ đó tạo ra một giải pháp xếp hạng lại toàn diện trên nhiều hình thái dữ liệu khác nhau.
 
+\subsection{Phân tích tác động của dữ liệu tổng hợp (Ablation Study)}
+
+\subsubsection*{Thiết lập thực nghiệm}
+Hiệu năng của các mô hình xếp hạng trong hệ thống tìm kiếm phụ thuộc mật thiết vào chất lượng và sự đa dạng của dữ liệu huấn luyện. Để làm rõ vai trò của bộ dữ liệu sinh bởi LLM đối với năng lực của kiến trúc Ctrl-CE, thực nghiệm được thiết kế dựa trên tập dữ liệu chuẩn Amazon ESCI. Đây là bộ dữ liệu thực tế mô tả mối quan hệ giữa các câu truy vấn mua sắm và sản phẩm, được gán nhãn theo bốn mức độ liên quan: Exact, Substitute, Complement, và Irrelevant. Để chuẩn hóa quy trình đánh giá, các nhãn này được quy đổi về bài toán phân loại nhị phân, trong đó mô hình phải phân biệt giữa sản phẩm mục tiêu (Positive) và các sản phẩm không liên quan (Negative). Giao thức đánh giá được thực hiện qua phương pháp \textit{Leave-One-Out Ranking} với hai chỉ số chính là \textit{HR@10} và \textit{NDCG@10}.
+
+\subsubsection*{Kết quả và phân tích định lượng}
+Quá trình đánh giá được thực hiện kiểm thử độc lập trên hai cấu trúc cốt lõi khác nhau của kiến trúc Ctrl-CE bao gồm \texttt{all-mpnet-base-v2} và \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}. Hiệu năng của mô hình đề xuất được đối chiếu với các Baseline hệ thống bao gồm BM25 và các mô hình nguyên bản tương ứng. Kết quả thực nghiệm chi tiết được tổng hợp tại Bảng \ref{tab:ablation_esci}.
+
+\begin{table}[htbp]
+\centering
+\caption{So sánh hiệu năng của các mô hình trên tập dữ liệu ESCI}
+\label{tab:ablation_esci}
+\begin{tabularx}{\textwidth}{l|l|cc}
+\toprule
+\textbf{Mô hình cốt lõi (Core)} & \textbf{Phiên bản} & \textbf{HR@10 (\%)} & \textbf{NDCG@10} \\ \midrule
+Baseline & BM25 & 77.12 & 0.4685 \\
+Baseline & all-mpnet-base-v2 & 78.42 & 0.4845 \\
+Baseline & ms-marco-MiniLM-L-6-v2 & 80.88 & 0.5435 \\ \midrule
+\textbf{MPNet} & Ctrl-CE Base (Zero-shot) & 75.78 & 0.4120 \\
+ & Ctrl-CE (Fine-tuned) & 79.42 & 0.4910 \\ \midrule
+\textbf{MiniLM} & Ctrl-CE Base (Zero-shot) & 70.12 & 0.3697 \\
+ & Ctrl-CE (Fine-tuned) & 80.73 & 0.5129 \\ \bottomrule
+\end{tabularx}
+\end{table}
+
+Số liệu thực nghiệm cho thấy sự cải thiện rõ rệt của mô hình sau khi được huấn luyện tinh chỉnh trên dữ liệu tổng hợp. Phiên bản Ctrl-CE (Fine-tuned) sử dụng lõi \texttt{all-mpnet-base-v2} đạt chỉ số NDCG@10 là 0.4910, vượt qua chính mô hình \texttt{all-mpnet-base-v2} nguyên bản (0.4845). Lý do Ctrl-CE đạt hiệu năng cao hơn nằm ở chiến lược huấn luyện trên bộ dữ liệu sinh bởi LLM giàu tính ngữ nghĩa. Tập dữ liệu sinh vởi LLM này đóng vai trò như một trình giả lập ý định tìm kiếm, cung cấp các cặp truy vấn - sản phẩm tự nhiên. Nhờ vậy, thay vì chỉ dựa vào không gian biểu diễn tổng quát có sẵn của mô hình gốc, quá trình fine-tune trên dữ liệu LLM đã giúp mạng nơ-ron học được cách bóc tách các mối liên hệ ngữ nghĩa và các đặc trưng liên quan phức tạp trong miền thương mại điện tử một cách hiệu quả hơn.
+
+Tuy nhiên, khi đối chiếu với mô hình xếp hạng \texttt{MiniLM} (đạt NDCG@10 là 0.5435), phiên bản tinh chỉnh của Ctrl-CE có phần thấp hơn. Kết quả này hoàn toàn hợp lý bởi \texttt{ms-marco-MiniLM-L-6-v2} đã trải qua quá trình tiền huấn luyện quy mô khổng lồ trên tập dữ liệu MS-MARCO tiêu chuẩn, mang lại lợi thế lớn về phân bổ không gian vector cho tác vụ xếp hạng tổng quát. Ctrl-CE vẫn thể hiện ưu thế cạnh tranh nhờ khả năng tối ưu hóa chuyên biệt (Domain-Specific). Trong khi mô hình Baseline là một cấu trúc tĩnh, Ctrl-CE nhờ được tinh chỉnh sâu trên tập dữ liệu giả lập hành vi, giúp mô hình thấu hiểu sâu sắc đặc thù ngôn ngữ ngành hàng All-Beauty. Khi huấn luyện 5 epochs với lõi \texttt{ms-marco-MiniLM-L-6-v2}, chỉ số HR@10 tăng mạnh từ 70.12\% lên 80.73\% và NDCG@10 tăng từ 0.3697 lên 0.5129, chứng minh tính hiệu quả của quy trình huấn luyện tinh chỉnh trên bộ dữ liệu LLM.
+
+\subsubsection*{Tổng kết}
+Kết quả thực nghiệm khẳng định rằng việc sử dụng LLM để giả lập hành vi tìm kiếm là một phương pháp hiệu quả để tối ưu hóa mô hình xếp hạng trong điều kiện hạn chế dữ liệu gán nhãn. Sự tăng trưởng đồng nhất giữa các chỉ số cho thấy tiềm năng của phương pháp tiếp cận dựa trên dữ liệu tổng hợp, mở ra hướng đi mới trong việc phát triển các hệ thống tìm kiếm có khả năng cá nhân hóa chuyên sâu, đáp ứng chính xác nhu cầu của người dùng trong thương mại điện tử.
 
 \section{Triển khai Hệ thống và Demo thực tế}
 Để minh chứng cho tính khả thi và đánh giá trực quan hiệu quả của các mô hình học máy đã nghiên cứu, đồ án đã tiến hành xây dựng và triển khai một ứng dụng web hoàn chỉnh với luồng tương tác rõ ràng.
