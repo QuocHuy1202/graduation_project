@@ -34,46 +34,29 @@ Từ hai phân loại cốt lõi này, thông qua các bước tiền xử lý c
 \label{tab:dataset_stats}
 \renewcommand{\arraystretch}{1.2}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llccc}
+\begin{tabular}{lccc}
 \hline
-\textbf{Tập dữ liệu} & \textbf{Tập phân chia} & \textbf{Số lượng Người dùng} & \textbf{Số lượng Tương tác} & \textbf{Tổng số Sản phẩm} \\ \hline
-
-\multirow{4}{*}{\textbf{Gift Card}} 
-& Train & 59.143 & 62.456 & \multirow{4}{*}{1.137} \\
-& Validation & 7.393 & 7.797 & \\
-& Test & 7.393 & 7.842 & \\
-& \textit{Tổng cộng} & \textit{-} & \textit{78.095} & \\ \hline
-
-\multirow{4}{*}{\textbf{\begin{tabular}[c]{@{}l@{}}Beauty\\(3-core, 8000 Cold-start)\end{tabular}}} 
-& Train & 1.600 & 8.860 & \multirow{4}{*}{10.216} \\
-& Validation & 200 & 1.297 & \\
-& Test & 200 & 1.041 & \\
-& \textit{Tổng cộng} & \textit{-} & \textit{11.198} & \\ \hline
-
-\multirow{4}{*}{\textbf{\begin{tabular}[c]{@{}l@{}}Beauty\\(5-core, Full Cold-start)\end{tabular}}} 
-& Train & 1.094 & 10.037 & \multirow{4}{*}{6.710} \\
-& Validation & 274 & 2.313 & \\
-& Test & 241 & 1.758 & \\
-& \textit{Tổng cộng} & \textit{-} & \textit{14.108} & \\ \hline
-
-\multirow{4}{*}{\textbf{\begin{tabular}[c]{@{}l@{}}Phone \& Accessories\\(5-core, Leave-One-Out)\end{tabular}}} 
-& Train & 3.326 & 41.195 & \multirow{4}{*}{24.287} \\
-& Validation & 945 & 8.145 & \\
-& Test & 966 & 8.367 & \\
-& \textit{Tổng cộng} & \textit{-} & \textit{57.707} & \\ \hline
+\textbf{Tập dữ liệu} & \textbf{Số lượng Người dùng} & \textbf{Số lượng Tương tác} & \textbf{Tổng số Sản phẩm} \\ \hline
+Gift Card & 73.929 & 78.095 & 1.137 \\ \hline
+Beauty (3-core, Kèm nhiễu) & 2.000 & 11.198 & 10.216 \\ \hline
+Beauty (5-core, Full New Item) & 1.609 & 14.108 & 6.710 \\ \hline
+Phone \& Accessories (5-core, Leave-One-Out) & 5.237 & 57.707 & 24.287 \\ \hline
+Beauty (Amazon 2014) & 22.363 & 198.502 & 12.101 \\ \hline
 \end{tabular}%
 }
 \end{table}
 
 Dựa vào Bảng \ref{tab:dataset_stats}, có thể phân tách rõ đặc thù phân bố của bốn kịch bản thử nghiệm trong nghiên cứu:
 
-Kịch bản siêu thưa thớt được thể hiện qua tập thẻ quà tặng. Dù sở hữu tổng lượng tương tác lớn nhất với 78.095 lượt, dữ liệu lại bị phân mảnh trên một lượng khổng lồ người dùng. Với tỷ lệ trung bình chỉ khoảng 1,05 lượt tương tác cho mỗi người dùng, đây là bài kiểm tra độ bền của hệ thống trong điều kiện cực hạn của bài toán người dùng khởi động lạnh.
+\textbf{Kịch bản siêu thưa thớt} được thể hiện qua tập Gift Card. Dù sở hữu tổng lượng tương tác lớn nhất với 78.095 lượt, dữ liệu lại bị phân mảnh trên một lượng khổng lồ người dùng. Với tỷ lệ trung bình chỉ khoảng 1,05 lượt tương tác cho mỗi người dùng, đây là bài kiểm tra độ bền của hệ thống trong điều kiện cực hạn của bài toán khởi động lạnh từ phía người dùng hay còn gọi là User Cold-start.
 
-Kịch bản chống nhiễu được thiết lập thông qua tập làm đẹp với bộ lọc mức độ ba. Kịch bản này có mật độ dữ liệu ổn định hơn khi đạt trung bình 5,5 tương tác trên mỗi người dùng. Đặc biệt, hệ thống phải tìm kiếm sản phẩm đích trong một không gian ứng viên bị cố tình làm nhiễu bởi 8.000 mặt hàng chưa từng phát sinh tương tác. Thiết lập này nhằm kiểm định khắt khe năng lực trích xuất đặc trưng nội tại từ hình ảnh và văn bản của mô hình.
+\textbf{Kịch bản chống nhiễu} được thiết lập thông qua tập Beauty với bộ lọc mức độ 3 tức 3-core. Kịch bản này có mật độ dữ liệu ổn định hơn khi đạt trung bình 5,5 tương tác trên mỗi người dùng. Đặc biệt, hệ thống phải dự đoán sản phẩm đích trong một không gian ứng viên bị cố tình làm nhiễu bởi 8.000 mặt hàng chưa từng phát sinh tương tác. Thiết lập này nhằm kiểm định khắt khe năng lực trích xuất đặc trưng nội tại từ hình ảnh và văn bản của mô hình khi đối mặt với dữ liệu nhiễu.
 
-Kịch bản khởi động lạnh toàn phần sử dụng tập làm đẹp với bộ lọc mức độ năm. Tập dữ liệu này cung cấp chuỗi hành vi lịch sử chất lượng cao với 9,17 tương tác trên mỗi người dùng. Tuy nhiên, sản phẩm mục tiêu ở tập kiểm thử lại là những mặt hàng thuộc phần đuôi dài hoàn toàn mới mẻ. Kịch bản này đánh giá trực tiếp sức mạnh dung hợp đa phương thức của hệ thống khi không có sự trợ giúp từ các thuật toán lọc cộng tác truyền thống.
+\textbf{Kịch bản khởi động lạnh toàn phần} sử dụng tập Beauty với bộ lọc mức độ 5 tức 5-core. Tập dữ liệu này cung cấp chuỗi hành vi lịch sử chất lượng cao với 9,17 tương tác trên mỗi người dùng. Tuy nhiên, toàn bộ sản phẩm mục tiêu ở tập kiểm thử lại là những mặt hàng hoàn toàn mới mẻ. Kịch bản này đánh giá trực tiếp sức mạnh dung hợp đa phương thức của hệ thống trong điều kiện Zero-shot Inference khi hoàn toàn không có sự trợ giúp từ các thuật toán lọc cộng tác truyền thống.
 
-Cuối cùng, kịch bản đối chiếu chuẩn được thực hiện trên tập điện thoại và phụ kiện với bộ lọc mức độ năm và phân chia theo giao thức Leave-One-Out. Đây là tập dữ liệu có mật độ tương tác dày đặc nhất với tỷ lệ xấp xỉ 12,38 lượt trên mỗi người dùng. Kết hợp với không gian sản phẩm khổng lồ lên tới 24.287 mặt hàng, thử nghiệm này tạo ra một thước đo toàn diện để so sánh trực tiếp với các mô hình nền tảng khác. Đặc thù của tập dữ liệu này cho phép đánh giá chuyên sâu năng lực khai thác chuỗi hành vi dài hạn, đồng thời đo lường mức độ hiệu quả khi xử lý các truy vấn dạng từ khóa ngắn so với truy vấn bằng ngôn ngữ tự nhiên.
+\textbf{Kịch bản đánh giá quy mô lớn} được thực hiện trên tập Phone \& Accessories với bộ lọc mức độ 5 và phân chia theo giao thức Leave-One-Out. Đây là tập dữ liệu có mật độ tương tác dày đặc nhất với tỷ lệ xấp xỉ 12,38 lượt trên mỗi người dùng. Kết hợp với không gian sản phẩm khổng lồ lên tới 24.287 mặt hàng, thử nghiệm này tạo ra một thước đo toàn diện để đánh giá chuyên sâu năng lực khai thác chuỗi hành vi dài hạn, đồng thời đo lường mức độ hiệu quả khi xử lý các truy vấn có độ dài khác biệt.
+
+\textbf{Kịch bản đối chứng nền tảng} Baseline Reproduction được thực hiện trên tập Beauty phiên bản gốc từ Amazon 2014. Với quy mô 22.363 người dùng và 198.502 lượt tương tác tức trung bình xấp xỉ 8,88 lượt tương tác trên mỗi cá nhân, tập dữ liệu này mang đặc trưng của một môi trường dồi dào tín hiệu cộng tác. Đây chính là không gian dữ liệu chuẩn mực từng được sử dụng để thiết lập và công bố hiệu năng của mạng SASRec. Việc triển khai đánh giá trên tập dữ liệu này đảm bảo tính công bằng tuyệt đối về mặt học thuật. Thay vì kỳ vọng sự vượt trội của kiến trúc đa phương thức, thử nghiệm này được thiết lập nhằm tạo ra một giới hạn trên Upper Bound tham chiếu. Qua đó, nghiên cứu có thể định lượng rõ ràng sự đánh đổi Trade-off khi mô hình đa phương thức phải chấp nhận suy giảm một phần hiệu năng trên nhóm sản phẩm cũ so với mạng tuần tự thuần ID gốc, nhằm đánh đổi lấy năng lực suy luận mạnh mẽ đối với các mặt hàng hoàn toàn mới.
 
 \subsubsection*{A. Chi tiết dữ liệu User Reviews}
 Tập dữ liệu này cung cấp chuỗi hành vi lịch sử để huấn luyện mô hình.
@@ -369,10 +352,10 @@ Mục tiêu của phép thử này là kiểm chứng năng lực của Tháp S�
 \multirow{2}{*}{Gift Card} 
 & Text $\rightarrow$ Image & 35.96\% & 57.89\% & 66.67\% \\
 & Text $\rightarrow$ Fused Item & 40.35\% & 62.28\% & 71.93\% \\ \hline
-\multirow{2}{*}{Beauty 3-core, 8000 Cold-start} 
+\multirow{2}{*}{Beauty 3-core, kèm nhiễu} 
 & Text $\rightarrow$ Image & 12.13\% & 36.01\% & 48.43\% \\
 & Text $\rightarrow$ Fused Item & 14.58\% & 38.75\% & 49.02\% \\ \hline
-\multirow{2}{*}{Beauty 5-core, Full Cold-start} 
+\multirow{2}{*}{Beauty 5-core, Full new items} 
 & Text $\rightarrow$ Image & 9.91\% & 28.85\% & 40.48\% \\
 & Text $\rightarrow$ Fused Item & 12.40\% & 32.56\% & 47.20\% \\ \hline
 \end{tabular}
@@ -385,7 +368,7 @@ Dựa vào các số liệu thống kê tại Bảng \ref{tab:cross_modal_retrie
 \textbf{Độ khó và quy mô của không gian ứng viên Domain Specificity.} Số liệu cho thấy hiệu suất trên tập Gift Card chỉ có 1.137 sản phẩm vượt trội hoàn toàn so với Beauty chứa lần lượt 10.216 và 6.710 sản phẩm ở mọi mốc K. Hiện tượng này phản ánh chính xác bản chất vật lý của hai ngành hàng. Ngành hàng thẻ quà tặng có không gian mẫu nhỏ, hình ảnh chủ yếu là các logo thương hiệu đặc trưng và rất khớp với từ khóa văn bản nên việc truy xuất diễn ra tương đối dễ dàng. Ngược lại, ngành hàng mỹ phẩm Beauty lại là một thách thức cực đại Extreme Fine-grained. Tập dữ liệu này chứa hàng vạn mặt hàng có ngoại quan thị giác gần như giống hệt nhau, ví dụ như các thỏi son cùng một dòng chỉ khác biệt rất nhỏ về sắc độ. Tính đa dạng và nhiễu hình ảnh cao khiến việc dùng một đoạn văn bản để trích xuất chính xác một sản phẩm trở nên khó khăn hơn rất nhiều.
 
 \textbf{Ảnh hưởng của mật độ ngữ nghĩa Semantic Density và mẫu âm tính khó Hard Negatives.} Khi so sánh hai kịch bản của ngành hàng Beauty, ta quan sát thấy Kịch bản 5-core dù có không gian tìm kiếm nhỏ hơn gồm 6.710 sản phẩm nhưng lại có kết quả truy xuất thấp hơn một chút so với Kịch bản 3-core, với Hit@1 của Fused Item giảm nhẹ từ 14.58\% xuống 12.40\%. Sự chênh lệch nhỏ này xuất phát từ bản chất phân bố đa phương thức của tập dữ liệu sau khi thực hiện các bước lọc. 
-Kịch bản 3-core bao gồm 8.000 sản phẩm Cold-start được lấy đa dạng từ nhiều nhóm hàng, tạo ra một không gian vector có độ phân tán cao, giúp mạng Contrastive Learning phân biệt các cụm sản phẩm dễ dàng hơn. Ngược lại, việc lọc 5-core ở kịch bản sau vô hình trung đã khoanh vùng lại những sản phẩm phổ biến và có tính cạnh tranh cao nhất. Các mặt hàng này, điển hình như các sản phẩm cùng một bộ sưu tập mỹ phẩm, thường có sự đồng nhất lớn về mặt ngoại quan thị giác Image và cấu trúc mô tả Text. Đặc điểm này làm tăng tỷ lệ các mẫu âm tính khó Hard Negatives trong không gian vector, khiến bài toán phân loại trở nên tinh vi hơn và dẫn đến sự thay đổi nhẹ về mặt hiệu suất.
+Kịch bản 3-core bao gồm 8.000 sản phẩm nhiễu được lấy đa dạng từ nhiều nhóm hàng, tạo ra một không gian vector có độ phân tán cao, giúp mạng Contrastive Learning phân biệt các cụm sản phẩm dễ dàng hơn. Ngược lại, việc lọc 5-core ở kịch bản sau vô hình trung đã khoanh vùng lại những sản phẩm phổ biến và có tính cạnh tranh cao nhất. Các mặt hàng này, điển hình như các sản phẩm cùng một bộ sưu tập mỹ phẩm, thường có sự đồng nhất lớn về mặt ngoại quan thị giác Image và cấu trúc mô tả Text. Đặc điểm này làm tăng tỷ lệ các mẫu âm tính khó Hard Negatives trong không gian vector, khiến bài toán phân loại trở nên tinh vi hơn và dẫn đến sự thay đổi nhẹ về mặt hiệu suất.
 
 Kết quả thực nghiệm này là tiền đề hoàn hảo để lý giải cho các đánh giá truy xuất người dùng tiếp theo. Việc Tháp Sản phẩm chứng minh được khả năng học và dung hợp thành công các đặc trưng hạt mịn tinh vi ngay cả trong không gian nhiễu và mang tính thử thách khắt khe như tập Beauty Full Cold-start sẽ mang lại sức mạnh nền tảng vững chắc. Từ đó, Tháp Người dùng User Tower có thể tận dụng biểu diễn đa phương thức chất lượng cao này để tạo ra sự đột phá trong gợi ý cá nhân hóa.
 
@@ -413,15 +396,22 @@ Kết quả thực nghiệm này là tiền đề hoàn hảo để lý giải c
 
 Phân tích kết quả trên tập dữ liệu thẻ quà tặng cho thấy sự vượt trội của phương pháp sinh truy vấn ngắn dựa trên luật. Tỷ lệ trúng đích trong mười kết quả đầu tiên đạt 87,36 phần trăm, cao hơn khoảng 10 điểm phần trăm so với luồng truy vấn dài do mô hình ngôn ngữ sinh ra. Nguyên nhân cốt lõi xuất phát từ bản chất của ngành hàng thẻ quà tặng, nơi người dùng thường tìm kiếm trực tiếp bằng các từ khóa mang tên thương hiệu cụ thể thay vì sử dụng các câu mô tả ngữ nghĩa dài dòng. Mặc dù vậy, chỉ số thứ hạng đảo ngược trung bình của truy vấn dài lại nhỉnh hơn đôi chút, cho thấy khi mô hình ngôn ngữ bắt đúng được ngữ cảnh đặc thù, nó có khả năng đưa sản phẩm đích lên vị trí đầu tiên một cách chính xác.
 
-Sự chênh lệch về hiệu suất trở nên đặc biệt rõ rệt và mang tính quyết định khi quan sát thực nghiệm trên tập dữ liệu làm đẹp với thiết lập khởi động lạnh toàn phần. Đối với tập dữ liệu này, luồng truy vấn dài do mô hình ngôn ngữ sinh ra sụt giảm hiệu năng nghiêm trọng, chỉ đạt tỷ lệ trúng đích 42,21 phần trăm ở mười kết quả đầu tiên. Sự suy giảm này minh chứng cho hiện tượng ảo giác và quá tải mệnh lệnh của các mô hình ngôn ngữ cỡ nhỏ khi phải đối mặt với các mặt hàng hoàn toàn mới chưa từng xuất hiện trong tập huấn luyện. Các câu truy vấn hội thoại được sinh ra thường trở nên mơ hồ, làm loãng trọng số của các từ khóa quan trọng và khiến bộ mã hóa văn bản không thể đối sánh chính xác với không gian vector của sản phẩm.
+Sự chênh lệch về hiệu suất trở nên đặc biệt rõ rệt và mang tính quyết định khi quan sát thực nghiệm trên tập dữ liệu làm đẹp với thiết lập khởi động lạnh toàn phần. Đối với tập dữ liệu này, luồng truy vấn dài do mô hình ngôn ngữ sinh ra sụt giảm hiệu năng nghiêm trọng, chỉ đạt tỷ lệ trúng đích 42,21\% ở mười kết quả đầu tiên. Sự suy giảm này minh chứng cho hiện tượng ảo giác và quá tải mệnh lệnh của các mô hình ngôn ngữ cỡ nhỏ khi phải đối mặt với các mặt hàng hoàn toàn mới chưa từng xuất hiện trong tập huấn luyện. Các câu truy vấn hội thoại được sinh ra thường trở nên mơ hồ, làm loãng trọng số của các từ khóa quan trọng và khiến bộ mã hóa văn bản không thể đối sánh chính xác với không gian vector của sản phẩm.
 
 Ngược lại, luồng truy vấn ngắn được bóc tách bằng thuật toán tự suy đã chứng minh sức mạnh áp đảo khi đẩy tỷ lệ trúng đích lên tới 78,94 phần trăm, đồng thời giúp chỉ số chất lượng xếp hạng chuẩn hóa tăng hơn gấp đôi, từ 27,45 lên 62,14 phần trăm. Bằng cách chắt lọc chính xác thương hiệu, hình thái sản phẩm và tên cốt lõi, thuật toán tự suy đã loại bỏ hoàn toàn các hậu tố tối ưu hóa công cụ tìm kiếm rườm rà. Phương pháp này tạo ra một biểu diễn vector cực kỳ đặc, chứa đựng hàm lượng thông tin định danh cô đọng nhất. Từ những minh chứng thực nghiệm này, có thể khẳng định việc áp dụng thuật toán tự suy cho luồng truy vấn ngắn là một thiết kế mang tính chiến lược, giúp bảo chứng sự ổn định và độ chính xác của toàn bộ kiến trúc mạng học sâu trong môi trường thương mại điện tử khắc nghiệt.
 
-\subsection{Đánh giá năng lực Tháp Người dùng và Hiệu suất Toàn hệ thống}
+\subsection{Đánh giá năng lực Tháp Người dùng}
 
 Để đánh giá chính xác năng lực thực tế của kiến trúc Tháp Người dùng khi triển khai, đồ án tiếp tục áp dụng giao thức truy xuất toàn cục. Thay vì sử dụng phương pháp đánh giá lấy mẫu, nơi hệ thống chỉ phải phân biệt mặt hàng mục tiêu với một nhóm nhỏ các sản phẩm nhiễu ngẫu nhiên khiến các chỉ số dễ bị thổi phồng, mô hình của đồ án bắt buộc phải tính toán và xếp hạng toàn bộ sản phẩm trong cơ sở dữ liệu để tìm ra mặt hàng đúng. Phương pháp khắc nghiệt này phản ánh chân thực nhất rủi ro và năng lực của hệ thống khi hoạt động trong môi trường thương mại điện tử thực tế.
 
-Mô hình đề xuất dựa trên kiến trúc Bi-Encoder Đa phương thức được kiểm chứng và đối sánh trực tiếp với cấu hình cơ sở SASRec, một mô hình chỉ sử dụng học nhúng mã định danh truyền thống. Thực nghiệm được tiến hành trên ba kịch bản dữ liệu có độ khó tăng dần bao gồm tập Gift Card siêu thưa thớt, tập All Beauty 3-core với không gian ứng viên lớn và tập All Beauty 5-core tập trung vào bài toán khởi động lạnh toàn phần. Lưu ý rằng thông báo giới hạn không gian ứng viên xuất hiện trong nhật ký hệ thống chỉ là chuỗi định dạng tĩnh từ cấu hình cũ, thực tế kịch bản kiểm thử đã được chạy trên toàn bộ không gian của từng tập dữ liệu, minh chứng qua việc có thể đo lường tại mốc giới hạn lên đến 5000.
+Mô hình đề xuất dựa trên kiến trúc Bi-Encoder đa phương thức được kiểm chứng và đối sánh toàn diện với các mô hình cơ sở thuần mã định danh tiêu biểu bao gồm SASRec, BERT4Rec, S$^3$Rec và DuoRec. Các kịch bản kiểm thử đều đã được chạy trên toàn bộ không gian của từng tập dữ liệu theo chiến lược đánh giá xếp hạng toàn diện.
+
+\begin{itemize}
+    \item \textbf{SASRec} \cite{7} áp dụng cơ chế tự chú ý đơn hướng tức unidirectional self-attention để phân tích chuỗi hành vi. Đây là hệ cơ sở nền tảng và cực kỳ mạnh mẽ cho bài toán gợi ý tuần tự.
+    \item \textbf{BERT4Rec} \cite{54} sử dụng lược đồ huấn luyện che khuất sản phẩm hay masked item prediction tương tự như các mô hình ngôn ngữ trong NLP. Xương sống của nó là cơ chế tự chú ý hai chiều tức bi-directional self-attention.
+    \item \textbf{S$^3$Rec} \cite{53} ứng dụng cơ chế tiền huấn luyện tự giám sát, cụ thể là tiêm thông tin ngữ cảnh vào vector ID, nhằm tối đa hóa thông tin tương hỗ giữa chuỗi hành vi và các thuộc tính ngữ cảnh của sản phẩm.
+    \item \textbf{DuoRec} \cite{52} sử dụng phương pháp học đối chiếu tức contrastive learning cấp độ chuỗi để giảm thiểu hiện tượng dị hướng hay anisotropy trong không gian vector nhúng. Đây là mô hình tiên tiến đạt hiệu năng thuộc top đầu hiện nay.
+\end{itemize}
 
 \begin{table}[H]
 \centering
@@ -460,29 +450,59 @@ Mô hình đề xuất dựa trên kiến trúc Bi-Encoder Đa phương thức �
 
 \vspace{0.6cm} % Khoảng cách giữa bảng 2 và 3
 
-% --- BẢNG 3 ---
-\caption{So sánh Hiệu suất trên tập All Beauty 5-core kịch bản Khởi động lạnh toàn phần với không gian 6.710 sản phẩm}
-\label{tab:eval_beauty5core}
+\caption{So sánh hiệu năng của mô hình đề xuất với các mô hình cơ sở trên tập Amazon Beauty 2014 tức kịch bản đối chứng nền tảng}
+\label{tab:baseline_comparison}
 \renewcommand{\arraystretch}{1.2}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccccc}
+\begin{tabular}{lcccc}
 \hline
-\multirow{2}{*}{\textbf{Metric}} & \multicolumn{2}{c}{\textbf{Top @10}} & \multicolumn{2}{c}{\textbf{Top @20}} & \multicolumn{2}{c}{\textbf{Top @50}} & \multicolumn{2}{c}{\textbf{Top @100}} \\ \cline{2-9} 
- & \textbf{SASRec} & \textbf{Đề xuất} & \textbf{SASRec} & \textbf{Đề xuất} & \textbf{SASRec} & \textbf{Đề xuất} & \textbf{SASRec} & \textbf{Đề xuất} \\ \hline
-\textbf{Hit Rate} & 0.00\% & \textbf{3.45\%} & 0.00\% & \textbf{5.91\%} & 0.00\% & \textbf{12.32\%} & 0.00\% & \textbf{18.23\%} \\
-\textbf{NDCG} & 0.00\% & \textbf{1.93\%} & 0.00\% & \textbf{2.55\%} & 0.00\% & \textbf{3.80\%} & 0.00\% & \textbf{4.77\%} \\
-\textbf{MRR} & 0.00\% & \textbf{1.47\%} & 0.00\% & \textbf{1.63\%} & 0.00\% & \textbf{1.82\%} & 0.00\% & \textbf{1.91\%} \\ \hline
-\end{tabular}%
-}
+\textbf{Mô hình} & \textbf{Hit@5} & \textbf{Hit@10} & \textbf{NDCG@5} & \textbf{NDCG@10} \\ \hline
+BERT4Rec & 1.93\% & 4.01\% & 1.87\% & 2.54\% \\
+S$^3$Rec & 3.27\% & 5.91\% & 1.75\% & 2.68\% \\
+SASRec & 3.65\% & 6.27\% & 2.36\% & 2.81\% \\
+DuoRec & \textbf{5.46\%} & \textbf{8.45\%} & \textbf{3.52\%} & \textbf{4.43\%} \\ \hline
+\textbf{User tower đề xuất} & 2.48\% & 4.33\% & 1.51\% & 2.10\% \\ \hline
+\end{tabular}
+
 \end{table}
 
-Sự tương quan giữa mô hình đề xuất và cấu hình cơ sở SASRec qua ba kịch bản đã phản ánh rõ rệt đặc trưng, ưu điểm cũng như sự đánh đổi của hệ thống gợi ý đa phương thức.
-
-\textbf{Sự sụp đổ của Baseline và Bứt phá của kiến trúc Đa phương thức:} Bảng \ref{tab:eval_beauty5core} chính là minh chứng đắt giá nhất cho đồ án. Trong kịch bản khởi động lạnh toàn phần, nơi sản phẩm mục tiêu ở tập kiểm thử chưa từng xuất hiện trong tập huấn luyện, mô hình SASRec dựa trên mã định danh đã tê liệt hoàn toàn. Tỷ lệ Hit Rate và NDCG của mô hình này đạt mức không ở mọi mốc đánh giá từ Top 10 đến Top 100. Hệ thống này chỉ bắt đầu tìm thấy sản phẩm khi mở rộng giới hạn tìm kiếm lên ngưỡng cực đại Top 5000 trên 6710 sản phẩm với hit rate khiêm tốn chỉ khoảng 13,28\%. Ngược lại, mô hình Đề xuất vẫn duy trì khả năng dự đoán sắc bén, thu hồi thành công 12,32\% sản phẩm đúng ở mốc Top 50 và 18,23\% ở mốc Top 100. Khả năng dự đoán sản phẩm mới này bắt nguồn trực tiếp từ việc nội suy các đặc trưng hình ảnh và văn bản, qua đó phá vỡ hoàn toàn rào cản của ma trận thưa thớt vốn là điểm yếu chí mạng của phương pháp truyền thống.
+\textbf{Trade off giữa lọc nội dung và lọc cộng tác:} Bảng \ref{tab:baseline_comparison} cho thấy mô hình đa phương thức đề xuất đạt Hit@10 là 4.33\%, xuất sắc vượt qua mô hình ngôn ngữ tuần tự hai chiều BERT4Rec với mức điểm 4.01\%, qua đó khẳng định sức mạnh định tuyến vượt trội của việc dung hợp đặc trưng hình ảnh và văn bản. Mặc dù vậy, hiệu năng của hệ thống vẫn xếp sau nhóm dẫn đầu thuần ID bao gồm SASRec và DuoRec vốn có Hit@10 cao nhất lên tới 8.45\%. Kết quả này phản ánh hoàn toàn chính xác bài toán đánh đổi hiệu năng có chủ đích. Trong môi trường dồi dào tín hiệu cộng tác, các kiến trúc thuần ID dễ dàng tối ưu hóa biểu đồ hành vi nhờ các vector tự do, trong khi mô hình đề xuất chịu sự ràng buộc của nút thắt cổ chai ngữ nghĩa. Tuy nhiên, việc chấp nhận suy giảm một phần độ chính xác trên nhóm sản phẩm cũ là sự đánh đổi thiết yếu nhằm thiết lập năng lực suy luận linh hoạt trên không gian khởi động lạnh toàn phần, một kịch bản mà toàn bộ các mạng ID truyền thống đều hoàn toàn bất lực.
 
 \textbf{Năng lực phân biệt và chống nhiễu trong không gian lớn:} Trên tập All Beauty 3-core Bảng \ref{tab:eval_beauty3core}, do đã áp dụng bộ lọc mức độ ba, toàn bộ các sản phẩm mục tiêu ở tập kiểm thử đều đã xuất hiện và được mô hình học qua ở tập huấn luyện. Thử thách thực sự của kịch bản này nằm ở việc mở rộng không gian tìm kiếm lên hơn mười ngàn ứng viên bằng cách trộn thêm tám ngàn sản phẩm chưa từng xuất hiện đóng vai trò là các mẫu nhiễu. Trong môi trường dày đặc nhiễu này, mô hình Đề xuất vẫn đánh bại SASRec ở khả năng thu hồi, tiêu biểu là mốc Top 50 đạt 19,30\%. Mặc dù SASRec có nhỉnh hơn về điểm xếp hạng NDCG do lợi thế ghi nhớ các mặt hàng phổ biến, kết quả trên vẫn chứng minh rằng việc kết hợp các vector ngữ nghĩa giúp tạo ra các ranh giới biểu diễn sắc nét hơn. Nhờ đó, hệ thống không bị nhầm lẫn giữa các sản phẩm đã học với hàng ngàn sản phẩm nhiễu mới so với việc chỉ sử dụng kỹ thuật nhúng mã định danh đơn thuần.
 
-\textbf{Đặc thù trên tập dữ liệu siêu thưa thớt:} Tại Bảng \ref{tab:eval_giftcard}, mô hình SASRec cho thấy hiệu suất cao hơn, thể hiện qua việc thu hồi được 55,03\% ở mốc Top 10 so với 47,59\% của mô hình Đề xuất. Điều này hoàn toàn phù hợp với lý thuyết học máy cốt lõi. Trên một không gian sản phẩm rất nhỏ với vỏn vẹn hơn một ngàn mặt hàng đi kèm lịch sử người dùng cực kỳ ngắn, việc ghi nhớ mã định danh giúp mạng học nhanh và chính xác hơn. Trong khi đó, kiến trúc Đa phương thức với hàng triệu tham số phức tạp từ các bộ mã hóa gặp khó khăn trong việc hội tụ khi thiếu hụt chuỗi dữ liệu hành vi. Dù vậy, mức Hit Rate dao động xấp xỉ một nửa của mô hình Đề xuất vẫn là một chỉ số cực kỳ ấn tượng và đáp ứng tốt các tiêu chuẩn ứng dụng thực tiễn trong ngành thương mại điện tử.
+\textbf{Đặc thù trên tập dữ liệu siêu thưa thớt:} Tại Bảng \ref{tab:eval_giftcard}, mô hình SASRec cho thấy hiệu suất cao hơn, thể hiện qua việc thu hồi được 55,03\% ở mốc Top 10 so với 47,59\% của mô hình Đề xuất. Điều này hoàn toàn phù hợp với lý thuyết học máy cốt lõi. Trên một không gian sản phẩm rất nhỏ với vỏn vẹn hơn một ngàn mặt hàng đi kèm lịch sử người dùng cực kỳ ngắn, việc ghi nhớ mã định danh giúp mạng học nhanh và chính xác hơn. Trong khi đó, kiến trúc Đa phương thức với hàng triệu tham số phức tạp từ các bộ mã hóa gặp khó khăn trong việc hội tụ khi thiếu hụt chuỗi dữ liệu hành vi. Dù vậy, mức Hit Rate dao động xấp xỉ SASRec của mô hình Đề xuất vẫn là một chỉ số cực kỳ ấn tượng và đáp ứng tốt các tiêu chuẩn ứng dụng thực tiễn trong ngành thương mại điện tử.
+
+\vspace{0.5cm}
+
+\noindent Trong các kịch bản sở hữu mật độ tương tác dày đặc, các mạng thuần mã định danh tiêu biểu như SASRec đã chứng minh được năng lực tối ưu hóa biểu đồ hành vi xuất sắc. Tuy nhiên, khi tiến hành kiểm thử trên kịch bản khởi động lạnh toàn phần, nhóm mô hình này bộc lộ giới hạn cấu trúc cố hữu. Do phụ thuộc hoàn toàn vào ma trận biểu diễn tĩnh, việc thiếu vắng dữ liệu lịch sử khiến các hệ thống này mất đi khả năng nội suy véc tơ cho sản phẩm mới, dẫn đến sự sụp đổ tất yếu về mặt hiệu năng. Do đó, để đảm bảo tính công bằng và sự chặt chẽ về phương pháp luận nghiên cứu, việc đối chứng hiệu năng trong không gian ứng viên mới hoàn toàn đòi hỏi một hệ quy chiếu đồng bộ hơn. Thay vì sử dụng các mạng học chuỗi truyền thống, nghiên cứu tiến hành thiết lập đối trọng so sánh với \textbf{MoRec} \cite{55}, cụ thể là một kiến trúc gợi ý đa phương thức tiên tiến áp dụng cơ chế dung hợp trực tiếp đầu cuối. Việc đặt cấu trúc bộ mã hóa kép của mô hình đề xuất cạnh MoRec sẽ cung cấp một lăng kính khách quan và chuẩn mực nhất để đánh giá năng lực định tuyến ngữ nghĩa, cũng như sức mạnh của hàm InfoNCE trong việc giải quyết triệt để bài toán sản phẩm mới.
+
+\begin{table}[H]
+    \centering
+    \caption{So sánh hiệu năng truy xuất trên kịch bản khởi động lạnh toàn phần với không gian 6.710 sản phẩm}
+    \label{tab:morec_vs_proposed}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{lcccc}
+        \hline
+        \textbf{Phương thức nạp liệu} & \multicolumn{2}{c}{\textbf{MoRec}} & \multicolumn{2}{c}{\textbf{Mô hình đề xuất}} \\
+        \cline{2-5}
+        & \textbf{Hit@10} & \textbf{NDCG@10} & \textbf{Hit@10} & \textbf{NDCG@10} \\
+        \hline
+        Chỉ dùng Văn bản & 0.93\% & 0.67\% & \textbf{2.46\%} & \textbf{1.24\%} \\
+        Chỉ dùng Hình ảnh & 0.41\% & 0.18\% & \textbf{2.96\%} & \textbf{1.63\%} \\
+        Dung hợp đa phương thức & - & - & \textbf{3.45\%} & \textbf{1.93\%} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Từ Bảng \ref{tab:morec_vs_proposed}, có thể rút ra ba luận điểm phân tích chuyên sâu về sự vượt trội của kiến trúc đề xuất so với mạng đa phương thức MoRec:
+
+\textbf{Thứ nhất, sự đảo chiều về mức độ đóng góp của đặc trưng Hình ảnh và Văn bản.}
+Kết quả thực nghiệm cho thấy một hiện tượng trái ngược thú vị giữa hai kiến trúc. Tại MoRec, luồng văn bản mang lại hiệu quả gấp đôi hình ảnh với Hit@10 đạt 0.93\% so với 0.41\%. Nguyên nhân xuất phát từ việc MoRec chỉ nạp một ảnh đại diện duy nhất, dẫn đến rủi ro mất mát thông tin vật lý, khiến mạng lưới phải bám víu vào dữ liệu văn bản để suy luận. Ngược lại, tại hệ thống đề xuất, đặc trưng hình ảnh lại vươn lên trở thành phương thức định tuyến mạnh nhất với Hit@10 đạt 2.96\%. Sự bứt phá này là minh chứng cho tính hiệu quả của chiến lược nạp dữ liệu đa góc nhìn. Khi được cung cấp trọn vẹn đặc điểm hình thái từ nhiều góc độ, bộ mã hóa hình ảnh đã tạo ra các véc tơ biểu diễn cực kỳ sắc nét, vượt qua cả tín hiệu ngữ nghĩa từ văn bản.
+
+\textbf{Thứ hai, ưu thế tuyệt đối của hàm mất mát đối chiếu trong không gian truy xuất.}
+Sự chênh lệch lớn về hiệu năng tổng thể giữa hai mô hình được quyết định bởi hàm mục tiêu huấn luyện. MoRec tối ưu hóa bằng hàm Entropy chéo nhị phân tức BCE, một phương pháp phân loại điểm độc lập. Cách tiếp cận này khiến MoRec thiếu đi góc nhìn toàn cục, dẫn đến việc các véc tơ bị rối loạn khi rơi vào không gian ứng viên khổng lồ. Trong khi đó, mô hình đề xuất ứng dụng hàm InfoNCE thuộc phương pháp học đối chiếu. Thông qua cơ chế tối ưu hóa xếp hạng danh sách, InfoNCE liên tục đẩy hàng loạt các mẫu tiêu cực ra xa nhau trong mỗi bước huấn luyện. Lực đẩy diện rộng này giúp hệ thống kiến tạo một không gian biểu diễn đẳng hướng và phân cấp rành mạch, đảm bảo năng lực quét và truy xuất mục tiêu cực kỳ chuẩn xác ngay cả với các sản phẩm chưa từng xuất hiện.
+
+\textbf{Thứ ba, hiệu ứng cộng hưởng từ chiến lược dung hợp đa phương thức.}
+Điểm sáng lớn nhất của hệ thống đề xuất nằm ở mức hiệu năng đỉnh cao 3.45\% khi dung hợp đồng thời các luồng thông tin. Con số này cao hơn đáng kể so với hiệu suất của từng nhánh văn bản hay hình ảnh hoạt động độc lập. Kết quả này khẳng định cơ chế kết hợp của mô hình không hề gây ra tình trạng nhiễu loạn phương thức, mà ngược lại, đã tạo ra hiệu ứng cộng hưởng tương hỗ vô cùng mạnh mẽ. Các khuyết điểm về sự thưa thớt của dữ liệu bảng hay điểm mù của hình ảnh đã được bù đắp chéo bởi độ sâu ngữ nghĩa của văn bản. Việc dung hợp thành công này đã phá vỡ triệt để nút thắt cổ chai thông tin, cung cấp cho hệ thống một biểu diễn nội suy toàn vẹn nhất để thấu hiểu ý định người dùng trong kịch bản khởi động lạnh toàn phần.
 
 \section{Đánh giá Cross-Encoder}
 Việc đánh giá hệ thống xếp hạng lại (Reranker) đóng vai trò quyết định trong việc xác định khả năng thực tiễn của kiến trúc CtrlCE khi đối mặt với các kịch bản tìm kiếm khác nhau. Trong chương này, quá trình đánh giá được thực hiện thông qua hai đợt thực nghiệm riêng biệt nhằm bao quát toàn diện các khía cạnh từ khả năng cá nhân hóa truyền thống đến năng lực hiểu ngôn ngữ tự nhiên hiện đại. 
