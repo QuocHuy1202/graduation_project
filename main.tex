@@ -43,6 +43,7 @@
 \usepackage{tabularx}
 \usepackage{enumitem}
 \usepackage{longtable}
+\usepackage{pdfpages}
 \setcounter{tocdepth}{2}
 \usetikzlibrary{arrows,snakes,backgrounds}
 
@@ -313,28 +314,30 @@ morekeywords={}
 
 \begin{center}
 \begin{tabular}{c}
-\multicolumn{1}{c}{\textbf{{\LARGE BÁO CÁO}}}\\
-\\{\textbf{{\large ĐỒ ÁN TỐT NGHIỆP}}}
-\\{\textbf{{\large KHOA KHOA HỌC VÀ KĨ THUẬT MÁY TÍNH}}}
+\multicolumn{1}{c}{\textbf{{\large LUẬN VĂN TỐT NGHIỆP ĐẠI HỌC}}}\\
 \\
 \\
 \textbf{\large Ứng dụng mô hình ngôn ngữ lớn (LLM) trong hệ thống gợi ý}\\
 \textbf{\large và tư vấn trên sàn thương mại điện tử}
-
+\\
+\\
+\textbf{\large Ngành: KHOA HỌC MÁY TÍNH}
 \end{tabular}
 \end{center}
 \vspace{0.5cm}
 \begin{table}[h]
 \begin{tabular}{rll}
-\hspace{6 cm} &  \textbf{\large HỘI ĐỒNG:} {\large Khoa học máy tính}
+\hspace{6 cm} &  \textbf{\large HỘI ĐỒNG:} {\large Khoa học máy tính 23}
 \\
 \\
-\hspace{6 cm} &   \textbf{\large GVHD:} {\large Ths. Võ Thanh Hùng}
-\\
-\\
+\hspace{6 cm} &   \textbf{\large GVHD:} {\large ThS. Võ Thanh Hùng}
 
+\\
+\\
+\hspace{6 cm} &   \textbf{\large GVPB:} {\large TS. Trần Tuấn Anh}
 % TKHĐ là THƯ KÝ HỘI ĐỒNG
-\hspace{6 cm} &     \textbf{$\;$ $\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$$\;$ \Large ---o0o---} 
+\\
+\\
 \\
 \\
 \hspace{6 cm} &   \textbf{\large SVTH1:} {\large Đàm Đức Huy(2211157)}
@@ -350,16 +353,19 @@ morekeywords={}
 \end{table}
 \vspace{0.5cm}
 \begin{center}
-{\large TP. HỒ CHÍ MINH, 5/2026 }
+{\large TP. HỒ CHÍ MINH, 6/2026 }
 \end{center}
 \end{titlepage}
 %\thispagestyle{empty}
 \newpage
+
+% \includepdf[pages=-]{phieu_nhiem_vu.pdf}
+\newpage
 %%%%%%%%%%%%%%%%%INTRO%%%%%%%%%%%%%%%%%%%
-\input{Intro/LoiCamOn}
 \input{Intro/LoiCamDoan}
+\input{Intro/LoiCamOn}
 \input{Intro/TomTat}
-\input{Intro/PhanCongCongViec}
+
 \input{Intro/DanhMucTuVietTat}
 \newpage
 \tableofcontents
