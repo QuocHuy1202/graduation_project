@@ -79,3 +79,7 @@ During the evaluation phase, the system performs a **Full-Ranking** sweep across
 - **NDCG @K** — Normalized Discounted Cumulative Gain; penalizes the score if the correct item is ranked lower in the top K list.
 - **MRR** — Mean Reciprocal Rank; evaluates the position of the first relevant recommendation.
 
+## Demo
+
+[![Watch the demo](https://img.youtube.com/vi/tNAwKtsQa_c/maxresdefault.jpg)](https://www.youtube.com/watch?v=tNAwKtsQa_c)
+
